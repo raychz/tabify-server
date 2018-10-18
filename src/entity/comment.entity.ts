@@ -13,20 +13,20 @@ import { Ticket, User } from './';
 
 @Entity()
 export class Comment {
-  @PrimaryGeneratedColumn() id: number;
+  @PrimaryGeneratedColumn() id!: number;
 
   @ManyToMany(type => User, user => user.uid)
-  user: User;
+  user!: User;
 
   @ManyToOne(type => Ticket, ticket => ticket.id)
-  ticket: Ticket;
+  ticket!: Ticket;
 
   @Column({ type: 'text', nullable: false })
-  content: string;
+  content!: string;
 
   @UpdateDateColumn()
-  date_edited: Date;
+  date_edited!: Date;
 
   @CreateDateColumn()
-  date_posted: Date;
+  date_posted!: Date;
 }

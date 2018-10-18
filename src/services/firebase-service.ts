@@ -4,7 +4,7 @@ import * as firebaseAdmin from 'firebase-admin';
 @Injectable()
 export class FirebaseService {
   async getUserInfo(uid: string) {
-    return firebaseAdmin.auth().getUser(uid);
+    return await firebaseAdmin.auth().getUser(uid);
   }
 
   async getUidFromToken(token: string): Promise<string | null> {

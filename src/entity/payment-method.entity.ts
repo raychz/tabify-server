@@ -3,14 +3,14 @@ import { User } from './';
 
 @Entity()
 export class PaymentMethod {
-  @PrimaryGeneratedColumn() id: number;
+  @PrimaryGeneratedColumn() id!: number;
 
   @ManyToOne(type => User, user => user.uid, { nullable: false })
-  user: string;
+  user!: string;
 
   /**
    * Hash ideally store in a third party server
    */
   @Column('varchar', { length: 255, nullable: false })
-  payment_method: string;
+  payment_method!: string;
 }

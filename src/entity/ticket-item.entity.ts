@@ -9,26 +9,26 @@ import { Ticket, TicketPayment } from '.';
 
 @Entity()
 export class TicketItem {
-  @PrimaryGeneratedColumn() id: number;
+  @PrimaryGeneratedColumn() id!: number;
 
   @Column({ type: 'int', nullable: false })
-  ticket_item_id: number;
+  ticket_item_id!: number;
 
   @ManyToOne(type => Ticket, ticket => ticket.items, { nullable: false })
-  ticket: Ticket;
+  ticket!: Ticket;
 
   @Column({ type: 'varchar', nullable: false })
-  name: string;
+  name!: string;
 
   @Column({ type: 'int', nullable: false })
-  price: number;
+  price!: number;
 
   @Column({ type: 'int', nullable: false })
-  quantity: number;
+  quantity!: number;
 
   /**
    * One TicketItem can have a relationship to many payments
    */
   @ManyToMany(type => TicketPayment)
-  payments: TicketPayment[];
+  payments!: TicketPayment[];
 }

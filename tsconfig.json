@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "module": "commonjs",
+    "moduleResolution": "node",
     "declaration": true,
     "noImplicitAny": true,
     "removeComments": true,
@@ -11,7 +12,8 @@
     "target": "es6",
     "lib": ["es2017", "es2015"],
     "sourceMap": true,
-    "outDir": "./dist",
+    "skipLibCheck": true,
+    "outDir": "./build",
     "baseUrl": "./src",
     "strict": true
   },
@@ -20,6 +22,5 @@
   ],
   "exclude": [
     "node_modules",
-    "**/*.spec.ts"
   ]
 }

@@ -16,6 +16,8 @@
   "dependencies": {
     "@nestjs/common": "^5.1.0",
     "@nestjs/core": "^5.1.0",
+    "@types/dotenv": "^4.0.3",
+    "@types/node-fetch": "^2.1.2",
     "firebase": "^5.5.3",
     "firebase-admin": "^6.0.0",
     "pg": "^7.5.0",

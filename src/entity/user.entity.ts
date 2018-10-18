@@ -4,11 +4,11 @@ import { PaymentMethod, Ticket } from '.';
 @Entity()
 export class User {
   @Column('varchar', { length: 255, primary: true, nullable: false })
-  uid: string;
+  uid!: string;
 
   @OneToMany(type => PaymentMethod, method => method.id)
-  payment_methods: string[];
+  payment_methods!: string[];
 
   @OneToMany(type => Ticket, ticket => ticket.id)
-  tickets: Ticket[];
+  tickets!: Ticket[];
 }

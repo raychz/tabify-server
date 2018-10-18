@@ -11,30 +11,30 @@ import { Ticket, User, TicketItem } from '.';
 
 @Entity()
 export class TicketPayment {
-  @PrimaryGeneratedColumn() id: number;
+  @PrimaryGeneratedColumn() id!: number;
 
   @CreateDateColumn()
-  date_created: Date;
+  date_created!: Date;
 
   @ManyToOne(type => User, user => user.uid)
-  user: User;
+  user!: User;
 
   @ManyToOne(type => Ticket, ticket => ticket.id)
-  ticket: Ticket;
+  ticket!: Ticket;
 
   @ManyToMany(type => TicketItem)
   @JoinTable({ name: 'ticket_payment_ticket_item' })
-  items: TicketItem[];
+  items!: TicketItem[];
 
   /**
    * Id provided from the omnivore payment response
    */
   @Column({ type: 'int', nullable: false })
-  payment_id: number;
+  payment_id!: number;
 
   @Column({ type: 'int', nullable: false })
-  amount: number;
+  amount!: number;
 
   @Column({ type: 'int', nullable: false })
-  tip: number;
+  tip!: number;
 }

@@ -22,10 +22,10 @@ import * as Controllers from '../controllers';
  */
 import { PaymentService } from 'services/payment.service';
 import { FirebaseService } from 'services/firebase-service';
-import { OmnivoreService } from 'services/omnivore-service'
+import { OmnivoreService } from 'services/omnivore-service';
 import { TicketService } from 'services/ticket-service';
 
-const controllers = Object.keys(Controllers).map(k => Controllers[k]);
+const controllers =  Object.values(Controllers);
 
 // Initializing the FIRAdmin app probably should be somewhere else
 firAdmin.initializeApp(firAdminConfig);
@@ -36,9 +36,12 @@ firAdmin.initializeApp(firAdminConfig);
   providers: [PaymentService, FirebaseService, OmnivoreService, TicketService],
 })
 export class AppModule implements NestModule {
+  constructor() {
+
+  }
   configure(consumer: MiddlewareConsumer) {
     consumer
-      .apply(AuthMiddleware)
+      .apply(AuthMiddleware);
       // .forRoutes({ path: '*', method: RequestMethod.ALL });
   }
 }

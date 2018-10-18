@@ -1,23 +1,33 @@
 import { Get, Controller, Post, Delete, Param, Query, Res, Req } from '@nestjs/common';
 import { TicketService } from 'services/ticket-service';
+import { Response as ServerResponse } from 'express-serve-static-core';
 
 @Controller('ticket')
 export class TicketController {
 
   constructor(private readonly ticketService: TicketService) {
-    
+
   }
 
   @Get()
-  async getTicket(@Res() res, @Query() params) {
-    const { ticket, location } = params;
-    if (!ticket || !location) {
+  async getTicket(@Res() res: ServerResponse, @Query() params: any) {
+    const { ticket_number, location } = params;
+    if (!ticket_number || !location) {
       res.status(400);
       res.send({
         message: 'Missing ticket and/or Location',
       });
+      return;
     }
-    return this.ticketService.getTicket(location, ticket);
+
+    const ticketObj = await this.ticketService.getTicket(location, ticket_number);
+    if (!ticketObj) {
+      res.status(500);
+      res.send({
+        message: 'There was an error getting your ticket',
+      });
+    }
+    res.send(ticketObj);
   }
 
 }

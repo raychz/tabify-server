@@ -1,6 +1,7 @@
-import { Get, Controller, Param, Response } from '@nestjs/common';
+import { Get, Controller, Param, Res } from '@nestjs/common';
 import { FirebaseService } from 'services/firebase-service';
 import { auth } from 'firebase-admin';
+import { Response as ServerResponse } from 'express-serve-static-core';
 
 @Controller('user')
 export class UserController {
@@ -11,14 +12,13 @@ export class UserController {
    * should be passed from auth middleware
    */
   @Get()
-  async getUserInfo(@Response() res): Promise<auth.UserRecord> {
-    if (res.locals.auth && res.locals.auth.uid) {
-      return await this.firService.getUserInfo('HMrwQHUTTTasdYSscKNwee6PmS63');
-    }
+  async getUserInfo(@Res() res: ServerResponse) {
+    const { uid } = res.locals.auth;
+    res.send(this.firService.getUserInfo(uid)); // HMrwQHUTTTasdYSscKNwee6PmS63
   }
 
   @Get(':uid')
-  async getUserById(@Param('uid') uid: string): Promise<auth.UserRecord> {
-    return await this.firService.getUserInfo(uid);
+  async getUserById(@Param('uid') uid: string): Promise<auth.UserRecord>  {
+     return this.firService.getUserInfo(uid);
   }
 }
