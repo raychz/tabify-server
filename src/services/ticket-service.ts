@@ -22,13 +22,15 @@ export class TicketService {
       return ticket;
     } else {
       try {
-        const ticketObj = await this.omnivoreService.getTicket(location, ticket_number);
+        const ticketObj = await this.omnivoreService.getTicket(
+          location,
+          ticket_number,
+        );
         return this.saveTicket(ticketObj, location);
       } catch (error) {
         Logger.error(error.message);
       }
     }
-
   }
 
   /**
@@ -36,7 +38,10 @@ export class TicketService {
    * @param ticket
    * @param location
    */
-  async saveTicket(ticket: IOmnivoreTicket, location: string): Promise<TicketEntity | undefined> {
+  async saveTicket(
+    ticket: IOmnivoreTicket,
+    location: string,
+  ): Promise<TicketEntity | undefined> {
     const ticketRepo = await getRepository(TicketEntity);
 
     await getManager().transaction(async transactionalEntityManager => {
@@ -46,7 +51,7 @@ export class TicketService {
       nTicket.tab_id = ticket.id;
 
       await transactionalEntityManager.save(nTicket);
-      const ticketItems = ticket.items.map((item) => {
+      const ticketItems = ticket.items.map(item => {
         const ticketItem = new TicketItem();
         ticketItem.name = item.name;
         ticketItem.ticket = nTicket;
@@ -57,8 +62,7 @@ export class TicketService {
       });
 
       ticketItems.forEach(
-        async (item: TicketItem) =>
-          await transactionalEntityManager.save(item),
+        async (item: TicketItem) => await transactionalEntityManager.save(item),
       );
     });
 

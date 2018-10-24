@@ -1,13 +1,19 @@
-import { Get, Controller, Post, Delete, Param, Query, Res, Req } from '@nestjs/common';
+import {
+  Get,
+  Controller,
+  Post,
+  Delete,
+  Param,
+  Query,
+  Res,
+  Req,
+} from '@nestjs/common';
 import { TicketService } from 'services/ticket-service';
 import { Response as ServerResponse } from 'express-serve-static-core';
 
 @Controller('ticket')
 export class TicketController {
-
-  constructor(private readonly ticketService: TicketService) {
-
-  }
+  constructor(private readonly ticketService: TicketService) {}
 
   @Get()
   async getTicket(@Res() res: ServerResponse, @Query() params: any) {
@@ -20,7 +26,10 @@ export class TicketController {
       return;
     }
 
-    const ticketObj = await this.ticketService.getTicket(location, ticket_number);
+    const ticketObj = await this.ticketService.getTicket(
+      location,
+      ticket_number,
+    );
     if (!ticketObj) {
       res.status(500);
       res.send({
@@ -29,5 +38,4 @@ export class TicketController {
     }
     res.send(ticketObj);
   }
-
 }

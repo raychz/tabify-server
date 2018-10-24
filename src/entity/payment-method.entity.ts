@@ -3,7 +3,8 @@ import { User } from './';
 
 @Entity()
 export class PaymentMethod {
-  @PrimaryGeneratedColumn() id!: number;
+  @PrimaryGeneratedColumn()
+  id!: number;
 
   @ManyToOne(type => User, user => user.uid, { nullable: false })
   user!: string;

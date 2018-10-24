@@ -13,7 +13,8 @@ import { Ticket, User } from './';
 
 @Entity()
 export class Comment {
-  @PrimaryGeneratedColumn() id!: number;
+  @PrimaryGeneratedColumn()
+  id!: number;
 
   @ManyToMany(type => User, user => user.uid)
   user!: User;
