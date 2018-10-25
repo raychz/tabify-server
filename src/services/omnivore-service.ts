@@ -38,8 +38,7 @@ export interface IOmnivoreTicket {
 @Injectable()
 export class OmnivoreService {
   static readonly API_URL = 'https://api.omnivore.io/1.0';
-  getLocations() {
-  }
+  getLocations() {}
 
   /**
    * @description Loads a single ticket from the omnivore api given
@@ -53,7 +52,9 @@ export class OmnivoreService {
       'Api-Key': process.env.OMNIVORE_API_KEY || '',
     };
 
-    const url = `${OmnivoreService.API_URL}/locations/${location}/tickets/${ticket_number}`;
+    const url = `${
+      OmnivoreService.API_URL
+    }/locations/${location}/tickets/${ticket_number}`;
     const res = await fetch(url, { headers });
     const json = await res.json();
 
@@ -77,17 +78,19 @@ export class OmnivoreService {
         sent_at: item.sent_at,
         split: item.split,
       })),
-      payments: json._embedded.payments.map((payment: Partial<IOmnivoreTicketPayment>) => ({
-        id: payment.id,
-        amount: payment.amount,
-        change: payment.change,
-        comment: payment.comment,
-        full_name: payment.full_name,
-        last4: payment.last4,
-        status: payment.status,
-        tip: payment.tip,
-        type: payment.type,
-      })),
+      payments: json._embedded.payments.map(
+        (payment: Partial<IOmnivoreTicketPayment>) => ({
+          id: payment.id,
+          amount: payment.amount,
+          change: payment.change,
+          comment: payment.comment,
+          full_name: payment.full_name,
+          last4: payment.last4,
+          status: payment.status,
+          tip: payment.tip,
+          type: payment.type,
+        }),
+      ),
     };
     return ticket;
   }

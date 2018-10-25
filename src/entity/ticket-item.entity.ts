@@ -9,7 +9,8 @@ import { Ticket, TicketPayment } from '.';
 
 @Entity()
 export class TicketItem {
-  @PrimaryGeneratedColumn() id!: number;
+  @PrimaryGeneratedColumn()
+  id!: number;
 
   @Column({ type: 'int', nullable: false })
   ticket_item_id!: number;

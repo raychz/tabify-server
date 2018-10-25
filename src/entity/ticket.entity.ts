@@ -11,7 +11,8 @@ import { TicketItem, TicketPayment, User } from '.';
 @Entity()
 @Unique(['ticket_number', 'tab_id', 'location'])
 export class Ticket {
-  @PrimaryGeneratedColumn() id!: number;
+  @PrimaryGeneratedColumn()
+  id!: number;
 
   @Column({ type: 'int', nullable: false })
   tab_id!: number;

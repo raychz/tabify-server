@@ -20,7 +20,11 @@ export class AuthMiddleware implements NestMiddleware {
           );
 
           if (!uid) {
-            this.responseMessage(res, 401, 'Unable to authentica using provided token');
+            this.responseMessage(
+              res,
+              401,
+              'Unable to authentica using provided token',
+            );
           } else {
             res.locals.auth = {
               isAuthenticated: true,
@@ -31,15 +35,17 @@ export class AuthMiddleware implements NestMiddleware {
             }
           }
         } catch (error) {
-          this.responseMessage(res, 401, 'Unable to authentica using provided token');
+          this.responseMessage(
+            res,
+            401,
+            'Unable to authentica using provided token',
+          );
         }
       }
     };
   }
 
-  responseMessage(res: Response, statusCode: HttpStatus,  message: string) {
-    res
-      .status(401)
-      .send({ message });
+  responseMessage(res: Response, statusCode: HttpStatus, message: string) {
+    res.status(401).send({ message });
   }
 }

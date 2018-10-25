@@ -11,7 +11,8 @@ import { Ticket, User, TicketItem } from '.';
 
 @Entity()
 export class TicketPayment {
-  @PrimaryGeneratedColumn() id!: number;
+  @PrimaryGeneratedColumn()
+  id!: number;
 
   @CreateDateColumn()
   date_created!: Date;
