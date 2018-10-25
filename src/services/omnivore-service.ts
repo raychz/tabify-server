@@ -35,10 +35,53 @@ export interface IOmnivoreTicket {
   payments: IOmnivoreTicketPayment[];
 }
 
+export interface IAddress {
+  city?: string;
+  country?: string;
+  state?: string;
+  street?: string;
+  street2?: string;
+  zip?: string;
+}
+
+export interface IOmnivoreLocation {
+  address: IAddress;
+  name: string;
+  id: string;
+  longitude: number;
+  latitude: number;
+  website: string;
+}
+
 @Injectable()
 export class OmnivoreService {
   static readonly API_URL = 'https://api.omnivore.io/1.0';
-  getLocations() {}
+
+  async getLocations(): Promise<IOmnivoreLocation> {
+    const headers = {
+      'Content-Type': 'application/json',
+      'Api-Key': process.env.OMNIVORE_API_KEY || '',
+    };
+
+    const url = `${OmnivoreService.API_URL}/locations`;
+    const res = await fetch(url, { headers });
+    const json = await res.json();
+
+    if (this.hasError(json) || res.status !== HttpStatus.OK) {
+      throw Error('Failed fetching ticket from source');
+    }
+
+    return json._embedded.locations.map(
+      (location: any): IOmnivoreLocation => ({
+        address: location.address,
+        name: location.name,
+        id: location.id,
+        longitude: location.longitude,
+        latitude: location.latitude,
+        website: location.website,
+      }),
+    );
+  }
 
   /**
    * @description Loads a single ticket from the omnivore api given
