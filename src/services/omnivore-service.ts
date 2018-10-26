@@ -56,6 +56,7 @@ export interface IOmnivoreLocation {
 @Injectable()
 export class OmnivoreService {
   static readonly API_URL = 'https://api.omnivore.io/1.0';
+
   async getLocations(): Promise<IOmnivoreLocation> {
     const headers = {
       'Content-Type': 'application/json',

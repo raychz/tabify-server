@@ -1,17 +1,29 @@
-import { Get, Controller, Post, Delete } from '@nestjs/common';
+import { Get, Controller, Body, Param, Post, Delete } from '@nestjs/common';
 import { PaymentService } from 'services/payment.service';
+import { SpreedlyService } from 'services/spreedly.service';
 
 @Controller('payment')
 export class PaymentController {
-  constructor(private readonly appService: PaymentService) {}
+  constructor(
+    private readonly appService: PaymentService,
+    private readonly spreedlyService: SpreedlyService,
+  ) {}
 
   /**
-   * Shoud receive a paymnet method and an amount, should query a third party given a userid
-   * for the payment method hash and use the value to make payment request to omnivore.
+   * Receives a gateway token, a payment method token, and an amount to pay,
+   * returns the resulting transaction.
    */
   @Post()
-  makePayment(): string {
-    return 'post payment';
+  makePayment(
+    @Body('gateway') gateway: string,
+    @Body('payment_method') paymentMethod: string,
+    @Body('amount') amount: number,
+  ) {
+    return this.spreedlyService.createGatewayPurchase(
+      gateway,
+      paymentMethod,
+      amount,
+    );
   }
 
   /**
@@ -19,8 +31,16 @@ export class PaymentController {
    * used will be the same one provided from the auth.
    */
   @Get('method')
-  getPaymentMethods(): any[] {
-    return [];
+  getPaymentMethods() {
+    return this.spreedlyService.getAllGateways();
+  }
+
+  /**
+   * Returns payment method information associated with a given payment method token.
+   */
+  @Get('method/:token')
+  getPaymentMethod(@Param('token') token: string) {
+    return this.spreedlyService.getPaymentMethod(token);
   }
 
   /**

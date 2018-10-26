@@ -23,6 +23,7 @@ import * as Controllers from '../controllers';
 import { PaymentService } from 'services/payment.service';
 import { FirebaseService } from 'services/firebase-service';
 import { OmnivoreService } from 'services/omnivore-service';
+import { SpreedlyService } from 'services/spreedly.service';
 import { TicketService } from 'services/ticket-service';
 
 const controllers = Object.values(Controllers);
@@ -33,7 +34,13 @@ firAdmin.initializeApp(firAdminConfig);
 @Module({
   imports: [],
   controllers,
-  providers: [PaymentService, FirebaseService, OmnivoreService, TicketService],
+  providers: [
+    PaymentService,
+    FirebaseService,
+    OmnivoreService,
+    SpreedlyService,
+    TicketService,
+  ],
 })
 export class AppModule implements NestModule {
   constructor() {}
