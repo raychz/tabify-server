@@ -1,5 +1,5 @@
 import { Get, Controller, Param, Res } from '@nestjs/common';
-import { FirebaseService } from 'services/firebase-service';
+import { FirebaseService } from 'services/firebase.service';
 import { auth } from 'firebase-admin';
 import { Response as ServerResponse } from 'express-serve-static-core';
 

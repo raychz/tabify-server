@@ -1,5 +1,5 @@
 import { Get, Controller } from '@nestjs/common';
-import { OmnivoreService } from 'services/omnivore-service';
+import { OmnivoreService } from 'services/omnivore.service';
 
 @Controller('locations')
 export class LocationController {
