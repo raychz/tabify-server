@@ -12,6 +12,7 @@ jobs:
           keys:
             - yarn-packages-{{ checksum "package.json" }}
       - run: yarn install
+      - run: yarn prestart:prod
       - run: yarn test
 
       - save_cache:
