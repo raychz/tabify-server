@@ -21,8 +21,8 @@ import * as Controllers from '../controllers';
  * Services
  */
 import { PaymentService } from 'services/payment.service';
-import { FirebaseService } from 'services/firebase-service';
-import { OmnivoreService } from 'services/omnivore-service';
+import { FirebaseService } from 'services/firebase.service';
+import { OmnivoreService } from 'services/omnivore.service';
 import { SpreedlyService } from 'services/spreedly.service';
 import { TicketService } from 'services/ticket-service';
 
