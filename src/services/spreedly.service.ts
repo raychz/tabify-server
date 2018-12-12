@@ -3,6 +3,12 @@ import fetch, { Response } from 'node-fetch';
 
 import * as Spreedly from '../interfaces';
 
+interface APIError { // Identical to the nest error response format
+  error: string;
+  message: string;
+  statusCode: number;
+}
+
 function isSpreedlyError(value: any): value is Spreedly.APIError {
   return value && (typeof value.key === 'string') && (typeof value.message === 'string');
 }
@@ -47,10 +53,21 @@ export class SpreedlyService {
 
   private async handleSpreedlyResponse<T>(request: Promise<Response>): Promise<T> {
     const response = await request;
+
     const json = await (response.json() as Promise<T | Spreedly.ErrorResponse>);
 
     if (isSpreedlyErrorResponse(json)) {
-      throw new BadRequestException(json.errors[0].message);
+      const statusCode = (response.status < 200) || (response.status > 299)
+        ? response.status
+        : 400;
+
+      const error: APIError = {
+        statusCode,
+        error: (statusCode === 400) ? 'Bad Request' : response.statusText,
+        message: json.errors.length ? json.errors[0].message : 'API Gateway Error',
+      };
+
+      throw new HttpException(error, statusCode);
     }
 
     return json;
