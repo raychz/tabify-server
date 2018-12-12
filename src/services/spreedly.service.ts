@@ -1,7 +1,18 @@
-import { Injectable } from '@nestjs/common';
-import fetch from 'node-fetch';
+import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
+import fetch, { Response } from 'node-fetch';
 
 import * as Spreedly from '../interfaces';
+
+function isSpreedlyError(value: any): value is Spreedly.APIError {
+  return value && (typeof value.key === 'string') && (typeof value.message === 'string');
+}
+
+function isSpreedlyErrorResponse(value: any): value is Spreedly.ErrorResponse {
+  return value
+    && value.errors
+    && Array.isArray(value.errors)
+    && value.errors.every(isSpreedlyError);
+}
 
 @Injectable()
 export class SpreedlyService {
@@ -16,12 +27,12 @@ export class SpreedlyService {
     SpreedlyService.AUTH_PHRASE,
   ).toString('base64')}`;
 
-  private async createSpreedlyRequest<T, B = {}>(
+  private async createSpreedlyRequest<B = {}>(
     endpoint: string,
     method: 'GET' | 'POST' = 'GET',
     body?: B,
-  ): Promise<T> {
-    const response = await fetch(
+  ): Promise<Response> {
+    return await fetch(
       `${SpreedlyService.SPREEDLY_API}${endpoint}.json`,
       {
         body: body ? JSON.stringify(body) : undefined,
@@ -32,16 +43,25 @@ export class SpreedlyService {
         },
       },
     );
+  }
 
-    return (await response.json()) as T;
+  private async handleSpreedlyResponse<T>(request: Promise<Response>): Promise<T> {
+    const response = await request;
+    const json = await (response.json() as Promise<T | Spreedly.ErrorResponse>);
+
+    if (isSpreedlyErrorResponse(json)) {
+      throw new BadRequestException(json.errors[0].message);
+    }
+
+    return json;
   }
 
   /**
    * Returns all gateways for the current environment
    */
   public async getAllGateways() {
-    return (await this.createSpreedlyRequest<Spreedly.GatewayListResponse>(
-      '/gateways',
+    return (await this.handleSpreedlyResponse<Spreedly.GatewayListResponse>(
+      this.createSpreedlyRequest('/gateways')
     )).gateways;
   }
 
@@ -54,16 +74,18 @@ export class SpreedlyService {
     amount: number,
     currency: string = 'USD',
   ) {
-    return (await this.createSpreedlyRequest<Spreedly.TransactionResponse>(
-      `/gateways/${gatewayToken}/purchase`,
-      'POST',
-      {
-        transaction: {
-          amount: String(amount),
-          currency_code: currency,
-          payment_method_token: paymentMethodToken,
+    return (await this.handleSpreedlyResponse<Spreedly.TransactionResponse>(
+      this.createSpreedlyRequest(
+        `/gateways/${gatewayToken}/purchase`,
+        'POST',
+        {
+          transaction: {
+            amount: String(amount),
+            currency_code: currency,
+            payment_method_token: paymentMethodToken,
+          },
         },
-      },
+      )
     )).transaction;
   }
 
@@ -71,8 +93,8 @@ export class SpreedlyService {
    * Returns all transactions for the current environment
    */
   public async getAllTransactions() {
-    return (await this.createSpreedlyRequest<Spreedly.TransactionListResponse>(
-      '/transactions',
+    return (await this.handleSpreedlyResponse<Spreedly.TransactionListResponse>(
+      this.createSpreedlyRequest('/transactions')
     )).transactions;
   }
 
@@ -80,17 +102,17 @@ export class SpreedlyService {
    * Returns all payment methods for the current auth environment
    */
   public async getAllPaymentMethods() {
-    return await this.createSpreedlyRequest<Spreedly.TransactionListResponse>(
-      '/payment_methods',
-    );
+    return await (this.handleSpreedlyResponse<Spreedly.TransactionListResponse>(
+      this.createSpreedlyRequest('/payment_methods')
+    ));
   }
 
   /**
    * Returns the payment method associated with the given token
    */
   public async getPaymentMethod(token: string) {
-    return (await this.createSpreedlyRequest<Spreedly.PaymentMethodResponse>(
-      `/payment_methods/${token}`,
+    return (await this.handleSpreedlyResponse<Spreedly.PaymentMethodResponse>(
+      this.createSpreedlyRequest(`/payment_methods/${token}`)
     )).payment_method;
   }
 
@@ -99,22 +121,24 @@ export class SpreedlyService {
    * Do not add real CC info on the server.
    */
   public async createCreditCard() {
-    return await this.createSpreedlyRequest<Spreedly.TransactionResponse>(
-      '/payment_methods',
-      'POST',
-      {
-        payment_method: {
-          credit_card: {
-            first_name: 'John',
-            last_name: 'Doe',
-            number: '4111111111111111',
-            verification_value: '123',
-            month: '10',
-            year: '2030',
+    return await this.handleSpreedlyResponse<Spreedly.TransactionResponse>(
+      this.createSpreedlyRequest(
+        '/payment_methods',
+        'POST',
+        {
+          payment_method: {
+            credit_card: {
+              first_name: 'John',
+              last_name: 'Doe',
+              number: '4111111111111111',
+              verification_value: '123',
+              month: '10',
+              year: '2030',
+            },
+            email: 'hi@use-tabify.app',
           },
-          email: 'hi@use-tabify.app',
         },
-      },
+      )
     );
   }
 }
