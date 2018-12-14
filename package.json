@@ -14,6 +14,7 @@
     "webpack": "webpack --config webpack.config.js"
   },
   "dependencies": {
+    "@nest-middlewares/morgan": "^5.1.1",
     "@nestjs/common": "^5.1.0",
     "@nestjs/core": "^5.1.0",
     "@types/dotenv": "^4.0.3",
