@@ -107,6 +107,19 @@ export class SpreedlyService {
   }
 
   /**
+   * Creates a gateway and returns the gateway token and other metadata.
+   */
+  public async createGateway(gatewayType: string) {
+    return (await this.handleSpreedlyResponse<Spreedly.TransactionResponse>(
+      this.createSpreedlyRequest(`/gateways`, 'POST', {
+        gateway: {
+          gateway_type: gatewayType,
+        },
+      }),
+    ));
+  }
+
+  /**
    * Returns all transactions for the current environment
    */
   public async getAllTransactions() {
