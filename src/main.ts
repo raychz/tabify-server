@@ -10,7 +10,11 @@ import { Logger } from '@nestjs/common';
 async function bootstrap() {
   await connect();
 
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    cors: {
+      origin: 'http://localhost:8100',
+    },
+  });
   await app.listen(env.port, () => {
     Logger.log(`Server listening on port ${env.port}`);
   });

@@ -1,5 +1,14 @@
 import { Nullable } from './nullable';
 
+export interface APIError {
+  key: string;
+  message: string;
+}
+
+export interface ErrorResponse {
+  errors: APIError[];
+}
+
 type RootResponse<E extends string, T> = { [key in E]: T };
 type ListResponse<E extends string, T> = { [key in E]: T[] };
 

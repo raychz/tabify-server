@@ -27,6 +27,14 @@ export class PaymentController {
   }
 
   /**
+   * Adds a new gateway.
+   */
+  @Post('/gateway')
+  addGateway() {
+    return this.spreedlyService.createGateway('test');
+  }
+
+  /**
    * Returns all credit card info associated with the given user, the user id should be
    * used will be the same one provided from the auth.
    */
@@ -48,7 +56,9 @@ export class PaymentController {
    * and the userid from the auth
    */
   @Post('/method')
-  addMethod() {}
+  addMethod() {
+    return this.spreedlyService.createCreditCard();
+  }
 
   /**
    * Removes the payment method from both the thrid party and our database
