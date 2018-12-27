@@ -6,12 +6,17 @@ import { AppModule } from 'modules/app.module';
 import env from './globals/env';
 import { connect } from 'globals/connection';
 import { Logger } from '@nestjs/common';
+import * as express from 'express';
+import * as http from 'http';
+
+const expressApp = express();
+export const httpServer = http.createServer(expressApp);
 
 async function bootstrap() {
   await connect();
-
-  const app = await NestFactory.create(AppModule);
-  await app.listen(env.port, () => {
+  const app = await NestFactory.create(AppModule, expressApp);
+  await app.init();
+  await httpServer.listen(env.port, () => {
     Logger.log(`Server listening on port ${env.port}`);
   });
 }

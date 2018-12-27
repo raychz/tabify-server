@@ -25,6 +25,7 @@ import { FirebaseService } from 'services/firebase.service';
 import { OmnivoreService } from 'services/omnivore.service';
 import { SpreedlyService } from 'services/spreedly.service';
 import { TicketService } from 'services/ticket-service';
+import { SocketServer } from 'modules/socket/socket.module';
 
 const controllers = Object.values(Controllers);
 
@@ -32,7 +33,7 @@ const controllers = Object.values(Controllers);
 firAdmin.initializeApp(firAdminConfig);
 
 @Module({
-  imports: [],
+  imports: [SocketServer],
   controllers,
   providers: [
     PaymentService,
@@ -44,8 +45,9 @@ firAdmin.initializeApp(firAdminConfig);
 })
 export class AppModule implements NestModule {
   constructor() {}
+
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(AuthMiddleware);
-    // .forRoutes({ path: '*', method: RequestMethod.ALL });
+      // .forRoutes({ path: '*', method: RequestMethod.ALL });
   }
 }
