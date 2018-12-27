@@ -14,7 +14,13 @@ export const httpServer = http.createServer(expressApp);
 
 async function bootstrap() {
   await connect();
-  const app = await NestFactory.create(AppModule, expressApp);
+  const app = await NestFactory.create(AppModule, expressApp,
+    {
+      cors: {
+        origin: 'http://localhost:8100',
+      },
+    },
+  );
   await app.init();
   await httpServer.listen(env.port, () => {
     Logger.log(`Server listening on port ${env.port}`);

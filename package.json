@@ -29,6 +29,7 @@
     "testEnvironment": "node"
   },
   "dependencies": {
+    "@nest-middlewares/morgan": "^5.1.1",
     "@nestjs/common": "^5.1.0",
     "@nestjs/core": "^5.1.0",
     "@types/dotenv": "^4.0.3",
@@ -38,6 +39,7 @@
     "firebase-admin": "^6.0.0",
     "pg": "^7.5.0",
     "reflect-metadata": "^0.1.12",
+    "rxjs": "^6.3.3",
     "socket.io": "^2.2.0",
     "typeorm": "^0.2.7",
     "typescript": "^3.0.1"
