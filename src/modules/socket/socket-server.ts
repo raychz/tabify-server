@@ -10,7 +10,7 @@ export class IoServer {
   constructor() {
     this.socketIo = io(httpServer);
     this.socketIo.on('connection', () => {
-      console.log('socket connected');
+      console.log('IoServer: socket connected');
     });
   }
 

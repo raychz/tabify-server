@@ -27,6 +27,7 @@ import { OmnivoreService } from 'services/omnivore.service';
 import { SpreedlyService } from 'services/spreedly.service';
 import { TicketService } from 'services/ticket-service';
 import { SocketServer } from 'modules/socket/socket.module';
+import { TicketEventsService } from 'services/ticket-events.service';
 
 const controllers = Object.values(Controllers);
 
@@ -42,6 +43,7 @@ firAdmin.initializeApp(firAdminConfig);
     OmnivoreService,
     SpreedlyService,
     TicketService,
+    TicketEventsService,
   ],
 })
 export class AppModule implements NestModule {
