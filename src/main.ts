@@ -17,7 +17,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, expressApp,
     {
       cors: {
-        origin: 'http://localhost:8100',
+        origin: ['http://localhost:8100', 'http://localhost:8101'],
       },
     },
   );

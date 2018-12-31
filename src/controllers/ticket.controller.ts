@@ -3,6 +3,7 @@ import {
   Controller,
   Query,
   Res,
+  Post,
 } from '@nestjs/common';
 import { TicketService } from 'services/ticket-service';
 import { Response as ServerResponse } from 'express-serve-static-core';
@@ -12,7 +13,7 @@ import { IoServer } from 'modules/socket/socket-server';
 export class TicketController {
   constructor(private readonly ticketService: TicketService, private readonly socketConnection: IoServer) {}
 
-  @Get()
+  @Post()
   async getTicket(@Res() res: ServerResponse, @Query() params: any) {
     const { ticket_number, location } = params;
     if (!ticket_number || !location) {
@@ -35,15 +36,6 @@ export class TicketController {
       return;
     }
 
-    /*
-    NOTE: If we are using namespaces (which i think we should) we can use this approach,
-    there should be a ticket gateway/service that will subscribe to events on a namespace/room and decide what to do with
-    the event.
-    const ticketNsps = this.socketConnection.socketIo.nsps['ticket_nsps'];
-    if (ticketNsps) {
-      ticketNsps.to('some_room').emit('SOME_EVENT', 'somemessage');
-    }
-    */
     res.send(ticketObj);
   }
 

@@ -9,9 +9,6 @@ export class IoServer {
 
   constructor() {
     this.socketIo = io(httpServer);
-    this.socketIo.on('connection', () => {
-      console.log('IoServer: socket connected');
-    });
   }
 
   public static getInstance() {

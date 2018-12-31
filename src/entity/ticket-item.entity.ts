@@ -3,9 +3,9 @@ import {
   PrimaryGeneratedColumn,
   Column,
   ManyToOne,
-  ManyToMany,
+  OneToMany,
 } from 'typeorm';
-import { Ticket, TicketPayment } from '.';
+import { Ticket, User } from '.';
 
 @Entity()
 export class TicketItem {
@@ -27,9 +27,6 @@ export class TicketItem {
   @Column({ type: 'int', nullable: false })
   quantity!: number;
 
-  /**
-   * One TicketItem can have a relationship to many payments
-   */
-  @ManyToMany(type => TicketPayment)
-  payments!: TicketPayment[];
+  @OneToMany(type => User, user => user.uid)
+  users!: User[];
 }
