@@ -1,5 +1,15 @@
 import { Nullable } from './nullable';
 
+export enum ReceiverVariables {
+  CARD_TOKEN = '{{credit_card_token}}',
+  CARD_NUMBER = '{{credit_card_number}}',
+  CARD_VERIFICATION_VALUE = '{{credit_card_verification_value}}',
+  CARD_FIRST_NAME = '{{credit_card_first_name}}',
+  CARD_LAST_NAME = '{{credit_card_last_name}}',
+  CARD_EXPIRATION_MONTH = '{{credit_card_month}}',
+  CARD_EXPIRATION_YEAR = '{{credit_card_year}}',
+}
+
 export interface APIError {
   key: string;
   message: string;
