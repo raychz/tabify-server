@@ -1,7 +1,8 @@
 import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
 import fetch, { Response } from 'node-fetch';
 
-import * as Spreedly from '../interfaces';
+import * as Omnivore from '../interfaces/omnivore-api';
+import * as Spreedly from '../interfaces/spreedly-api';
 
 interface APIError { // Identical to the nest error response format
   error: string;
@@ -71,6 +72,41 @@ export class SpreedlyService {
     }
 
     return json;
+  }
+
+  /**
+   * Sends a payment to the given omnivore location ID and ticket ID using the provided Spreedly payment token
+   * @param {string}    locationId   The location ID the ticket belongs to
+   * @param {string}    ticketId     The ticket ID to receive the payment
+   * @param {string}    paymentToken The token for the payment method to use
+   * @param {number}    amount       The amount (in USD) to be paid against the ticket
+   * @param {number =            0.0}         tip The amount (in USD) to be added as a ticket
+   */
+  public async sendPayment(locationId: string, ticketId: string, paymentToken: string, amount: number, tip: number = 0.0) {
+    return (await this.handleSpreedlyResponse<Spreedly.TransactionResponse>(
+      this.createSpreedlyRequest(
+        `/receivers/${process.env.SPREEDLY_RECEIVER_TOKEN}/deliver`,
+        'POST',
+        {
+          delivery: {
+            payment_method_token: paymentToken,
+            url: `https://api.omnivore.io/1.0/locations/${encodeURIComponent(locationId)}/tickets/${encodeURIComponent(ticketId)}`,
+            headers: 'Content-Type: application/json',
+            body: JSON.stringify({
+              amount,
+              tip,
+              card_info: {
+                cvc2: Spreedly.ReceiverVariables.CARD_VERIFICATION_VALUE,
+                exp_month: Spreedly.ReceiverVariables.CARD_EXPIRATION_MONTH,
+                exp_year: Spreedly.ReceiverVariables.CARD_EXPIRATION_YEAR,
+                number: Spreedly.ReceiverVariables.CARD_NUMBER,
+              },
+              type: 'card_not_present',
+            } as Omnivore.TicketPaymentRequest),
+          }
+        },
+      )
+    ))
   }
 
   /**

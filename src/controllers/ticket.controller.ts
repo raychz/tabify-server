@@ -13,7 +13,7 @@ import { IoServer } from 'modules/socket/socket-server';
 export class TicketController {
   constructor(private readonly ticketService: TicketService, private readonly socketConnection: IoServer) {}
 
-  @Post()
+  @Get()
   async getTicket(@Res() res: ServerResponse, @Query() params: any) {
     const { ticket_number, location } = params;
     if (!ticket_number || !location) {

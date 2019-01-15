@@ -23,10 +23,10 @@ export enum TICKET_SOCKET_EVENTS {
 
 @Injectable()
 export class TicketEventsService {
+  ticketNsps: SocketIO.Namespace;
   constructor(private readonly io: IoServer, private firService: FirebaseService) {
-    const ticketNsps = this.io.socketIo.of('/ticket-events');
-    ticketNsps.on('connection', this.onConnetion.bind(this));
-
+    this.ticketNsps = this.io.socketIo.of('/ticket-events');
+    this.ticketNsps.on('connection', this.onConnetion.bind(this));
   }
 
   private onConnetion(socket: Socket) {
@@ -35,6 +35,7 @@ export class TicketEventsService {
       socket.handshake.query.room = room;
       socket.join(room);
       const user = await this.firService.getUserInfo(uid);
+
       socket.broadcast.to(room).emit(TICKET_SOCKET_EVENTS.USER_JOINED, user);
     });
 
@@ -48,4 +49,15 @@ export class TicketEventsService {
     });
   }
 
+  // private getUserInRoom(room: string) {
+  //   const socketRoom = this.ticketNsps.adapter.rooms[room];
+  //   let sockets;
+  //   if (room) {
+  //     sockets = Object
+  //       .entries(socketRoom.sockets)
+  //       .filter(([_, active]) => active)
+  //       .map(([socketId]) => this.ticketNsps.connected[socketId].handshake.query.uid);
+  //   }
+  //   return sockets;
+  // }
 }
