@@ -1,5 +1,5 @@
 import { NestMiddleware, Injectable, HttpStatus } from '@nestjs/common';
-import { FirebaseService } from '../services/firebase-service';
+import { FirebaseService } from '../services/firebase.service';
 import { RequestHandler } from '@nestjs/common/interfaces';
 import { Response } from 'express-serve-static-core';
 

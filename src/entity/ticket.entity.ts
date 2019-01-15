@@ -6,7 +6,7 @@ import {
   OneToMany,
   Unique,
 } from 'typeorm';
-import { TicketItem, TicketPayment, User } from '.';
+import { TicketItem, User } from '.';
 
 @Entity()
 @Unique(['ticket_number', 'tab_id', 'location'])
@@ -26,12 +26,9 @@ export class Ticket {
   @OneToMany(type => TicketItem, item => item.ticket)
   items!: TicketItem[];
 
-  @OneToMany(type => TicketPayment, item => item.id)
-  payments!: TicketPayment[];
+  @CreateDateColumn()
+  date_created!: Date;
 
   @OneToMany(type => User, user => user.uid)
   users!: User[];
-
-  @CreateDateColumn()
-  date_created!: Date;
 }

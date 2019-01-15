@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { OmnivoreService, IOmnivoreTicket } from 'services/omnivore-service';
+import { OmnivoreService, IOmnivoreTicket } from 'services/omnivore.service';
 import { getManager, getRepository } from 'typeorm';
 import { Ticket as TicketEntity, TicketItem } from '../entity';
 
