@@ -4,9 +4,12 @@ import {
   PrimaryGeneratedColumn,
   Column,
   OneToMany,
+  OneToOne,
   Unique,
+  JoinColumn
 } from 'typeorm';
 import { TicketItem, User } from '.';
+import { Location } from './location.entity';
 
 @Entity()
 @Unique(['ticket_number', 'tab_id', 'location'])
@@ -17,8 +20,9 @@ export class Ticket {
   @Column({ type: 'int', nullable: false })
   tab_id!: number;
 
-  @Column({ type: 'varchar', nullable: false })
-  location!: string;
+  @OneToOne(type => Location)
+  @JoinColumn()
+  location!: Location;
 
   @Column({ type: 'int', nullable: false })
   ticket_number!: number;

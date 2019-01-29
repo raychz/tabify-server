@@ -4,6 +4,7 @@ import {
   Query,
   Res,
   Post,
+  Body,
 } from '@nestjs/common';
 import { TicketService } from 'services/ticket-service';
 import { Response as ServerResponse } from 'express-serve-static-core';
@@ -37,6 +38,11 @@ export class TicketController {
     }
 
     res.send(ticketObj);
+  }
+
+  @Post()
+  async addUserToTicket(@Res() res: ServerResponse, @Body() body: any) {
+    console.log(body);
   }
 
   @Get('/items')

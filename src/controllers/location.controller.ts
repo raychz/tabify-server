@@ -1,16 +1,16 @@
-import { Get, Controller } from '@nestjs/common';
-import { OmnivoreService } from 'services/omnivore.service';
+import { Get, Controller, Body, Post } from '@nestjs/common';
+import { LocationService } from 'services/location.service';
 
 @Controller('locations')
 export class LocationController {
-  constructor(private omnivoreService: OmnivoreService) {}
+  constructor(private locationService: LocationService) {}
 
   /**
    * Returns a list of locations on our omnivore account
    */
   @Get()
   getLocations() {
-    return this.omnivoreService.getLocations();
+    return this.locationService.getLocations();
   }
 
   /**
@@ -19,5 +19,11 @@ export class LocationController {
   @Get('')
   getNearByLocations() {
 
+  }
+
+  @Post()
+  createLocation(@Body() body: any) {
+    console.log(body)
+    return this.locationService.addLocation(body);
   }
 }
