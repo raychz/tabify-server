@@ -76,37 +76,48 @@ export class SpreedlyService {
 
   /**
    * Sends a payment to the given omnivore location ID and ticket ID using the provided Spreedly payment token
-   * @param {string}    locationId   The location ID the ticket belongs to
-   * @param {string}    ticketId     The ticket ID to receive the payment
-   * @param {string}    paymentToken The token for the payment method to use
-   * @param {number}    amount       The amount (in USD) to be paid against the ticket
-   * @param {number =            0.0}         tip The amount (in USD) to be added as a ticket
+   * @param {string}        locationId   The location ID the ticket belongs to
+   * @param {string}        ticketId     The ticket ID to receive the payment
+   * @param {string}        paymentToken The token for the payment method to use
+   * @param {number}        amount       The amount (in USD) to be paid against the ticket
+   * @param {number = 0.0}  tip The amount (in USD) to be added as a ticket
    */
   public async sendPayment(locationId: string, ticketId: string, paymentToken: string, amount: number, tip: number = 0.0) {
-    return (await this.handleSpreedlyResponse<Spreedly.TransactionResponse>(
+    // This is the response from Spreedly (assuming handleSpreedlyResponse didn't throw)
+    const json = (await this.handleSpreedlyResponse<Spreedly.TransactionResponse>(
       this.createSpreedlyRequest(
-        `/receivers/${process.env.SPREEDLY_RECEIVER_TOKEN}/deliver`,
+        `/receivers/${encodeURIComponent(process.env.SPREEDLY_RECEIVER_TOKEN as string)}/deliver`,
         'POST',
         {
           delivery: {
             payment_method_token: paymentToken,
-            url: `https://api.omnivore.io/1.0/locations/${encodeURIComponent(locationId)}/tickets/${encodeURIComponent(ticketId)}`,
-            headers: 'Content-Type: application/json',
-            body: JSON.stringify({
-              amount,
-              tip,
-              card_info: {
-                cvc2: Spreedly.ReceiverVariables.CARD_VERIFICATION_VALUE,
-                exp_month: Spreedly.ReceiverVariables.CARD_EXPIRATION_MONTH,
-                exp_year: Spreedly.ReceiverVariables.CARD_EXPIRATION_YEAR,
-                number: Spreedly.ReceiverVariables.CARD_NUMBER,
+            url: `https://api.omnivore.io/1.0/locations/${encodeURIComponent(locationId)}/tickets/${encodeURIComponent(ticketId)}/payments`,
+            headers: `Content-Type: application/json;\r\nApi-Key: ${encodeURIComponent(process.env.OMNIVORE_API_KEY as string)}`,
+            body: `{
+              "amount": ${JSON.stringify(amount)},
+              "tip": ${JSON.stringify(tip)},
+              "card_info": {
+                "cvc2": "${Spreedly.ReceiverVariables.CARD_VERIFICATION_VALUE}",
+                "exp_month": ${Spreedly.ReceiverVariables.CARD_EXPIRATION_MONTH},
+                "exp_year": ${Spreedly.ReceiverVariables.CARD_EXPIRATION_YEAR},
+                "number": "${Spreedly.ReceiverVariables.CARD_NUMBER}"
               },
-              type: 'card_not_present',
-            } as Omnivore.TicketPaymentRequest),
+              "type": "card_not_present"
+            }`,
           }
         },
       )
-    ))
+    ));
+
+    // This extracts the response from the Omnivore server (provided as a string in transaction.response.body)
+    return JSON.parse(json.transaction.response.body as string) as (Omnivore.PaymentComplete | Omnivore.Error);
+  }
+
+  /**
+   * Returns all receivers created for the current environment
+   */
+  public async getReceivers() {
+    return (await this.handleSpreedlyResponse(this.createSpreedlyRequest('/receivers')));
   }
 
   /**
@@ -129,7 +140,7 @@ export class SpreedlyService {
   ) {
     return (await this.handleSpreedlyResponse<Spreedly.TransactionResponse>(
       this.createSpreedlyRequest(
-        `/gateways/${gatewayToken}/purchase`,
+        `/gateways/${encodeURIComponent(gatewayToken)}/purchase`,
         'POST',
         {
           transaction: {
@@ -143,7 +154,8 @@ export class SpreedlyService {
   }
 
   /**
-   * Creates a gateway and returns the gateway token and other metadata.
+   * Creates a gateway of the specified type
+   * @param {string} gatewayType The type of Spreedly gateway to create
    */
   public async createGateway(gatewayType: string) {
     return (await this.handleSpreedlyResponse<Spreedly.TransactionResponse>(
@@ -152,6 +164,21 @@ export class SpreedlyService {
           gateway_type: gatewayType,
         },
       }),
+    ));
+  }
+
+  /**
+   * Stores the given paymentMethod in the vault for the given gateway.
+   * @param {string} gatewayToken  The gateway to associate the payment method with.
+   * @param {string} paymentMethod The payment method to associate.
+   */
+  public async storeGatewayPurchaseMethod(gatewayToken: string, paymentMethod: string) {
+    return (await this.handleSpreedlyResponse<Spreedly.TransactionResponse>(
+      this.createSpreedlyRequest(
+        `/gateways/${encodeURIComponent(gatewayToken)}/store`,
+        'POST',
+        { transaction: { payment_method_token: paymentMethod } },
+      )
     ));
   }
 
