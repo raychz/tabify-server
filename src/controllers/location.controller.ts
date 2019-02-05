@@ -1,9 +1,10 @@
 import { Get, Controller, Body, Post } from '@nestjs/common';
 import { LocationService } from 'services/location.service';
+import { OmnivoreService } from 'services/omnivore.service';
 
 @Controller('locations')
 export class LocationController {
-  constructor(private locationService: LocationService) {}
+  constructor(private omnivoreService: OmnivoreService, private locationService: LocationService) {}
 
   /**
    * Returns a list of locations on our omnivore account
@@ -23,7 +24,11 @@ export class LocationController {
 
   @Post()
   createLocation(@Body() body: any) {
-    console.log(body)
     return this.locationService.addLocation(body);
+  }
+
+  @Post('sync')
+  syncLocations() {
+    return this.omnivoreService.syncLocations();
   }
 }

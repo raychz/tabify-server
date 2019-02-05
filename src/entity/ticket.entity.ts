@@ -6,33 +6,48 @@ import {
   OneToMany,
   OneToOne,
   Unique,
-  JoinColumn
+  JoinColumn,
 } from 'typeorm';
 import { TicketItem, User } from '.';
-import { Location } from './location.entity';
+import { ILocation, Location } from './location.entity';
+import { ITicketItem } from './ticket-item.entity';
+
+export interface ITicket {
+  id?: number;
+  tab_id: number;
+  ticket_number: number;
+  location: ILocation;
+  items: ITicketItem[];
+  date_created?: Date;
+  date_modified?: Date;
+  users?: User[];
+}
 
 @Entity()
 @Unique(['ticket_number', 'tab_id', 'location'])
-export class Ticket {
+export class Ticket implements ITicket {
   @PrimaryGeneratedColumn()
-  id!: number;
+  id?: number;
 
   @Column({ type: 'int', nullable: false })
   tab_id!: number;
 
-  @OneToOne(type => Location)
-  @JoinColumn()
-  location!: Location;
-
   @Column({ type: 'int', nullable: false })
   ticket_number!: number;
 
-  @OneToMany(type => TicketItem, item => item.ticket)
+  @OneToOne(() => Location)
+  @JoinColumn()
+  location!: Location;
+
+  @OneToMany(() => TicketItem, (item: TicketItem) => item.ticket)
   items!: TicketItem[];
 
   @CreateDateColumn()
   date_created!: Date;
 
-  @OneToMany(type => User, user => user.uid)
+  @CreateDateColumn()
+  date_modified!: Date;
+
+  @OneToMany(() => User, (user: User) => user.uid)
   users!: User[];
 }

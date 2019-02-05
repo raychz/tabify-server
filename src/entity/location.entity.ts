@@ -5,14 +5,33 @@ import {
   Unique,
 } from 'typeorm';
 
+export interface ILocation {
+  id?: number;
+  omnivore_id: string;
+  name: string;
+  city: string;
+  country: string;
+  state: string;
+  street1: string;
+  street2: string;
+  longitude: string;
+  latitude: string;
+  phone: string;
+  timezone: string;
+  website: string;
+  photo_url?: string;
+  zip: string;
+  google_place_id?: string;
+}
+
 @Entity()
 @Unique(['omnivore_id'])
-export class Location {
+export class Location implements ILocation {
   @PrimaryGeneratedColumn()
-  id!: number;
+  id?: number;
 
-  @Column({ type: 'int', nullable: false })
-  omnivore_id!: number;
+  @Column({ type: 'varchar', nullable: false })
+  omnivore_id!: string;
 
   @Column({ type: 'varchar', nullable: false })
   name!: string;
@@ -48,5 +67,19 @@ export class Location {
   website!: string;
 
   @Column({ type: 'varchar', nullable: true })
-  photo_url!: string;
+  photo_url?: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  zip!: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  google_place_id?: string;
+
+  constructor(location?: ILocation) {
+    if (location) {
+      Object.keys(location).forEach((key: string) => {
+        this[key as keyof ILocation] = location[key as keyof ILocation];
+      });
+    }
+  }
 }

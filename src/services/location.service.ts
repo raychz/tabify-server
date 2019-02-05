@@ -1,11 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { Location as LocationEntity, Location } from '../entity';
-import { getManager, getRepository } from 'typeorm';
+import { Location as LocationEntity } from '../entity';
+import { getRepository, FindOneOptions } from 'typeorm';
 
 @Injectable()
 export class LocationService {
-    constructor() { }
-
     /**
      * Gets all locations saved on the tabify db;
      */
@@ -21,13 +19,9 @@ export class LocationService {
     /**
      * Returns a location based on the given id.
      */
-    public async getLocation(locationId: string) {
+    public async getLocation(options: FindOneOptions<LocationEntity>) {
         const locationRepo = await getRepository(LocationEntity);
-        return locationRepo.find({
-            where: {
-                id: locationId,
-            },
-        });
+        return locationRepo.findOne(options);
     }
 
     public async addLocation(location: any) {
@@ -37,5 +31,5 @@ export class LocationService {
         nLocation.name = location.name;
         const resLocation = await locationRepo.save(nLocation);
         return resLocation;
-     }
+    }
 }

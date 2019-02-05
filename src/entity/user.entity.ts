@@ -5,7 +5,4 @@ import { Ticket } from '.';
 export class User {
   @Column('varchar', { length: 255, primary: true, nullable: false })
   uid!: string;
-
-  @OneToMany(type => Ticket, ticket => ticket.id)
-  tickets!: Ticket[];
 }
