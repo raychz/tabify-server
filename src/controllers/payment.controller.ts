@@ -28,7 +28,7 @@ export class PaymentController {
   */
 
   /**
-   * Receives a gateway token, a payment method token, and an amount to pay,
+   * Receives a location, a ticket id, a payment method token, an amount, and a tip to pay,
    * returns the resulting transaction.
    */
   @Post()
