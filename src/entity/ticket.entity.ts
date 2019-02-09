@@ -7,6 +7,7 @@ import {
   OneToOne,
   Unique,
   JoinColumn,
+  ManyToMany,
 } from 'typeorm';
 import { TicketItem, User } from '.';
 import { ILocation, Location } from './location.entity';
@@ -48,6 +49,6 @@ export class Ticket implements ITicket {
   @CreateDateColumn()
   date_modified!: Date;
 
-  @OneToMany(() => User, (user: User) => user.uid)
+  @ManyToMany(type => User)
   users!: User[];
 }
