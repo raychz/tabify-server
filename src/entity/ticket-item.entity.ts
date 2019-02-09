@@ -3,7 +3,7 @@ import {
   PrimaryGeneratedColumn,
   Column,
   ManyToOne,
-  OneToMany,
+  ManyToMany,
 } from 'typeorm';
 import { Ticket, User } from '.';
 
@@ -21,14 +21,17 @@ export interface ITicketItem {
 }
 
 @Entity()
-export class TicketItem implements ITicketItem{
+export class TicketItem implements ITicketItem {
   @PrimaryGeneratedColumn()
   id!: number;
 
   @Column({ type: 'int', nullable: false })
   ticket_item_id!: number;
 
-  @ManyToOne(type => Ticket, (ticket: Ticket) => ticket.items, { nullable: false })
+  @ManyToOne(type => Ticket, (ticket: Ticket) => ticket.items, {
+    nullable: false,
+    onDelete: 'CASCADE',
+  })
   ticket!: Ticket;
 
   @Column({ type: 'varchar', nullable: false })
@@ -40,6 +43,6 @@ export class TicketItem implements ITicketItem{
   @Column({ type: 'int', nullable: false })
   quantity!: number;
 
-  @OneToMany(type => User, (user: User) => user.uid)
+  @ManyToMany(type => User)
   users!: User[];
 }
