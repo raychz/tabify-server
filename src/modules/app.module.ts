@@ -52,8 +52,9 @@ export class AppModule implements NestModule {
   constructor() {}
 
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(AuthMiddleware);
-    // .forRoutes({ path: '*', method: RequestMethod.ALL });
+    consumer
+      .apply(AuthMiddleware)
+      .forRoutes({ path: '*', method: RequestMethod.ALL });
     MorganMiddleware.configure('tiny');
     consumer.apply(MorganMiddleware).forRoutes('*');
   }
