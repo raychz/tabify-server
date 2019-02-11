@@ -4,6 +4,7 @@ import {
   Column,
   ManyToOne,
   ManyToMany,
+  JoinTable,
 } from 'typeorm';
 import { Ticket, User } from '.';
 
@@ -44,5 +45,6 @@ export class TicketItem implements ITicketItem {
   quantity!: number;
 
   @ManyToMany(type => User)
+  @JoinTable()
   users!: User[];
 }

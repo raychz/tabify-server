@@ -8,6 +8,7 @@ import {
   Unique,
   JoinColumn,
   ManyToMany,
+  JoinTable,
 } from 'typeorm';
 import { TicketItem, User } from '.';
 import { ILocation, Location } from './location.entity';
@@ -40,7 +41,9 @@ export class Ticket implements ITicket {
   @JoinColumn()
   location!: Location;
 
-  @OneToMany(() => TicketItem, (item: TicketItem) => item.ticket)
+  @OneToMany(() => TicketItem, (item: TicketItem) => item.ticket, {
+    cascade: true,
+  })
   items!: TicketItem[];
 
   @CreateDateColumn()
@@ -49,6 +52,9 @@ export class Ticket implements ITicket {
   @CreateDateColumn()
   date_modified!: Date;
 
-  @ManyToMany(type => User)
+  @ManyToMany(type => User, {
+    cascade: true,
+  })
+  @JoinTable()
   users!: User[];
 }

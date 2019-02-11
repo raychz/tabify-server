@@ -39,7 +39,8 @@
     "firebase-admin": "^7.0.0",
     "pg": "^7.5.0",
     "reflect-metadata": "^0.1.13",
-    "rxjs": "^6.3.3",
+    "rxjs": "6",
+    "rxjs-compat": "6",
     "socket.io": "^2.2.0",
     "typeorm": "^0.2.7",
     "typescript": "^3.0.1"
