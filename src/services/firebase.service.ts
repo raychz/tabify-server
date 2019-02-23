@@ -21,25 +21,27 @@ export class FirebaseService {
 
   async addUserToFirestoreTicket(ticket: Ticket, user: auth.UserRecord) {
     const db = firebaseAdmin.firestore();
-    const ticketsRef = db.collection('tickets').doc(String(ticket.id));
+    const ticketsRef = db.collection('tickets').doc(`${ticket.id}`);
 
-    ticketsRef.update({
+    await ticketsRef.update({
       users: firebaseAdmin.firestore.FieldValue.arrayUnion({
         uid: user.uid,
         name: user.displayName,
       }),
+      uids: firebaseAdmin.firestore.FieldValue.arrayUnion(user.uid),
     });
   }
 
   async removeUserFromFirestoreTicket(ticket: Ticket, user: auth.UserRecord) {
     const db = firebaseAdmin.firestore();
-    const ticketsRef = db.collection('tickets').doc(String(ticket.id));
+    const ticketsRef = db.collection('tickets').doc(`${ticket.id}`);
 
-    ticketsRef.update({
+    await ticketsRef.update({
       users: firebaseAdmin.firestore.FieldValue.arrayRemove({
         uid: user.uid,
         name: user.displayName,
       }),
+      uids: firebaseAdmin.firestore.FieldValue.arrayRemove(user.uid),
     });
   }
 
@@ -47,7 +49,7 @@ export class FirebaseService {
     const db = firebaseAdmin.firestore();
     const batch = db.batch();
 
-    const ticketsRef = db.collection('tickets').doc(String(ticket.id));
+    const ticketsRef = db.collection('tickets').doc(`${ticket.id}`);
     batch.set(
       ticketsRef,
       this.toPlainObject({
@@ -56,13 +58,14 @@ export class FirebaseService {
         location: ticket.location.name,
         date_created: ticket.date_created,
         users: [],
+        uids: [],
       }),
     );
 
     ticket.items.forEach(item => {
       const ticketItemsRef = ticketsRef
         .collection('ticketItems')
-        .doc(String(item.id));
+        .doc(`${item.id}`);
 
       batch.set(
         ticketItemsRef,
