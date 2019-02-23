@@ -4,11 +4,10 @@ import {
   PrimaryGeneratedColumn,
   Column,
   OneToMany,
-  OneToOne,
   Unique,
-  JoinColumn,
   ManyToMany,
   JoinTable,
+  ManyToOne,
 } from 'typeorm';
 import { TicketItem, User } from '.';
 import { ILocation, Location } from './location.entity';
@@ -37,8 +36,7 @@ export class Ticket implements ITicket {
   @Column({ type: 'int', nullable: false })
   ticket_number!: number;
 
-  @OneToOne(() => Location)
-  @JoinColumn()
+  @ManyToOne(type => Location, location => location.tickets)
   location!: Location;
 
   @OneToMany(() => TicketItem, (item: TicketItem) => item.ticket, {

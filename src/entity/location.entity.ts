@@ -3,7 +3,9 @@ import {
   PrimaryGeneratedColumn,
   Column,
   Unique,
+  OneToMany,
 } from 'typeorm';
+import { Ticket } from './ticket.entity';
 
 export interface ILocation {
   id?: number;
@@ -22,6 +24,7 @@ export interface ILocation {
   photo_url?: string;
   zip: string;
   google_place_id?: string;
+  tickets: Ticket[];
 }
 
 @Entity()
@@ -74,6 +77,9 @@ export class Location implements ILocation {
 
   @Column({ type: 'varchar', nullable: true })
   google_place_id?: string;
+
+  @OneToMany(type => Ticket, ticket => ticket.location)
+  tickets!: Ticket[];
 
   constructor(location?: ILocation) {
     if (location) {

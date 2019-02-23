@@ -43,6 +43,7 @@ export class OmnivoreService {
         omnivore_id: location.id,
         phone: location.phone,
         google_place_id: location.google_place_id,
+        tickets: [],
       }),
     );
   }
