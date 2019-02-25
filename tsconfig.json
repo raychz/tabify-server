@@ -13,8 +13,15 @@
     "lib": ["es2017", "es2015"],
     "sourceMap": true,
     "skipLibCheck": true,
-    "outDir": "./build",
-    "baseUrl": "./src",
+    "outDir": "./dist",
+    "baseUrl": "./",
+    // "paths": {
+    //   "*": [
+    //     "*",
+    //     "./*",
+    //     "./src/*",
+    //   ]
+    // },
     "strict": true
   },
   "include": [

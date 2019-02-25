@@ -1,12 +1,12 @@
 {
-   "type": "postgres",
+   "type": "mysql",
    "host": "localhost",
-   "port": 5432,
+   "port": 3306,
    "username": "test",
    "password": "test",
    "database": "test",
-   "synchronize": true,
-   "logging": true,
+   "synchronize": false,
+   "logging": false,
    "entities": [
       "build/entity/**/*.js"
    ],

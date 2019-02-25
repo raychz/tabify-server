@@ -1,6 +1,6 @@
 import { Get, Controller, Body, Post } from '@nestjs/common';
-import { LocationService } from 'services/location.service';
-import { OmnivoreService } from 'services/omnivore.service';
+import { LocationService } from '../services/location.service';
+import { OmnivoreService } from '../services/omnivore.service';
 
 @Controller('locations')
 export class LocationController {
@@ -11,6 +11,7 @@ export class LocationController {
    */
   @Get()
   getLocations() {
+    const a = 'hello';
     return this.locationService.getLocations();
   }
 

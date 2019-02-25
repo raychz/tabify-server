@@ -1,9 +1,9 @@
 import { Get, Controller, Res, Post, Headers } from '@nestjs/common';
-import { FirebaseService } from 'services/firebase.service';
+import { FirebaseService } from '../services/firebase.service';
 import { auth } from 'firebase-admin';
 import { Response as ServerResponse } from 'express-serve-static-core';
 import { getManager, getRepository } from 'typeorm';
-import { User as UserEntity } from 'entity';
+import { User as UserEntity } from '../entity';
 
 @Controller('user')
 export class UserController {

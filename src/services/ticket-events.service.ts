@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { IoServer } from 'modules/socket/socket-server';
+import { IoServer } from '../modules/socket/socket-server';
 import { Socket } from 'socket.io';
 import { FirebaseService } from './firebase.service';
 

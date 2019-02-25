@@ -1,7 +1,7 @@
 import { Get, Controller, Body, Param, Post, Delete } from '@nestjs/common';
 import * as Spreedly from '../interfaces/spreedly-api';
-import { PaymentService } from 'services/payment.service';
-import { SpreedlyService } from 'services/spreedly.service';
+import { PaymentService } from '../services/payment.service';
+import { SpreedlyService } from '../services/spreedly.service';
 
 @Controller('payment')
 export class PaymentController {

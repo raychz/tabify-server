@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as firebaseAdmin from 'firebase-admin';
-import { Ticket, User } from 'entity';
+import { Ticket, User } from '../entity';
 import { auth } from 'firebase-admin';
 
 @Injectable()
@@ -62,7 +62,7 @@ export class FirebaseService {
       }),
     );
 
-    ticket.items.forEach(item => {
+    ticket.items.forEach((item: any) => {
       const ticketItemsRef = ticketsRef
         .collection('ticketItems')
         .doc(`${item.id}`);

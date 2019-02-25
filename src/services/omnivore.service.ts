@@ -58,9 +58,10 @@ export class OmnivoreService {
       transactionalEntityManager
         .createQueryBuilder()
         .insert()
+        .orIgnore()
         .into(LocationEntity)
         .values(locations.map(location => new LocationEntity(location)))
-        .onConflict(`("omnivore_id") DO NOTHING`)
+        // .onConflict(`("omnivore_id") DO NOTHING`)
         .execute();
       try {
         transactionalEntityManager.queryRunner!.commitTransaction();
