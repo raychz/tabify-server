@@ -16,6 +16,7 @@
     "start:prod": "NODE_ENV=production node dist/main.js",
     "lint": "tslint -p tsconfig.json -c tslint.json",
     "test": "jest",
+    "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
     "webpack": "webpack --config webpack.config.js"
   },
   "jest": {
