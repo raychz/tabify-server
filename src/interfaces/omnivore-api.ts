@@ -9,7 +9,10 @@ export interface CardInfo {
 
 export interface TicketPaymentRequest {
   amount: number;
-  card_info: CardInfo;
+  card_info: string;
   tip: number;
   type: 'card_not_present';
 }
+
+export type PaymentComplete = any;
+export type Error = any;

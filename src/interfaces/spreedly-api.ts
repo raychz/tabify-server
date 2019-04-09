@@ -134,6 +134,7 @@ export type PaymentMethodListResponse = ListResponse<
 export interface Transaction extends TimeTrackedToken {
   amount?: number;
   api_urls?: Array<{ referencing_transaction: any[] }>;
+  basis_payment_method?: PaymentMethod;
   currency_code?: string;
   description?: Nullable<string>;
   email?: Nullable<string>;
