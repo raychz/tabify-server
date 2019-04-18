@@ -5,30 +5,54 @@ import {
   Column,
   OneToMany,
   Unique,
+  ManyToMany,
+  JoinTable,
+  ManyToOne,
 } from 'typeorm';
 import { TicketItem, User } from '.';
+import { ILocation, Location } from './location.entity';
+import { ITicketItem } from './ticket-item.entity';
+
+export interface ITicket {
+  id?: number;
+  tab_id: number;
+  ticket_number: number;
+  location: ILocation;
+  items: ITicketItem[];
+  date_created?: Date;
+  date_modified?: Date;
+  users?: User[];
+}
 
 @Entity()
 @Unique(['ticket_number', 'tab_id', 'location'])
-export class Ticket {
+export class Ticket implements ITicket {
   @PrimaryGeneratedColumn()
-  id!: number;
+  id?: number;
 
   @Column({ type: 'int', nullable: false })
   tab_id!: number;
 
-  @Column({ type: 'varchar', nullable: false })
-  location!: string;
-
   @Column({ type: 'int', nullable: false })
   ticket_number!: number;
 
-  @OneToMany(type => TicketItem, item => item.ticket)
+  @ManyToOne(type => Location, location => location.tickets)
+  location!: Location;
+
+  @OneToMany(() => TicketItem, (item: TicketItem) => item.ticket, {
+    cascade: true,
+  })
   items!: TicketItem[];
 
   @CreateDateColumn()
   date_created!: Date;
 
-  @OneToMany(type => User, user => user.uid)
+  @CreateDateColumn()
+  date_modified!: Date;
+
+  @ManyToMany(type => User, {
+    cascade: true,
+  })
+  @JoinTable()
   users!: User[];
 }

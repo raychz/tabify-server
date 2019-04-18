@@ -5,16 +5,8 @@ const entities = Object.values(Entities);
 
 export async function connect() {
   const baseConfig = await getConnectionOptions();
-
-  const config = Object.assign(baseConfig, {
-    username: process.env.DB_USERNAME || '',
-    password: process.env.DB_PASSWORD || '',
-    database: process.env.DB_NAME || '',
-    entities,
-  });
-
   try {
-    return await createConnection(config);
+    return await createConnection(baseConfig);
   } catch (error) {
     console.log(error); // tslint:disable-line
   }

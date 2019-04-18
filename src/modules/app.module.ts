@@ -21,13 +21,14 @@ import * as Controllers from '../controllers';
 /**
  * Services
  */
-import { PaymentService } from 'services/payment.service';
-import { FirebaseService } from 'services/firebase.service';
-import { OmnivoreService } from 'services/omnivore.service';
-import { SpreedlyService } from 'services/spreedly.service';
-import { TicketService } from 'services/ticket-service';
-import { SocketServer } from 'modules/socket/socket.module';
-import { TicketEventsService } from 'services/ticket-events.service';
+import { PaymentService } from '../services/payment.service';
+import { FirebaseService } from '../services/firebase.service';
+import { OmnivoreService } from '../services/omnivore.service';
+import { SpreedlyService } from '../services/spreedly.service';
+import { TicketService } from '../services/ticket-service';
+import { SocketServer } from './socket/socket.module';
+import { TicketEventsService } from '../services/ticket-events.service';
+import { LocationService } from '../services/location.service';
 
 const controllers = Object.values(Controllers);
 
@@ -44,14 +45,16 @@ firAdmin.initializeApp(firAdminConfig);
     SpreedlyService,
     TicketService,
     TicketEventsService,
+    LocationService,
   ],
 })
 export class AppModule implements NestModule {
   constructor() {}
 
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(AuthMiddleware);
-    // .forRoutes({ path: '*', method: RequestMethod.ALL });
+    consumer
+      .apply(AuthMiddleware)
+      .forRoutes({ path: '*', method: RequestMethod.ALL });
     MorganMiddleware.configure('tiny');
     consumer.apply(MorganMiddleware).forRoutes('*');
   }

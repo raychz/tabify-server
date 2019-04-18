@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { IoServer } from 'modules/socket/socket-server';
+import { IoServer } from '../modules/socket/socket-server';
 import { Socket } from 'socket.io';
 import { FirebaseService } from './firebase.service';
 
@@ -27,6 +27,18 @@ export class TicketEventsService {
   constructor(private readonly io: IoServer, private firService: FirebaseService) {
     this.ticketNsps = this.io.socketIo.of('/ticket-events');
     this.ticketNsps.on('connection', this.onConnetion.bind(this));
+
+    this.ticketNsps.use(async (socket, next) => {
+      const token = socket.handshake.query.token;
+      const uid = await firService.getUidFromToken(token);
+
+      if (!uid) {
+        socket.disconnect(true);
+        next(new Error('Disconnecting'));
+      } else {
+        next();
+      }
+    });
   }
 
   private onConnetion(socket: Socket) {
