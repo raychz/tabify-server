@@ -1,5 +1,6 @@
 import { Get, Controller, Query, Res, Post, Body } from '@nestjs/common';
 import { TicketService } from '../services/ticket-service';
+import { RestaurantCodeService } from '../services/restaurant-code.service';
 import { Response as ServerResponse } from 'express-serve-static-core';
 import { FirebaseService } from '../services/firebase.service';
 // import { IoServer } from 'modules/socket/socket-server';
@@ -9,21 +10,22 @@ export class TicketController {
   constructor(
     private readonly ticketService: TicketService,
     private readonly firebaseService: FirebaseService,
+    private readonly restaurantCodeService: RestaurantCodeService,
   ) {}
 
   @Get()
   async getTicket(@Res() res: ServerResponse, @Query() params: any) {
-    const { ticket_number, location } = params;
+    const { ticket_number, location, fraudPreventionCodeId } = params;
     const {
       locals: {
         auth: { uid },
       },
     } = res;
 
-    if (!ticket_number || !location) {
+    if (!ticket_number || !location || !fraudPreventionCodeId) {
       res.status(400);
       res.send({
-        message: 'Missing ticket and/or Location',
+        message: 'Missing ticket, location, or fraud prevention code',
       });
       return;
     }
@@ -35,13 +37,15 @@ export class TicketController {
       user,
     );
 
-    if (!ticketObj) {
+    if (!ticketObj || !ticketObj.id) {
       res.status(500);
       res.send({
         message: 'There was an error getting your ticket',
       });
       return;
     }
+
+    await this.restaurantCodeService.addTicketNumberToCode(ticketObj.id, fraudPreventionCodeId);
 
     res.send(ticketObj);
   }

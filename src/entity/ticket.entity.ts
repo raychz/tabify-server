@@ -9,7 +9,7 @@ import {
   JoinTable,
   ManyToOne,
 } from 'typeorm';
-import { TicketItem, User } from '.';
+import { TicketItem, User, RestaurantCode } from '.';
 import { ILocation, Location } from './location.entity';
 import { ITicketItem } from './ticket-item.entity';
 
@@ -55,4 +55,7 @@ export class Ticket implements ITicket {
   })
   @JoinTable()
   users!: User[];
+
+  @OneToMany(type => RestaurantCode, restaurantCode => restaurantCode.id)
+  restaurantCodes!: RestaurantCode[];
 }
