@@ -2,9 +2,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import {
   RestaurantCode as RestaurantCodeEntity,
   User as UserEntity,
-} from '../entity';
+} from '../../entity';
 import { getManager, getRepository, EntityManager, getConnection } from 'typeorm';
-import { FirebaseService } from './firebase.service';
+import { FirebaseService } from '../firebase.service';
+import badWords from './bad-words';
 
 @Injectable()
 export class RestaurantCodeService {
@@ -40,11 +41,14 @@ export class RestaurantCodeService {
   }
 
   generateCode() {
-    const length = this.fraudPreventionCodeLength;
-    const chars = this.allowedCodeLetterOptions;
-    let result = '';
-    for (let i = length; i > 0; --i) result += chars[Math.round(Math.random() * (chars.length - 1))];
+    let result;
+    do {
+      result = '';
+      const length = this.fraudPreventionCodeLength;
+      const chars = this.allowedCodeLetterOptions;
+      for (let i = length; i > 0; --i) result += chars[Math.round(Math.random() * (chars.length - 1))];
+    } while (badWords.includes(result));
+
     return result;
   }
 }
-

@@ -1,5 +1,5 @@
 import { Get, Controller, Query, Res, Post, Body } from '@nestjs/common';
-import { RestaurantCodeService } from '../services/restaurant-code.service';
+import { RestaurantCodeService } from '../services/restaurant-code/restaurant-code.service';
 import { Response as ServerResponse } from 'express-serve-static-core';
 
 @Controller('restaurant-code')
