@@ -13,14 +13,14 @@ export class RestaurantCodeService {
 
   constructor(
     private readonly firebaseService: FirebaseService,
-  ) {}
+  ) { }
 
   /**
    * Generates 3 digit alphanumeric code without 0s, Os, 1s, or Is used for fraud prevention
    * Saves to DB
    */
   async getFraudPreventionCode(uid: string) {
-    const code =  this.generateCode();
+    const code = this.generateCode();
     const user = new UserEntity();
     user.uid = uid;
     const restaurantCode = new RestaurantCodeEntity();
@@ -33,15 +33,10 @@ export class RestaurantCodeService {
 
   async addTicketNumberToCode(ticketId: number, codeId: number) {
     return await getConnection()
-    .createQueryBuilder()
-    .update(RestaurantCodeEntity)
-    .set({ticketId})
-    .where('id = :id', {id: codeId})
-    .execute();
-    // const restaurantCodeRepo = await getRepository(RestaurantCodeEntity);
-    // let restaurantCodeToUpdate = await restaurantCodeRepo.findOne(codeId);
-    // restaurantCodeToUpdate.ticket = ticketId;
-    // return await restaurantCodeRepo.save(restaurantCodeToUpdate);
+      .createQueryBuilder()
+      .relation(RestaurantCodeEntity, 'ticket')
+      .of(codeId)
+      .set(ticketId);
   }
 
   generateCode() {
