@@ -29,7 +29,7 @@ import { TicketService } from '../services/ticket-service';
 import { SocketServer } from './socket/socket.module';
 import { TicketEventsService } from '../services/ticket-events.service';
 import { LocationService } from '../services/location.service';
-import { RestaurantCodeService } from '../services/restaurant-code/restaurant-code.service';
+import { FraudPreventionCodeService } from '../services/fraud-prevention-code/fraud-prevention-code.service';
 
 const controllers = Object.values(Controllers);
 
@@ -47,7 +47,7 @@ firAdmin.initializeApp(firAdminConfig);
     TicketService,
     TicketEventsService,
     LocationService,
-    RestaurantCodeService,
+    FraudPreventionCodeService,
   ],
 })
 export class AppModule implements NestModule {

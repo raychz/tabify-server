@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import {
-  RestaurantCode as RestaurantCodeEntity,
+  FraudPreventionCode as FraudPreventionCodeEntity,
   User as UserEntity,
 } from '../../entity';
 import { getManager, getRepository, EntityManager, getConnection } from 'typeorm';
@@ -8,7 +8,7 @@ import { FirebaseService } from '../firebase.service';
 import badWords from './bad-words';
 
 @Injectable()
-export class RestaurantCodeService {
+export class FraudPreventionCodeService {
   private fraudPreventionCodeLength = 3;
   private allowedCodeLetterOptions = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
 
@@ -24,18 +24,18 @@ export class RestaurantCodeService {
     const code = this.generateCode();
     const user = new UserEntity();
     user.uid = uid;
-    const restaurantCode = new RestaurantCodeEntity();
-    restaurantCode.code = code;
-    restaurantCode.user = user;
+    const fraudPreventionCode = new FraudPreventionCodeEntity();
+    fraudPreventionCode.code = code;
+    fraudPreventionCode.user = user;
 
-    const restaurantCodeRepo = await getRepository(RestaurantCodeEntity);
-    return await restaurantCodeRepo.save(restaurantCode);
+    const fraudPreventionCodeRepo = await getRepository(FraudPreventionCodeEntity);
+    return await fraudPreventionCodeRepo.save(fraudPreventionCode);
   }
 
   async addTicketNumberToCode(ticketId: number, codeId: number) {
     return await getConnection()
       .createQueryBuilder()
-      .relation(RestaurantCodeEntity, 'ticket')
+      .relation(FraudPreventionCodeEntity, 'ticket')
       .of(codeId)
       .set(ticketId);
   }

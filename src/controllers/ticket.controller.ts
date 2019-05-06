@@ -1,6 +1,6 @@
 import { Get, Controller, Query, Res, Post, Body } from '@nestjs/common';
 import { TicketService } from '../services/ticket-service';
-import { RestaurantCodeService } from '../services/restaurant-code/restaurant-code.service';
+import { FraudPreventionCodeService } from '../services/fraud-prevention-code/fraud-prevention-code.service';
 import { Response as ServerResponse } from 'express-serve-static-core';
 import { FirebaseService } from '../services/firebase.service';
 // import { IoServer } from 'modules/socket/socket-server';
@@ -10,7 +10,7 @@ export class TicketController {
   constructor(
     private readonly ticketService: TicketService,
     private readonly firebaseService: FirebaseService,
-    private readonly restaurantCodeService: RestaurantCodeService,
+    private readonly fraudPreventionCodeService: FraudPreventionCodeService,
   ) {}
 
   @Get()
@@ -45,7 +45,7 @@ export class TicketController {
       return;
     }
 
-    await this.restaurantCodeService.addTicketNumberToCode(ticketObj.id, fraudPreventionCodeId);
+    await this.fraudPreventionCodeService.addTicketNumberToCode(ticketObj.id, fraudPreventionCodeId);
 
     res.send(ticketObj);
   }

@@ -1,11 +1,11 @@
 import { Get, Controller, Query, Res, Post, Body } from '@nestjs/common';
-import { RestaurantCodeService } from '../services/restaurant-code/restaurant-code.service';
+import { FraudPreventionCodeService } from '../services/fraud-prevention-code/fraud-prevention-code.service';
 import { Response as ServerResponse } from 'express-serve-static-core';
 
-@Controller('restaurant-code')
-export class RestaurantCodeController {
+@Controller('fraud-prevention-code')
+export class FraudPreventionCodeController {
   constructor(
-    private readonly restaurantCodeService: RestaurantCodeService,
+    private readonly fraudPreventionCodeService: FraudPreventionCodeService,
   ) { }
 
   @Get()
@@ -16,7 +16,7 @@ export class RestaurantCodeController {
       },
     } = res;
 
-    const result = await this.restaurantCodeService.getFraudPreventionCode(uid);
+    const result = await this.fraudPreventionCodeService.getFraudPreventionCode(uid);
     if (!result) {
       res.status(500);
       res.send({

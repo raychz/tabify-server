@@ -9,7 +9,7 @@ import {
   JoinTable,
   ManyToOne,
 } from 'typeorm';
-import { TicketItem, User, RestaurantCode } from '.';
+import { TicketItem, User, FraudPreventionCode } from '.';
 import { ILocation, Location } from './location.entity';
 import { ITicketItem } from './ticket-item.entity';
 
@@ -56,6 +56,8 @@ export class Ticket implements ITicket {
   @JoinTable()
   users!: User[];
 
-  @OneToMany(type => RestaurantCode, restaurantCode => restaurantCode.id)
-  restaurantCodes!: RestaurantCode[];
+  @OneToMany(type => FraudPreventionCode, fraudPreventionCode => fraudPreventionCode.id, {
+    cascade: true,
+  })
+  fraudPreventionCodes!: FraudPreventionCode[];
 }

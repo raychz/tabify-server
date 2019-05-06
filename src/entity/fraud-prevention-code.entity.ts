@@ -9,7 +9,7 @@ import {
 import { Ticket, User } from '.';
 
 @Entity()
-export class RestaurantCode {
+export class FraudPreventionCode {
   @PrimaryGeneratedColumn()
   id!: number;
 
@@ -22,9 +22,9 @@ export class RestaurantCode {
   @UpdateDateColumn()
   date_updated!: Date;
 
-  @ManyToOne(type => Ticket, ticket => ticket.restaurantCodes)
+  @ManyToOne(type => Ticket, ticket => ticket.fraudPreventionCodes)
   ticket!: Ticket;
 
-  @ManyToOne(type => User, user => user.restaurantCodes)
+  @ManyToOne(type => User, user => user.fraudPreventionCodes)
   user!: User;
 }
