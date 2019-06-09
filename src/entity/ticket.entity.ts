@@ -8,10 +8,13 @@ import {
   ManyToMany,
   JoinTable,
   ManyToOne,
+  OneToOne,
+  JoinColumn,
 } from 'typeorm';
 import { TicketItem, User, FraudPreventionCode } from '.';
 import { ILocation, Location } from './location.entity';
 import { ITicketItem } from './ticket-item.entity';
+import { Story } from './story.entity';
 
 export interface ITicket {
   id?: number;
@@ -22,6 +25,7 @@ export interface ITicket {
   date_created?: Date;
   date_modified?: Date;
   users?: User[];
+  story?: Story;
 }
 
 @Entity()
@@ -60,4 +64,11 @@ export class Ticket implements ITicket {
     cascade: true,
   })
   fraudPreventionCodes!: FraudPreventionCode[];
+
+  // If a ticket is deleted, delete story. Not viceversa
+  @OneToOne(type => Story, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn()
+  story!: Story;
 }
