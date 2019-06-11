@@ -9,6 +9,7 @@ export class User {
   uid!: string;
 
   @ManyToMany(type => Ticket)
+  @JoinTable()
   tickets!: Ticket[];
 
   @ManyToMany(type => TicketItem)
