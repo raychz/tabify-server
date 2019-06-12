@@ -1,11 +1,10 @@
-import {Entity, PrimaryGeneratedColumn, Column, ManyToMany, ManyToOne} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, ManyToOne } from 'typeorm';
 import { Story } from './story.entity';
 import { UseFilters } from '@nestjs/common';
 import { User } from './user.entity';
 
 @Entity()
 export class Comment {
-
     @PrimaryGeneratedColumn()
     id!: number;
 

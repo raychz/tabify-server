@@ -1,11 +1,10 @@
-import {Entity, PrimaryGeneratedColumn, Column, OneToMany} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { Comment } from './comment.entity';
 import { User } from '.';
 import { Like } from './like.entity';
 
 @Entity()
 export class Story {
-
     @PrimaryGeneratedColumn()
     id!: number;
 
