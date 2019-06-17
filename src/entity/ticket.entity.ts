@@ -9,7 +9,6 @@ import {
   JoinTable,
   ManyToOne,
   OneToOne,
-  JoinColumn,
 } from 'typeorm';
 import { TicketItem, User, FraudPreventionCode } from '.';
 import { ILocation, Location } from './location.entity';
@@ -66,9 +65,8 @@ export class Ticket implements ITicket {
   fraudPreventionCodes!: FraudPreventionCode[];
 
   // If a ticket is deleted, delete story. Not viceversa
-  @OneToOne(type => Story, {
+  @OneToOne(type => Story, story => story.ticket, {
     onDelete: 'CASCADE',
   })
-  @JoinColumn()
   story!: Story;
 }
