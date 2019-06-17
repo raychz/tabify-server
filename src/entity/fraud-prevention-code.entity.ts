@@ -22,7 +22,9 @@ export class FraudPreventionCode {
   @UpdateDateColumn()
   date_updated!: Date;
 
-  @ManyToOne(type => Ticket, ticket => ticket.fraudPreventionCodes)
+  @ManyToOne(type => Ticket, ticket => ticket.fraudPreventionCodes, {
+    onDelete: 'CASCADE',
+  })
   ticket!: Ticket;
 
   @ManyToOne(type => User, user => user.fraudPreventionCodes)
