@@ -5,7 +5,7 @@ import { resolve } from 'path';
 import { Response as ServerResponse } from 'express-serve-static-core';
 
 @Controller('stories')
-export class StoryController {
+export class CommentController {
     constructor(
         private readonly storyService: StoryService,
     ) { }

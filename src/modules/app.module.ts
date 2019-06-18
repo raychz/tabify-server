@@ -31,6 +31,7 @@ import { TicketEventsService } from '../services/ticket-events.service';
 import { LocationService } from '../services/location.service';
 import { FraudPreventionCodeService } from '../services/fraud-prevention-code/fraud-prevention-code.service';
 import { StoryService } from 'src/services/story.service';
+import { LikeService } from 'src/services/like.service';
 
 const controllers = Object.values(Controllers);
 
@@ -50,10 +51,11 @@ firAdmin.initializeApp(firAdminConfig);
     LocationService,
     FraudPreventionCodeService,
     StoryService,
+    LikeService,
   ],
 })
 export class AppModule implements NestModule {
-  constructor() {}
+  constructor() { }
 
   configure(consumer: MiddlewareConsumer) {
     consumer

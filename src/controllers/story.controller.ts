@@ -11,7 +11,7 @@ export class StoryController {
     ) { }
 
     @Get()
-    async test(@Res() res: ServerResponse, @Query() params: any) {
+    async getStories(@Res() res: ServerResponse, @Query() params: any) {
 
         // get currently logged-in user
         const {
@@ -23,6 +23,4 @@ export class StoryController {
         const stories = await this.storyService.readStories(uid);
         res.send(stories);
     }
-
-    // API: Handle new like.
 }

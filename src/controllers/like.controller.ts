@@ -1,28 +1,26 @@
-import { Get, Controller, Query, Res, Post, Body } from '@nestjs/common';
-import { StoryService } from '../services/story.service';
+import { Get, Controller, Query, Res, Post, Body, Param } from '@nestjs/common';
 import { async } from 'rxjs/internal/scheduler/async';
 import { resolve } from 'path';
 import { Response as ServerResponse } from 'express-serve-static-core';
+import { LikeService } from 'src/services/like.service';
 
-@Controller('stories')
-export class StoryController {
-    constructor(
-        private readonly storyService: StoryService,
-    ) { }
+@Controller('stories/:storyId/likes')
+export class LikeController {
+  constructor(
+    private readonly likeService: LikeService,
+  ) { }
 
-    @Get()
-    async test(@Res() res: ServerResponse, @Query() params: any) {
+  @Post()
+  async postLike(@Param('storyId') storyId: number, @Res() res: ServerResponse, @Query() params: any) {
 
-        // get currently logged-in user
-        const {
-            locals: {
-              auth: { uid },
-            },
-          } = res;
+    // get currently logged-in user
+    const {
+      locals: {
+        auth: { uid },
+      },
+    } = res;
 
-        const stories = await this.storyService.readStories(uid);
-        res.send(stories);
-    }
-
-    // API: Handle new like.
+    const stories = await this.likeService.createLike(storyId, uid);
+    res.send('liked!');
+  }
 }
