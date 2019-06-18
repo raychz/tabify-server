@@ -21,8 +21,8 @@ export class Story {
     @OneToMany(type => Like, like => like.story)
     likes!: Like[];
 
-  // Bi-directional one-to-one
-  @OneToOne(type => Ticket, ticket => ticket.story)
-  @JoinColumn()
-  ticket!: Ticket;
+    // Bi-directional one-to-one
+    @OneToOne(type => Ticket, ticket => ticket.story)
+    @JoinColumn()
+    ticket!: Ticket;
 }
