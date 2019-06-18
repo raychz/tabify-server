@@ -20,7 +20,7 @@ export class StoryController {
             },
           } = res;
 
-        const stories = await this.storyService.getStories(uid);
+        const stories = await this.storyService.readStories(uid);
         res.send(stories);
     }
 
