@@ -12,7 +12,6 @@ export class StoryController {
 
     @Get()
     async getStories(@Res() res: ServerResponse, @Query() params: any) {
-
         // get currently logged-in user
         const {
             locals: {

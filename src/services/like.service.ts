@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Like as LikeEntity } from '../entity';
 import { Story as StoryEntity } from '../entity';
 import { User as UserEntity } from '../entity';
-import { getRepository, FindOneOptions } from 'typeorm';
+import { getRepository, FindOneOptions, getConnection } from 'typeorm';
 
 @Injectable()
 export class LikeService {
@@ -23,7 +23,14 @@ export class LikeService {
 
         newLike.user = user;
 
-        return await likeRepo.save(newLike);
+        likeRepo.save(newLike);
+
+        await getConnection()
+            .createQueryBuilder()
+            .update(StoryEntity)
+            .set({ like_count: linkedStory[0].like_count + 1})
+            .where('id = :id', { id: storyId })
+            .execute();
     }
 
 }

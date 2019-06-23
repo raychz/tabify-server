@@ -12,7 +12,6 @@ export class LikeController {
 
   @Post()
   async postLike(@Param('storyId') storyId: number, @Res() res: ServerResponse, @Query() params: any) {
-
     // get currently logged-in user
     const {
       locals: {
@@ -21,6 +20,5 @@ export class LikeController {
     } = res;
 
     const stories = await this.likeService.createLike(storyId, uid);
-    res.send('liked!');
   }
 }
