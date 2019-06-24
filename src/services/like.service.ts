@@ -26,31 +26,35 @@ export class LikeService {
 
             newLike.user = user;
 
-            likeRepo.save(newLike);
 
-            await getConnection()
-                .createQueryBuilder()
-                .update(StoryEntity)
-                .set({ like_count: linkedStory[0].like_count + 1})
-                .where('id = :id', { id: storyId })
-                .execute();
+            await getConnection().transaction(async tractionalEntityManager => {
+                likeRepo.save(newLike);
+
+                await getConnection()
+                    .createQueryBuilder()
+                    .update(StoryEntity)
+                    .set({ like_count: linkedStory[0].like_count + 1 })
+                    .where('id = :id', { id: storyId })
+                    .execute();
+            });
 
         // else delete the like in like table, and decrement story's like_count
         } else {
+            await getConnection().transaction(async tractionalEntityManager => {
+                await getConnection()
+                    .createQueryBuilder()
+                    .delete()
+                    .from(LikeEntity)
+                    .where('userUid = :user AND storyId = :story', { user: uid, story: storyId })
+                    .execute();
 
-            await getConnection()
-                .createQueryBuilder()
-                .delete()
-                .from(LikeEntity)
-                .where('userUid = :user AND storyId = :story', { user: uid, story: storyId})
-                .execute();
-
-            await getConnection()
-                .createQueryBuilder()
-                .update(StoryEntity)
-                .set({ like_count: linkedStory[0].like_count - 1})
-                .where('id = :id', { id: storyId })
-                .execute();
+                await getConnection()
+                    .createQueryBuilder()
+                    .update(StoryEntity)
+                    .set({ like_count: linkedStory[0].like_count - 1 })
+                    .where('id = :id', { id: storyId })
+                    .execute();
+            });
         }
     }
 
@@ -59,7 +63,7 @@ export class LikeService {
         const result = await getConnection()
             .getRepository(LikeEntity)
             .createQueryBuilder()
-            .where('userUid = :user AND storyId = :story', { user: uid, story: storyId})
+            .where('userUid = :user AND storyId = :story', { user: uid, story: storyId })
             .getOne();
         return result !== undefined;
     }
