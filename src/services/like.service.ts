@@ -9,7 +9,6 @@ export class LikeService {
 
     async createLike(storyId: number, uid: any) {
         const likeExists = await this.checkIfLikeExists(storyId, uid);
-        const likeRepo = await getRepository(LikeEntity);
         const storyRepo = await getRepository(StoryEntity);
         const linkedStory = await storyRepo.find({
             where: { id: storyId },
@@ -67,7 +66,6 @@ export class LikeService {
         } else {
 
             try {
-
                 // delete like on story
                 await queryRunner.manager
                     .createQueryBuilder()
