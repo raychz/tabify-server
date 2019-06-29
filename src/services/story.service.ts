@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Story as StoryEntity } from '../entity';
 import { Ticket as TicketEntity } from '../entity';
-import { getRepository, FindOneOptions } from 'typeorm';
+import { getRepository, FindOneOptions, EntityManager } from 'typeorm';
 
 @Injectable()
 export class StoryService {
@@ -33,6 +33,18 @@ export class StoryService {
     async updateStory(storyId: number) {
     }
 
-    async readStory(storyId: number) {
+    async readStory(storyId: number, manager?: EntityManager) {
+        let story;
+        if (manager) {
+            story = await manager.findOneOrFail(StoryEntity, {
+                where: { id: storyId },
+            });
+        } else {
+            const storyRepo = await getRepository(StoryEntity);
+            story = await storyRepo.findOneOrFail({
+                where: { id: storyId },
+            });
+        }
+        return story;
     }
 }
