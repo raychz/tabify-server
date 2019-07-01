@@ -32,6 +32,7 @@ import { LocationService } from '../services/location.service';
 import { FraudPreventionCodeService } from '../services/fraud-prevention-code/fraud-prevention-code.service';
 import { StoryService } from 'src/services/story.service';
 import { LikeService } from 'src/services/like.service';
+import { CommentService } from 'src/services/comment.service';
 
 const controllers = Object.values(Controllers);
 
@@ -52,6 +53,7 @@ firAdmin.initializeApp(firAdminConfig);
     FraudPreventionCodeService,
     StoryService,
     LikeService,
+    CommentService,
   ],
 })
 export class AppModule implements NestModule {

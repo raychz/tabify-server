@@ -2,8 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Like as LikeEntity } from '../entity';
 import { Story as StoryEntity } from '../entity';
 import { User as UserEntity } from '../entity';
-import { getRepository, FindOneOptions, getConnection, EntityManager } from 'typeorm';
-import { throwError } from 'rxjs';
+import { getConnection, EntityManager } from 'typeorm';
 import { StoryService } from './story.service';
 
 @Injectable()
@@ -68,7 +67,7 @@ export class LikeService {
             .execute();
 
         if (incrementLikeOutput.raw.affectedRows === 0) {
-            throw 'ID does not exist.'
+            throw new Error('ID does not exist.');
         }
     }
 
@@ -93,14 +92,14 @@ export class LikeService {
             .execute();
 
         if (decrementLikeOutput.raw.affectedRows === 0 || deleteLikeOutput.raw.affectedRows === 0) {
-            throw 'ID does not exist.'
+            throw new Error('ID does not exist.');
         }
     }
 
     // check if like on a story exists by a particular user
     async checkIfLikeExists(storyId: number, uid: any, manager: EntityManager): Promise<boolean> {
         const result = await manager.findOne(LikeEntity, {
-            where: { user: uid, story: storyId }
+            where: { user: uid, story: storyId },
         });
 
         return !!result;

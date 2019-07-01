@@ -1,27 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { Comment as CommentEntity } from '../entity';
 import { Story as StoryEntity } from '../entity';
+import { Comment as CommentEntity } from '../entity';
 import { User as UserEntity } from '../entity';
-import { getRepository, FindOneOptions, getConnection, EntityManager } from 'typeorm';
+import { getConnection, EntityManager } from 'typeorm';
+import { StoryService } from './story.service';
 
 @Injectable()
 export class CommentService {
-    // create a comment
+
+    constructor(private storyService: StoryService) { }
+
     async createComment(storyId: number, uid: any, commentText: string) {
-        const storyRepo = await getRepository(StoryEntity);
-        const linkedStory = await storyRepo.find({
-            where: { id: storyId },
-        });
-
-        const newComment = new CommentEntity();
-        newComment.text = commentText;
-        newComment.story = linkedStory[0];
-
-        // Add current user to comment
-        const user = new UserEntity();
-        user.uid = uid;
-        newComment.user = user;
-
         // get a connection and create a new query runner
         const connection = getConnection();
         const queryRunner = connection.createQueryRunner();
@@ -33,40 +22,45 @@ export class CommentService {
         await queryRunner.startTransaction();
 
         try {
+            const linkedStory = await this.storyService.readStory(storyId);
 
-            // save new comment
-            await queryRunner.manager.save(newComment);
+            const newComment = new CommentEntity();
+            newComment.text = commentText;
+            newComment.story = linkedStory;
+
+            // Add current user to like
+            const user = new UserEntity();
+            user.uid = uid;
+            newComment.user = user;
+
+            queryRunner.manager.save(newComment);
 
             // increment comment count on story
-            await queryRunner.manager
+            const incrementCommentOutput = await queryRunner.manager
                 .createQueryBuilder()
                 .update(StoryEntity)
-                .set({ comment_count: linkedStory[0].comment_count + 1 })
-                .where('id = :id', { id: storyId })
+                .set({ comment_count: linkedStory.comment_count + 1 })
+                .where({ id: storyId })
                 .execute();
+
+            if (incrementCommentOutput.raw.affectedRows === 0) {
+                throw new Error('ID does not exist.');
+            }
 
             // commit transaction
             await queryRunner.commitTransaction();
 
         } catch (err) {
-
             // since we have errors lets rollback changes made
             await queryRunner.rollbackTransaction();
 
         } finally {
-
             // release query runner which is manually created
             await queryRunner.release();
         }
     }
 
-    // delete comment
-    async deleteComment(storyId: number, uid: any) {
-        const storyRepo = await getRepository(StoryEntity);
-        const linkedStory = await storyRepo.find({
-            where: { id: storyId },
-        });
-
+    async deleteComment(storyId: number, commentId: number) {
         // get a connection and create a new query runner
         const connection = getConnection();
         const queryRunner = connection.createQueryRunner();
@@ -78,32 +72,33 @@ export class CommentService {
         await queryRunner.startTransaction();
 
         try {
+            const linkedStory = await this.storyService.readStory(storyId);
+
             // delete comment on story
-            await queryRunner.manager
+            const deleteCommentOutput = await queryRunner.manager
                 .createQueryBuilder()
                 .delete()
                 .from(CommentEntity)
-                .where('userUid = :user AND storyId = :story', { user: uid, story: storyId })
+                .where({ id: commentId })
                 .execute();
 
-            // decrement comment count on story
-            await queryRunner.manager
+            // decrement like count on story
+            const decrementCommentOutput = await queryRunner.manager
                 .createQueryBuilder()
                 .update(StoryEntity)
-                .set({ comment_count: linkedStory[0].comment_count - 1 })
-                .where('id = :id', { id: storyId })
+                .set({ comment_count: linkedStory.comment_count - 1 })
+                .where({ id: storyId })
                 .execute();
 
-            // commit transaction
-            await queryRunner.commitTransaction();
+            if (decrementCommentOutput.raw.affectedRows === 0 || deleteCommentOutput.raw.affectedRows === 0) {
+                throw new Error('ID does not exist.');
+            }
 
         } catch (err) {
-
             // since we have errors lets rollback changes made
             await queryRunner.rollbackTransaction();
 
         } finally {
-
             // release query runner which is manually created
             await queryRunner.release();
         }

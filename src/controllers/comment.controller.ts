@@ -1,28 +1,35 @@
-import { Get, Controller, Query, Res, Post, Body } from '@nestjs/common';
-import { StoryService } from '../services/story.service';
-import { async } from 'rxjs/internal/scheduler/async';
-import { resolve } from 'path';
+import { Controller, Query, Res, Post, Param, Delete, Body } from '@nestjs/common';
 import { Response as ServerResponse } from 'express-serve-static-core';
+import { CommentService } from 'src/services/comment.service';
 
-@Controller('stories')
+@Controller('stories/:storyId/comments')
 export class CommentController {
-    constructor(
-        private readonly storyService: StoryService,
-    ) { }
+  constructor(
+    private readonly commentService: CommentService,
+  ) { }
 
-    @Get()
-    async test(@Res() res: ServerResponse, @Query() params: any) {
+  @Post()
+  async postComment(
+    @Param('storyId') storyId: number,
+    @Body('commentText') commentText: string,
+    @Res() res: ServerResponse) {
+    // get currently logged-in user
+    const {
+      locals: {
+        auth: { uid },
+      },
+    } = res;
 
-        // get currently logged-in user
-        const {
-            locals: {
-              auth: { uid },
-            },
-          } = res;
+    await this.commentService.createComment(storyId, uid, commentText);
+    res.send('Comment Posted');
+  }
 
-        const stories = await this.storyService.readStories(uid);
-        res.send(stories);
+  @Delete(':commentId')
+  async deleteComment(
+    @Param('storyId') storyId: number,
+    @Param('commentId') commentId: number,
+    @Res() res: ServerResponse) {
+      await this.commentService.deleteComment(storyId, commentId);
+      res.send('Comment Deleted');
     }
-
-    // API: Handle new like.
 }
