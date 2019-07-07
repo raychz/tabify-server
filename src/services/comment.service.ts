@@ -2,13 +2,23 @@ import { Injectable } from '@nestjs/common';
 import { Story as StoryEntity } from '../entity';
 import { Comment as CommentEntity } from '../entity';
 import { User as UserEntity } from '../entity';
-import { getConnection, EntityManager } from 'typeorm';
+import { getConnection, getRepository } from 'typeorm';
 import { StoryService } from './story.service';
 
 @Injectable()
 export class CommentService {
 
     constructor(private storyService: StoryService) { }
+
+    // read comments of a particular story
+    async readComments(storyId: number) {
+        const commentRepo = await getRepository(CommentEntity);
+        const comments = await commentRepo.find({
+            where: { storyId }, relations: ['user'],
+        });
+
+        return comments;
+    }
 
     async createComment(storyId: number, uid: any, commentText: string) {
         // get a connection and create a new query runner

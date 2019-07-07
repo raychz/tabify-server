@@ -14,10 +14,6 @@ export class StoryService {
                 'ticket.users', 'ticket.location'],
         });
 
-        // for (let i = 0; i < storyData.length; i++) {
-        //     storyData[i] = storyData[i].['story'];
-        // }
-
         return storyData;
     }
 
@@ -46,5 +42,15 @@ export class StoryService {
             });
         }
         return story;
+    }
+
+    async readDetailedStory(storyId: number) {
+        const storyRepo = await getRepository(StoryEntity);
+        const detailedStory = await storyRepo.find({
+            where: { id: storyId }, relations: ['likes', 'comments', 'ticket',
+                'ticket.users', 'ticket.location'],
+        });
+
+        return detailedStory[0];
     }
 }

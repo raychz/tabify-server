@@ -1,12 +1,22 @@
-import { Controller, Query, Res, Post, Param, Delete, Body } from '@nestjs/common';
+import { Controller, Query, Res, Post, Param, Delete, Body, Get } from '@nestjs/common';
 import { Response as ServerResponse } from 'express-serve-static-core';
 import { CommentService } from 'src/services/comment.service';
+import { async } from 'rxjs/internal/scheduler/async';
 
 @Controller('stories/:storyId/comments')
 export class CommentController {
   constructor(
     private readonly commentService: CommentService,
   ) { }
+
+  @Get()
+  async getComments(
+    @Param('storyId') storyId: number,
+    @Res() res: ServerResponse) {
+
+    const comments = await this.commentService.readComments(storyId);
+    res.send(comments);
+  }
 
   @Post()
   async postComment(
@@ -29,7 +39,8 @@ export class CommentController {
     @Param('storyId') storyId: number,
     @Param('commentId') commentId: number,
     @Res() res: ServerResponse) {
-      await this.commentService.deleteComment(storyId, commentId);
-      res.send('Comment Deleted');
-    }
+
+    await this.commentService.deleteComment(storyId, commentId);
+    res.send('Comment Deleted');
+  }
 }

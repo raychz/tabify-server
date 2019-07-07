@@ -23,6 +23,8 @@ export class LikeService {
 
         const likeExists = await this.checkIfLikeExists(storyId, uid, queryRunner.manager);
 
+        let response = '';
+
         try {
             if (likeExists) {
                 await this.deleteLike(storyId, uid, queryRunner.manager);
@@ -37,10 +39,17 @@ export class LikeService {
             // since we have errors lets rollback changes made
             await queryRunner.rollbackTransaction();
 
+            response = 'error handling like';
+
         } finally {
             // release query runner which is manually created
             await queryRunner.release();
         }
+
+        response = 'success handling like';
+
+        return response;
+
     }
 
     async createLike(storyId: number, uid: any, manager: EntityManager) {
