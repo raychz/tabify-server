@@ -14,7 +14,7 @@ export class CommentService {
     async readComments(storyId: number) {
         const commentRepo = await getRepository(CommentEntity);
         const comments = await commentRepo.find({
-            where: { storyId }, relations: ['user'],
+            where: { story: storyId }, relations: ['user'],
         });
 
         return comments;

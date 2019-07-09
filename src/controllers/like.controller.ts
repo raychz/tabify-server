@@ -19,6 +19,6 @@ export class LikeController {
       },
     } = res;
 
-    await this.likeService.handleLike(storyId, uid);
+    return await this.likeService.handleLike(storyId, uid);
   }
 }
