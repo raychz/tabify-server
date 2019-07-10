@@ -33,6 +33,7 @@ export class CommentController {
     const status = await this.commentService.createComment(storyId, uid, newComment);
 
     if (status === true) {
+      // 201 = 'CREATED'
       res.status(201).send();
     } else {
       res.status(500).send();
@@ -44,8 +45,20 @@ export class CommentController {
     @Param('storyId') storyId: number,
     @Param('commentId') commentId: number,
     @Res() res: ServerResponse) {
+    // get currently logged-in user
+    const {
+      locals: {
+        auth: { uid },
+      },
+    } = res;
 
-    await this.commentService.deleteComment(storyId, commentId);
-    res.send('Comment Deleted');
+    const status = await this.commentService.deleteComment(storyId, commentId, uid);
+
+    if (status === true) {
+      // 200 = 'OK'
+      res.status(200).send();
+    } else {
+      res.status(500).send();
+    }
   }
 }

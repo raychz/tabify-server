@@ -77,7 +77,7 @@ export class CommentService {
         return response;
     }
 
-    async deleteComment(storyId: number, commentId: number) {
+    async deleteComment(storyId: number, commentId: number, uid: string) {
         // get a connection and create a new query runner
         const connection = getConnection();
         const queryRunner = connection.createQueryRunner();
@@ -88,6 +88,8 @@ export class CommentService {
         // open a new transaction:
         await queryRunner.startTransaction();
 
+        let response = true;
+
         try {
             const linkedStory = await this.storyService.readStory(storyId);
 
@@ -96,7 +98,7 @@ export class CommentService {
                 .createQueryBuilder()
                 .delete()
                 .from(CommentEntity)
-                .where({ id: commentId })
+                .where({ id: commentId, user: uid })
                 .execute();
 
             // decrement like count on story
@@ -104,20 +106,27 @@ export class CommentService {
                 .createQueryBuilder()
                 .update(StoryEntity)
                 .set({ comment_count: linkedStory.comment_count - 1 })
-                .where({ id: storyId })
+                .where({ id: storyId})
                 .execute();
 
             if (decrementCommentOutput.raw.affectedRows === 0 || deleteCommentOutput.raw.affectedRows === 0) {
                 throw new Error('ID does not exist.');
             }
 
+            // commit transaction
+            await queryRunner.commitTransaction();
+
         } catch (err) {
             // since we have errors lets rollback changes made
             await queryRunner.rollbackTransaction();
+
+            response = false;
 
         } finally {
             // release query runner which is manually created
             await queryRunner.release();
         }
+
+        return response;
     }
 }
