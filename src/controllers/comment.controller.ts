@@ -21,7 +21,7 @@ export class CommentController {
   @Post()
   async postComment(
     @Param('storyId') storyId: number,
-    @Body('commentText') commentText: string,
+    @Body('newComment') newComment: string,
     @Res() res: ServerResponse) {
     // get currently logged-in user
     const {
@@ -30,8 +30,13 @@ export class CommentController {
       },
     } = res;
 
-    await this.commentService.createComment(storyId, uid, commentText);
-    res.send('Comment Posted');
+    const status = await this.commentService.createComment(storyId, uid, newComment);
+
+    if (status === true) {
+      res.status(201).send();
+    } else {
+      res.status(500).send();
+    }
   }
 
   @Delete(':commentId')

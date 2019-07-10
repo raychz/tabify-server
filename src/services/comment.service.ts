@@ -31,6 +31,8 @@ export class CommentService {
         // open a new transaction:
         await queryRunner.startTransaction();
 
+        let response = true;
+
         try {
             const linkedStory = await this.storyService.readStory(storyId);
 
@@ -64,10 +66,15 @@ export class CommentService {
             // since we have errors lets rollback changes made
             await queryRunner.rollbackTransaction();
 
+            // indicate in response that an error occured
+            response = false;
+
         } finally {
             // release query runner which is manually created
             await queryRunner.release();
         }
+
+        return response;
     }
 
     async deleteComment(storyId: number, commentId: number) {

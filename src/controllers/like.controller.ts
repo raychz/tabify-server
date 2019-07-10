@@ -1,4 +1,4 @@
-import { Controller, Query, Res, Post, Param, Header, Put } from '@nestjs/common';
+import { Controller, Query, Res, Post, Param, Header, Put, HttpStatus } from '@nestjs/common';
 import { Response as ServerResponse } from 'express-serve-static-core';
 import { LikeService } from 'src/services/like.service';
 
@@ -19,6 +19,12 @@ export class LikeController {
       },
     } = res;
 
-    return await this.likeService.handleLike(storyId, uid);
+    const status = await this.likeService.handleLike(storyId, uid);
+
+    if (status === true) {
+      res.status(201).send();
+    } else {
+      res.status(500).send();
+    }
   }
 }
