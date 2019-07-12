@@ -1,12 +1,13 @@
-import { Get, Controller, Body, Param, Post, Delete } from '@nestjs/common';
+import { Get, Controller, Body, Param, Post, Delete, Res } from '@nestjs/common';
 import * as Spreedly from '../interfaces/spreedly-api';
 import { PaymentService } from '../services/payment.service';
 import { SpreedlyService } from '../services/spreedly.service';
+import { Response as ServerResponse } from 'express-serve-static-core';
 
 @Controller('payment')
 export class PaymentController {
   constructor(
-    private readonly appService: PaymentService,
+    private readonly paymentService: PaymentService,
     private readonly spreedlyService: SpreedlyService,
   ) {}
 
@@ -69,8 +70,14 @@ export class PaymentController {
    * used will be the same one provided from the auth.
    */
   @Get('method')
-  getPaymentMethods() {
-    return this.spreedlyService.getAllPaymentMethods();
+  async getPaymentMethods(@Res() res: ServerResponse) {
+    const {
+      locals: {
+        auth: { uid },
+      },
+    } = res;
+    const methods = await this.paymentService.readPaymentMethods(uid);
+    res.send(methods);
   }
 
   /**
@@ -85,17 +92,24 @@ export class PaymentController {
    * Add a new payment method to a third party using the credit card info
    * and the userid from the auth
    */
-  @Post('/method')
-  addMethod(@Body('gateway') gatewayToken: string, @Body('method') methodToken: string) {
-    return this.spreedlyService.storeGatewayPurchaseMethod(gatewayToken, methodToken);
-  }
+  // @Post('/method')
+  // addMethod(@Body('gateway') gatewayToken: string, @Body('method') methodToken: string) {
+  //   return this.spreedlyService.storeGatewayPurchaseMethod(gatewayToken, methodToken);
+  // }
 
   /**
    * Create a test credit card via Spreedly
    */
-  @Post('/card')
-  addCard() {
-    return this.spreedlyService.createCreditCard();
+  @Post('/method')
+  async postPaymentMethod(@Res() res: ServerResponse, @Body('details') details: any) {
+    console.log('details here', details);
+    const {
+      locals: {
+        auth: { uid },
+      },
+    } = res;
+    const method = await this.paymentService.createPaymentMethod(uid, details);
+    res.send(method);
   }
 
   /**

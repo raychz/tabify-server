@@ -1,5 +1,5 @@
 import { Entity, Column, ManyToMany, OneToMany, JoinTable } from 'typeorm';
-import { Ticket, TicketItem, FraudPreventionCode } from '.';
+import { Ticket, TicketItem, FraudPreventionCode, PaymentMethod } from '.';
 
 @Entity()
 export class User {
@@ -14,4 +14,7 @@ export class User {
 
   @OneToMany(type => FraudPreventionCode, fraudPreventionCode => fraudPreventionCode.id)
   fraudPreventionCodes!: FraudPreventionCode[];
+
+  @OneToMany(type => PaymentMethod, paymentMethod => paymentMethod.id)
+  paymentMethods!: PaymentMethod[];
 }
