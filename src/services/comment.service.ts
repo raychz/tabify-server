@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { Story as StoryEntity } from '../entity';
 import { Comment as CommentEntity } from '../entity';
 import { User as UserEntity } from '../entity';
@@ -31,8 +31,6 @@ export class CommentService {
         // open a new transaction:
         await queryRunner.startTransaction();
 
-        let response = true;
-
         try {
             const linkedStory = await this.storyService.readStory(storyId);
 
@@ -45,7 +43,9 @@ export class CommentService {
             user.uid = uid;
             newComment.user = user;
 
-            queryRunner.manager.save(newComment);
+            // store new comment inserted
+            const newCommentInserted = await queryRunner.manager.save(newComment);
+            delete newCommentInserted.story;
 
             // increment comment count on story
             const incrementCommentOutput = await queryRunner.manager
@@ -56,25 +56,29 @@ export class CommentService {
                 .execute();
 
             if (incrementCommentOutput.raw.affectedRows === 0) {
-                throw new Error('ID does not exist.');
+                throw new Error('Story does not exist.');
             }
 
             // commit transaction
             await queryRunner.commitTransaction();
 
-        } catch (err) {
+            // return the newly created comment
+            return newCommentInserted;
+
+        } catch (e) {
             // since we have errors lets rollback changes made
             await queryRunner.rollbackTransaction();
 
-            // indicate in response that an error occured
-            response = false;
+            if (e === 'Story ID does not exist.') {
+                throw new BadRequestException('Story does not exist', e);
+            } else {
+                throw new BadRequestException('An unknown error occurred', e);
+            }
 
         } finally {
             // release query runner which is manually created
             await queryRunner.release();
         }
-
-        return response;
     }
 
     async deleteComment(storyId: number, commentId: number, uid: string) {
@@ -87,8 +91,6 @@ export class CommentService {
 
         // open a new transaction:
         await queryRunner.startTransaction();
-
-        let response = true;
 
         try {
             const linkedStory = await this.storyService.readStory(storyId);
@@ -116,17 +118,17 @@ export class CommentService {
             // commit transaction
             await queryRunner.commitTransaction();
 
-        } catch (err) {
+            return deleteCommentOutput;
+
+        } catch (e) {
             // since we have errors lets rollback changes made
             await queryRunner.rollbackTransaction();
 
-            response = false;
+            throw new BadRequestException('An error occured while deleting the comment', e);
 
         } finally {
             // release query runner which is manually created
             await queryRunner.release();
         }
-
-        return response;
     }
 }

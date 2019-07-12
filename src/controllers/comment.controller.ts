@@ -30,14 +30,9 @@ export class CommentController {
       },
     } = res;
 
-    const status = await this.commentService.createComment(storyId, uid, newComment);
+    const response = await this.commentService.createComment(storyId, uid, newComment);
 
-    if (status === true) {
-      // 201 = 'CREATED'
-      res.status(201).send();
-    } else {
-      res.status(500).send();
-    }
+    res.send(response);
   }
 
   @Delete(':commentId')
@@ -52,13 +47,8 @@ export class CommentController {
       },
     } = res;
 
-    const status = await this.commentService.deleteComment(storyId, commentId, uid);
+    const response = await this.commentService.deleteComment(storyId, commentId, uid);
 
-    if (status === true) {
-      // 200 = 'OK'
-      res.status(200).send();
-    } else {
-      res.status(500).send();
-    }
+    res.send(response);
   }
 }
