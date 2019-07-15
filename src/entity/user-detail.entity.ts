@@ -6,16 +6,16 @@ export class UserDetail {
     @PrimaryGeneratedColumn()
     id!: number;
 
-    @Column({type: 'string', nullable: false})
+    @Column({type: 'varchar', nullable: false})
     firstName!: string;
 
-    @Column({ type: 'string', nullable: true})
+    @Column({ type: 'varchar', nullable: true})
     lastName!: string;
 
-    @Column({ type: 'string', nullable: false })
+    @Column({ type: 'varchar', nullable: false })
     email!: string;
 
-    @Column({ type: 'string', nullable: false })
+    @Column({ type: 'varchar', nullable: false })
     password!: string;
 
     // Bi-directional one-to-one
