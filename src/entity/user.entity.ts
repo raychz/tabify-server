@@ -1,7 +1,8 @@
-import { Entity, Column, ManyToMany, OneToMany, JoinTable } from 'typeorm';
+import { Entity, Column, ManyToMany, OneToMany, JoinTable, OneToOne } from 'typeorm';
 import { Ticket, TicketItem, FraudPreventionCode } from '.';
 import { Comment } from './comment.entity';
 import { Like } from './like.entity';
+import { UserDetail } from './user-detail.entity';
 
 @Entity()
 export class User {
@@ -22,4 +23,10 @@ export class User {
 
   @OneToMany(type => Like, like => like.user)
   likes!: Like[];
+
+  // If a user is deleted, delete associated user-details. Not viceversa
+  @OneToOne(type => UserDetail, userDetail => userDetail.user, {
+    onDelete: 'CASCADE',
+  })
+  userDetail!: UserDetail;
 }
