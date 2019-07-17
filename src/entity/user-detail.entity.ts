@@ -7,16 +7,13 @@ export class UserDetail {
     id!: number;
 
     @Column({type: 'varchar', nullable: false})
-    firstName!: string;
-
-    @Column({ type: 'varchar', nullable: true})
-    lastName!: string;
+    displayName!: string;
 
     @Column({ type: 'varchar', nullable: false })
     email!: string;
 
-    @Column({ type: 'varchar', nullable: false })
-    password!: string;
+    @Column({type: 'varchar', nullable: true})
+    photoURL!: string;
 
     // Bi-directional one-to-one
     @OneToOne(type => User, user => user.userDetail)
