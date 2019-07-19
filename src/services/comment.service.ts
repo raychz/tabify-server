@@ -4,17 +4,21 @@ import { Comment as CommentEntity } from '../entity';
 import { User as UserEntity } from '../entity';
 import { getConnection, getRepository } from 'typeorm';
 import { StoryService } from './story.service';
+import { UserService } from './user.service';
 
 @Injectable()
 export class CommentService {
 
-    constructor(private storyService: StoryService) { }
+    constructor(
+        private storyService: StoryService,
+        private userService: UserService,
+    ) { }
 
     // read comments of a particular story
     async readComments(storyId: number) {
         const commentRepo = await getRepository(CommentEntity);
         const comments = await commentRepo.find({
-            where: { story: storyId }, relations: ['user'],
+            where: { story: storyId }, relations: ['user', 'user.userDetail'],
         });
 
         return comments;
@@ -58,6 +62,9 @@ export class CommentService {
             if (incrementCommentOutput.raw.affectedRows === 0) {
                 throw new Error('Story does not exist.');
             }
+
+            newCommentInserted.user.userDetail = await this.userService.getUserDetails(uid);
+            // add user details to newly created
 
             // commit transaction
             await queryRunner.commitTransaction();
@@ -108,7 +115,7 @@ export class CommentService {
                 .createQueryBuilder()
                 .update(StoryEntity)
                 .set({ comment_count: linkedStory.comment_count - 1 })
-                .where({ id: storyId})
+                .where({ id: storyId })
                 .execute();
 
             if (decrementCommentOutput.raw.affectedRows === 0 || deleteCommentOutput.raw.affectedRows === 0) {

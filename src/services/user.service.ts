@@ -26,4 +26,10 @@ export class UserService {
         const userDetailsRepo = await getRepository(UserDetailEntity);
         userDetailsRepo.save(refinedUserDetails);
     }
+
+    async getUserDetails(uid: string) {
+        const userDetailsRepo = await getRepository(UserDetailEntity);
+        const userDetail = await userDetailsRepo.find({where: { user: uid }});
+        return userDetail[0];
+    }
 }
