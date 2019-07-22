@@ -19,12 +19,15 @@ export class LikeController {
       },
     } = res;
 
-    const status = await this.likeService.handleLike(storyId, uid);
+    const response = await this.likeService.handleLike(storyId, uid);
 
-    if (status === true) {
-      res.status(201).send();
-    } else {
-      res.status(500).send();
-    }
+    res.status(200).send(response);
+
+    // Fix This
+    // if (status === true) {
+    //   res.status(201).send();
+    // } else {
+    //   res.status(500).send();
+    // }
   }
 }

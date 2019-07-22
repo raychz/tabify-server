@@ -53,7 +53,7 @@ export class UserController {
       .getUserInfo(uid)
       .catch(() => res.status(400));
 
-    this.userService.createUserDetails(user);
+    await this.userService.createUserDetails(user);
 
     if (!user) {
       res.send({
