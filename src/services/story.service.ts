@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Story as StoryEntity } from '../entity';
 import { Ticket as TicketEntity } from '../entity';
-import { getRepository, FindOneOptions, EntityManager } from 'typeorm';
+import { getRepository, FindOneOptions, EntityManager, In } from 'typeorm';
 
 @Injectable()
 export class StoryService {
@@ -10,10 +10,7 @@ export class StoryService {
 
         const storyRepo = await getRepository(StoryEntity);
         const storyData = await storyRepo.find({
-            where: { uid: userId }, relations: ['likes', 'comments', 'ticket',
-                'ticket.users', 'ticket.location'],
-        });
-
+            where: {userUid: In(['iyCovBVTj3VpkX8u5HZDtxX61cz1'])}, relations: ['ticket', 'ticket.users', 'ticket.location']});
         return storyData;
     }
 
