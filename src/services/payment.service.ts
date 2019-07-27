@@ -2,9 +2,12 @@ import { Injectable, BadRequestException, } from '@nestjs/common';
 import { getRepository, getConnection } from 'typeorm';
 import { PaymentMethod as PaymentMethodEntity, User } from '../entity';
 import { PaymentMethod as IPaymentMethod } from '../interfaces/spreedly-api';
+import { SpreedlyService } from './spreedly.service';
 
 @Injectable()
 export class PaymentService {
+    constructor(private spreedlyService: SpreedlyService) {}
+
     async readPaymentMethods(uid: string) {
         const paymentMethodRepo = await getRepository(PaymentMethodEntity);
         return await paymentMethodRepo.find({ where: { user: { uid } } });
@@ -30,6 +33,7 @@ export class PaymentService {
         const paymentMethodRepo = await getRepository(PaymentMethodEntity);
         try {
             const newPaymentMethod = await paymentMethodRepo.save(paymentMethod);
+            const retainResponse = await this.spreedlyService.retainPaymentMethod(paymentMethod.token);
             return newPaymentMethod;
         } catch (e) {
             const { code } = e;

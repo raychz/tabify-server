@@ -102,7 +102,6 @@ export class PaymentController {
    */
   @Post('/method')
   async postPaymentMethod(@Res() res: ServerResponse, @Body('details') details: any) {
-    console.log('details here', details);
     const {
       locals: {
         auth: { uid },
