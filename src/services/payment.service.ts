@@ -6,7 +6,7 @@ import { SpreedlyService } from './spreedly.service';
 
 @Injectable()
 export class PaymentService {
-    constructor(private spreedlyService: SpreedlyService) {}
+    constructor(private spreedlyService: SpreedlyService) { }
 
     async readPaymentMethods(uid: string) {
         const paymentMethodRepo = await getRepository(PaymentMethodEntity);
@@ -43,5 +43,15 @@ export class PaymentService {
                 throw new BadRequestException('An unknown error occurred.', e);
             }
         }
+    }
+
+    async deletePaymentMethod(uid: string, method: PaymentMethodEntity) {
+        const paymentMethodRepo = await getRepository(PaymentMethodEntity);
+        return await paymentMethodRepo
+            .createQueryBuilder()
+            .delete()
+            .from(PaymentMethodEntity)
+            .where({ id: method.id, user: uid, fingerprint: method.fingerprint })
+            .execute();
     }
 }

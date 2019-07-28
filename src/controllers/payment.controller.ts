@@ -9,7 +9,7 @@ export class PaymentController {
   constructor(
     private readonly paymentService: PaymentService,
     private readonly spreedlyService: SpreedlyService,
-  ) {}
+  ) { }
 
   /**
    * Receives a gateway token, a payment method token, and an amount to pay,
@@ -115,5 +115,13 @@ export class PaymentController {
    * Removes the payment method from both the thrid party and our database
    */
   @Delete('/method')
-  deleteMethod() {}
+  async deletePaymentMethod(@Res() res: ServerResponse, @Body() method: any) {
+    const {
+      locals: {
+        auth: { uid },
+      },
+    } = res;
+    const deleteResult = await this.paymentService.deletePaymentMethod(uid, method);
+    res.send(deleteResult);
+  }
 }
