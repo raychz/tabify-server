@@ -53,12 +53,6 @@ export class Ticket implements ITicket {
   @CreateDateColumn()
   date_modified!: Date;
 
-  @ManyToMany(type => User, {
-    cascade: true,
-  })
-  @JoinTable()
-  users!: User[];
-
   @OneToMany(type => FraudPreventionCode, fraudPreventionCode => fraudPreventionCode.id, {
     cascade: true,
   })
@@ -69,4 +63,11 @@ export class Ticket implements ITicket {
     onDelete: 'CASCADE',
   })
   story!: Story;
+
+  @ManyToMany(type => User, user => user.tickets,
+    {
+      cascade: true,
+    })
+  @JoinTable()
+  users!: User[];
 }

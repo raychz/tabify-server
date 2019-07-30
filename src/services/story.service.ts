@@ -1,17 +1,34 @@
 import { Injectable } from '@nestjs/common';
-import { Story as StoryEntity } from '../entity';
+import { Story as StoryEntity, User } from '../entity';
+import { getRepository, EntityManager, createQueryBuilder, Connection, getConnection, getConnectionManager } from 'typeorm';
 import { Ticket as TicketEntity } from '../entity';
-import { getRepository, FindOneOptions, EntityManager, In } from 'typeorm';
+import { User as UserEntity } from '../entity';
+import { relative } from 'path';
 
 @Injectable()
 export class StoryService {
-    // get all stories associated with the user
+    // get all stories associated with the logged-in user
     async readStories(userId: any) {
 
-        const storyRepo = await getRepository(StoryEntity);
-        const storyData = await storyRepo.find({
-            where: {userUid: In(['iyCovBVTj3VpkX8u5HZDtxX61cz1'])}, relations: ['ticket', 'ticket.users', 'ticket.location']});
-        return storyData;
+        let stories: any = [];
+
+        stories = await getRepository(StoryEntity)
+            .createQueryBuilder('story')
+            .innerJoinAndSelect('story.ticket', 'ticket')
+            .innerJoinAndSelect('ticket.users', 'user', 'user.uid = :userId', { userId })
+            .innerJoinAndSelect('ticket.location', 'location')
+            .getMany();
+
+        // stories = await getRepository(UserEntity)
+        //     .createQueryBuilder('user')
+        //     .innerJoinAndSelect('user.tickets', 'ticket', 'user.uid = :userId', { userId })
+        //     .innerJoinAndSelect('ticket.story', 'story')
+        //     .innerJoinAndSelect('ticket.location', 'location')
+        //     .getOne();
+
+        console.log(stories);
+
+        return stories;
     }
 
     // async createStory(ticket: TicketEntity) {

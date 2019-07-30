@@ -9,9 +9,6 @@ export class User {
   @Column('varchar', { length: 255, primary: true, nullable: false })
   uid!: string;
 
-  @ManyToMany(type => Ticket)
-  tickets!: Ticket[];
-
   @ManyToMany(type => TicketItem)
   ticketItems!: TicketItem[];
 
@@ -29,4 +26,7 @@ export class User {
     onDelete: 'CASCADE',
   })
   userDetail!: UserDetail;
+
+  @ManyToMany(type => Ticket, ticket => ticket.users)
+  tickets!: Ticket[];
 }
