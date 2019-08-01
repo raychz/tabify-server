@@ -13,7 +13,7 @@ export class UserDetail {
     email!: string;
 
     @Column({type: 'varchar', nullable: true})
-    photoURL!: string;
+    photo_url!: string;
 
     // Bi-directional one-to-one
     @OneToOne(type => User, user => user.userDetail)

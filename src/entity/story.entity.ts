@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, OneToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, OneToOne, JoinColumn, CreateDateColumn } from 'typeorm';
 import { Comment } from './comment.entity';
 import { User } from '.';
 import { Like } from './like.entity';
@@ -27,4 +27,7 @@ export class Story {
     @OneToOne(() => Ticket, ticket => ticket.story)
     @JoinColumn()
     ticket!: Ticket;
+
+    @CreateDateColumn()
+    date_created!: Date;
 }
