@@ -63,8 +63,8 @@ export class CommentService {
                 throw new Error('Story does not exist.');
             }
 
-            newCommentInserted.user.userDetail = await this.userService.getUserDetails(uid);
             // add user details to newly created
+            newCommentInserted.user.userDetail = await this.userService.getUserDetails(uid);
 
             // commit transaction
             await queryRunner.commitTransaction();
