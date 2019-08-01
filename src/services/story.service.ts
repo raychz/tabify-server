@@ -1,13 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { Story as StoryEntity, User } from '../entity';
-import { getRepository, EntityManager, createQueryBuilder, Connection, getConnection, getConnectionManager } from 'typeorm';
-import { Ticket as TicketEntity } from '../entity';
+import { Story as StoryEntity } from '../entity';
+import { getRepository, EntityManager } from 'typeorm';
 import { User as UserEntity } from '../entity';
-import { relative } from 'path';
 
 @Injectable()
 export class StoryService {
-    // get all stories associated with the logged-in user
+    // get all tickets associated with the logged-in user
+    // each ticket has a story object, location, and user/user details.
     async readStories(userId: any) {
 
         let stories: any = [];
@@ -21,18 +20,6 @@ export class StoryService {
             });
 
         return stories[0];
-    }
-
-    // async createStory(ticket: TicketEntity) {
-
-    //     const storyRepo = await getRepository(StoryEntity);
-    //     const newStory = new StoryEntity();
-    // }
-
-    async deleteStory(storyId: number) {
-    }
-
-    async updateStory(storyId: number) {
     }
 
     async readStory(storyId: number, manager?: EntityManager) {
