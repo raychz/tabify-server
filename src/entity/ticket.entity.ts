@@ -42,7 +42,7 @@ export class Ticket implements ITicket {
   @ManyToOne(type => Location, location => location.tickets)
   location!: Location;
 
-  @OneToMany(() => TicketItem, (item: TicketItem) => item.ticket, {
+  @OneToMany(type => TicketItem, (item: TicketItem) => item.ticket, {
     cascade: true,
   })
   items!: TicketItem[];
