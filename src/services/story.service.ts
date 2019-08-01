@@ -12,23 +12,15 @@ export class StoryService {
 
         let stories: any = [];
 
-        stories = await getRepository(StoryEntity)
-            .createQueryBuilder('story')
-            .innerJoinAndSelect('story.ticket', 'ticket')
-            .innerJoinAndSelect('ticket.users', 'user', 'user.uid = :userId', { userId })
-            .innerJoinAndSelect('ticket.location', 'location')
-            .getMany();
+        const userRepo = await getRepository(UserEntity);
+        stories = await userRepo.find(
+            {
+                where: { uid: userId },
+                relations: ['tickets', 'tickets.story', 'tickets.location',
+                    'tickets.users', 'tickets.users.userDetail'],
+            });
 
-        // stories = await getRepository(UserEntity)
-        //     .createQueryBuilder('user')
-        //     .innerJoinAndSelect('user.tickets', 'ticket', 'user.uid = :userId', { userId })
-        //     .innerJoinAndSelect('ticket.story', 'story')
-        //     .innerJoinAndSelect('ticket.location', 'location')
-        //     .getOne();
-
-        console.log(stories);
-
-        return stories;
+        return stories[0];
     }
 
     // async createStory(ticket: TicketEntity) {
