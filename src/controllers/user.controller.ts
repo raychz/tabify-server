@@ -4,10 +4,14 @@ import { auth } from 'firebase-admin';
 import { Response as ServerResponse } from 'express-serve-static-core';
 import { getManager, getRepository } from 'typeorm';
 import { User as UserEntity } from '../entity';
+import { UserService } from 'src/services/user.service';
 
 @Controller('user')
 export class UserController {
-  constructor(private readonly firService: FirebaseService) {}
+  constructor(
+    private readonly firService: FirebaseService,
+    private readonly userService: UserService,
+    ) {}
 
   /**
    * Returns the user info based on authenticated user, uid
@@ -48,6 +52,9 @@ export class UserController {
     const user = await this.firService
       .getUserInfo(uid)
       .catch(() => res.status(400));
+
+    await this.userService.createUserDetails(user);
+
     if (!user) {
       res.send({
         message: 'User does not exist.',
