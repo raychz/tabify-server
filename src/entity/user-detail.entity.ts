@@ -1,5 +1,6 @@
-import { Entity, Column, OneToMany, PrimaryGeneratedColumn, OneToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, OneToOne, JoinColumn, ManyToOne } from 'typeorm';
 import { User } from './user.entity';
+import { Server } from './server.entity';
 
 @Entity()
 export class UserDetail {
@@ -19,4 +20,7 @@ export class UserDetail {
     @OneToOne(type => User, user => user.userDetail)
     @JoinColumn()
     user!: User;
+
+    @ManyToOne(type => Server, server => server.users)
+    server!: Server;
 }
