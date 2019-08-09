@@ -26,7 +26,7 @@ cp .env.development .env.development.local
 2. Initialize a local MySQL database using Docker Compose.
 
 ```
-docker-compose start
+docker-compose up
 ```
 
 3. Verify that the container was started successfuly and that its state is `Up`.
