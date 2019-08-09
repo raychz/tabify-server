@@ -58,6 +58,25 @@ curl localhost:3000
 
 If you see a message about a missing auth token, you've successfully started the server! 🎉
 
+### Retrieving an auth token
+
+1. Open the Tabify mobile web app and sign in/up.
+2. On your browser's inspector, navigate to the Network panel.
+3. Clear the panel of any requests.
+4. On the app, click on the "Pay Tab" button.
+5. This will send an authenticated request to the server. Copy the token from the authorization header that was generated with the `GET` request to the `/locations` endpoint.
+
+### Adding test locations
+
+Follow these steps to synchronize your local database with the demo location(s) in Omnivore.
+
+1. Open Postman.
+2. Create a `POST` request to `http://localhost:3000/locations/sync`.
+3. Add an `authorization` header and paste the auth token that you copied in the section above.
+4. Send the request.
+
+A `201` response indicates that the request was successful. Verify by hitting the "Pay Tab" button on your local Tabify app instance. If you see a "Virtual POS" entry in the "Find Location" page, you've successfully synchronized your local database with the location data in Omnivore.
+
 ## Running the tests
 
 WIP Explain how to run the automated tests for this system here
