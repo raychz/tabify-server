@@ -10,7 +10,12 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Prerequisites
 
-Install [Docker](https://docs.docker.com/install/), [Node](https://nodejs.org/en/download/), and [Yarn](https://yarnpkg.com/en/docs/install).
+Install the following:
+- [Docker](https://docs.docker.com/install/)
+- [Node](https://nodejs.org/en/download/)
+- [Yarn](https://yarnpkg.com/en/docs/install)
+- [Postman](https://www.getpostman.com/)
+- MySQL database client of choice ([DataGrip](https://www.jetbrains.com/datagrip/download/) is recommended)
 
 ### Installing
 
