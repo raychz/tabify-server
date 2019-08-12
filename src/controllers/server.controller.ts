@@ -3,7 +3,7 @@ import { ServerService } from 'src/services/server.service';
 import { Response as ServerResponse } from 'express-serve-static-core';
 
 @Controller('server')
-export class UserController {
+export class ServerController {
     constructor(
         private readonly serverService: ServerService,
     ) { }
