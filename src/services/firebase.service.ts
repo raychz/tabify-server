@@ -27,12 +27,14 @@ export class FirebaseService {
       users: firebaseAdmin.firestore.FieldValue.arrayUnion({
         uid: user.uid,
         name: user.displayName,
+        photoUrl: 'abcd',
+        ticketItems: [],
       }),
       uids: firebaseAdmin.firestore.FieldValue.arrayUnion(user.uid),
     });
   }
 
-  async removeUserFromFirestoreTicket(ticket: Ticket, user: auth.UserRecord) {
+  async removeUserFromFirestoreTicket(ticket: Ticket, user: auth.UserRecord) { // not being called??
     const db = firebaseAdmin.firestore();
     const ticketsRef = db.collection('tickets').doc(`${ticket.id}`);
 
@@ -40,6 +42,7 @@ export class FirebaseService {
       users: firebaseAdmin.firestore.FieldValue.arrayRemove({
         uid: user.uid,
         name: user.displayName,
+        photoUrl: 'abcd',
       }),
       uids: firebaseAdmin.firestore.FieldValue.arrayRemove(user.uid),
     });
@@ -59,6 +62,8 @@ export class FirebaseService {
         date_created: ticket.date_created,
         users: [],
         uids: [],
+        unclaimedItems: [],
+        sharedItems: [],
       }),
     );
 
@@ -75,6 +80,18 @@ export class FirebaseService {
           ticket_item_id: item.ticket_item_id,
           users: [],
         }),
+      );
+
+      batch.update(
+        ticketsRef,
+        {
+          unclaimedItems: firebaseAdmin.firestore.FieldValue.arrayUnion({
+          name: item.name,
+          price: item.price,
+          ticket_item_id: item.ticket_item_id,
+          users: [],
+          }),
+        },
       );
     });
 
