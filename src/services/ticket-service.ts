@@ -14,17 +14,21 @@ import {
 } from '../entity/ticket-item.entity';
 import { FirebaseService } from './firebase.service';
 import { auth } from 'firebase-admin';
+import { StoryService } from './story.service';
 
 @Injectable()
 export class TicketService {
   constructor(
     private readonly omnivoreService: OmnivoreService,
     private readonly firebaseService: FirebaseService,
+    private storyService: StoryService,
   ) {}
 
   /**
    * Attemps to load a ticket from local database if exists,
    * if not, fetch it from omnivore, add it to our database, then return ticket.
+   *
+   * This function also creates a new story, to be associated with a new ticket
    */
   async getTicket(
     omnivoreLocationId: string,
@@ -47,6 +51,10 @@ export class TicketService {
           ticket_number,
         );
         const newTicket = await this.saveTicket(ticketObj, user.uid);
+
+        // Save new story
+        await this.storyService.saveStory(newTicket);
+
         await this.firebaseService.addTicketToFirestore(newTicket);
         await this.firebaseService.addUserToFirestoreTicket(newTicket, user);
         return newTicket;

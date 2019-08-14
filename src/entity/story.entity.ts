@@ -12,10 +12,10 @@ export class Story {
     @OneToMany(type => Comment, comment => comment.story)
     comments!: Comment[];
 
-    @Column({ type: 'int', nullable: false })
+    @Column({ type: 'int', nullable: false, default: 0})
     like_count!: number;
 
-    @Column({ type: 'int', nullable: false })
+    @Column({ type: 'int', nullable: false, default: 0})
     comment_count!: number;
 
     @OneToMany(type => Like, like => like.story)
