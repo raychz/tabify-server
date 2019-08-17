@@ -1,10 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { Story as StoryEntity } from '../entity';
 import { getRepository, EntityManager } from 'typeorm';
+import { Ticket as TicketEntity } from '../entity';
 import { User as UserEntity } from '../entity';
 
 @Injectable()
 export class StoryService {
+
+    async saveStory(newTicket: TicketEntity) {
+        const newStory = new StoryEntity();
+        newStory.ticket = newTicket;
+        const storyRepo = await getRepository(StoryEntity);
+        return await storyRepo.save(newStory);
+    }
+
     // get all tickets associated with the logged-in user
     // each ticket has a story object, location, and user/user details.
     async readStories(userId: any) {
