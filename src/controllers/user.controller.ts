@@ -1,8 +1,7 @@
-import { Get, Controller, Res, Post, Headers } from '@nestjs/common';
+import { Get, Controller, Res, Post, Headers, Body } from '@nestjs/common';
 import { FirebaseService } from '../services/firebase.service';
-import { auth } from 'firebase-admin';
 import { Response as ServerResponse } from 'express-serve-static-core';
-import { getManager, getRepository } from 'typeorm';
+import { getRepository } from 'typeorm';
 import { User as UserEntity } from '../entity';
 import { UserService } from 'src/services/user.service';
 
@@ -36,6 +35,7 @@ export class UserController {
   async saveUser(
     @Res() res: ServerResponse,
     @Headers('authorization') authorization: string,
+    @Body() referralCode: string,
   ) {
     if (!authorization) {
       return res.status(401).send({
@@ -53,8 +53,6 @@ export class UserController {
       .getUserInfo(uid)
       .catch(() => res.status(400));
 
-    await this.userService.createUserDetails(user);
-
     if (!user) {
       res.send({
         message: 'User does not exist.',
@@ -64,6 +62,10 @@ export class UserController {
 
     const userRepo = await getRepository(UserEntity);
     await userRepo.save({ uid });
+
+    // save user details
+    await this.userService.createUserDetails(user, referralCode);
+
     res.send(user);
   }
 }

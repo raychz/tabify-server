@@ -2,14 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { UserDetail as UserDetailEntity } from '../entity';
 import { getRepository } from 'typeorm';
 import { User as UserEntity } from '../entity';
+import { Server as ServerEntity } from '../entity';
 
 // This service handles operations for the User and UserDetails entities
 @Injectable()
 export class UserService {
 
-    async createUserDetails(userDetails: any) {
+    async createUserDetails(userDetails: any, referralCode: any) {
 
-        const refinedUserDetails: any = {};
+        const refinedUserDetails = new UserDetailEntity();
 
         // Add current user to refinedUserDetails
         const user = new UserEntity();
@@ -19,8 +20,17 @@ export class UserService {
         refinedUserDetails.email = userDetails.email;
         refinedUserDetails.displayName = userDetails.displayName;
 
-        if (userDetails.photoURL !== undefined) {
-            refinedUserDetails.photoURL = userDetails.photoURL;
+        if (referralCode.length !== 0) {
+            const serverRepo = await getRepository(ServerEntity);
+            const referringServer = await serverRepo.findOne({where: {referralCode: referralCode.referralCode}});
+
+            if (referringServer !== undefined) {
+                refinedUserDetails.server = referringServer;
+            }
+        }
+
+        if (userDetails.photo_url !== undefined) {
+            refinedUserDetails.photo_url = userDetails.photo_url;
         }
 
         const userDetailsRepo = await getRepository(UserDetailEntity);
