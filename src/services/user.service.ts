@@ -10,10 +10,10 @@ export class UserService {
 
     async createUserDetails(userDetails: any, referralCode: any) {
 
-        // check is userDetails exist in DB. If not, enter user details in DB
+        // check if userDetails exist in DB. If not, enter user details in DB
         const userDetailsRepo = await getRepository(UserDetailEntity);
         const userDetailsAlreadyExist = await userDetailsRepo
-            .findOne({ where: { userUid: userDetails.uid } });
+            .findOne({ where: { user: userDetails.uid } });
 
         if (userDetailsAlreadyExist === undefined) {
             const refinedUserDetails = new UserDetailEntity();
