@@ -47,7 +47,7 @@ export class UserService {
 
     async getUserDetails(uid: string) {
         const userDetailsRepo = await getRepository(UserDetailEntity);
-        const userDetail = await userDetailsRepo.find({ where: { user: uid } });
+        const userDetail = await userDetailsRepo.find({ where: { user: uid }, relations: ['user']});
         return userDetail[0];
     }
 }

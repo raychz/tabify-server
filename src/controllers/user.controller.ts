@@ -68,4 +68,14 @@ export class UserController {
 
     res.send(user);
   }
+
+  /**
+   * Returns userDetails from DB, if they exist
+   */
+  @Get('/userDetails')
+  async getUserDetailsFromDB(@Res() res: ServerResponse) {
+    const { uid } = res.locals.auth;
+    const userDetails = await this.userService.getUserDetails(uid);
+    res.send(userDetails);
+  }
 }
