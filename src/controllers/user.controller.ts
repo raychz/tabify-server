@@ -64,9 +64,9 @@ export class UserController {
     await userRepo.save({ uid });
 
     // save user details
-    await this.userService.createUserDetails(user, referralCode);
+    const savedUserDetails = await this.userService.createUserDetails(user, referralCode);
 
-    res.send(user);
+    res.send(savedUserDetails);
   }
 
   /**

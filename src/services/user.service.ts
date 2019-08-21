@@ -13,7 +13,7 @@ export class UserService {
         // check if userDetails exist in DB. If not, enter user details in DB
         const userDetailsRepo = await getRepository(UserDetailEntity);
         const userDetailsAlreadyExist = await userDetailsRepo
-            .findOne({ where: { user: userDetails.uid } });
+            .findOne({ where: { user: userDetails.uid }, relations: ['user'] });
 
         if (userDetailsAlreadyExist === undefined) {
             const refinedUserDetails = new UserDetailEntity();
@@ -39,7 +39,8 @@ export class UserService {
                 refinedUserDetails.photo_url = userDetails.photo_url;
             }
 
-            return await userDetailsRepo.save(refinedUserDetails);
+            await userDetailsRepo.save(refinedUserDetails);
+            return refinedUserDetails;
         } else {
             return userDetailsAlreadyExist;
         }
