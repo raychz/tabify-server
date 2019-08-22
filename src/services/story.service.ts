@@ -14,21 +14,27 @@ export class StoryService {
         return await storyRepo.save(newStory);
     }
 
-    // get all tickets associated with the logged-in user
-    // each ticket has a story object, location, and user/user details.
-    async readStories(userId: any) {
+    /**
+     * get all !!! Tickets !!! associated with the logged-in user
+     * !!!!! each ticket has a story object, location, and user/user details. !!!!!
+     * @param userId: string
+     */
+    async readStories(userId: string) {
 
-        let stories: any = [];
-
+        // starting from user Id table
         const userRepo = await getRepository(UserEntity);
-        stories = await userRepo.find(
-            {
-                where: { uid: userId },
-                relations: ['tickets', 'tickets.story', 'tickets.location',
-                    'tickets.users', 'tickets.users.userDetail'],
-            });
 
-        return stories[0];
+        // get all tickets, and sort them by story.date_created in DESC
+        const stories = await userRepo.createQueryBuilder('user')
+            .innerJoinAndSelect('user.tickets', 'ticket', 'user.uid = :userId', { userId })
+            .innerJoinAndSelect('ticket.story', 'story')
+            .innerJoinAndSelect('ticket.location', 'location')
+            .orderBy({
+                'story.date_created': 'DESC',
+            })
+            .getOne();
+
+        return stories;
     }
 
     async readStory(storyId: number, manager?: EntityManager) {
