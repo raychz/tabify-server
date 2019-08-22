@@ -54,11 +54,11 @@ export class StoryService {
 
     async readDetailedStory(storyId: number) {
         const storyRepo = await getRepository(StoryEntity);
-        const detailedStory = await storyRepo.find({
-            where: { id: storyId }, relations: ['likes', 'comments', 'ticket',
-                'ticket.users', 'ticket.location'],
+        const detailedStory = await storyRepo.findOneOrFail({
+            where: { id: storyId },
+            relations: ['ticket', 'ticket.users', 'ticket.location'],
         });
 
-        return detailedStory[0];
+        return detailedStory;
     }
 }
