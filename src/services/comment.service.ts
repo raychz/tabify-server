@@ -21,7 +21,7 @@ export class CommentService {
             where: { story: storyId },
             relations: ['user', 'user.userDetail'],
             order: {
-                date_created: 'DESC',
+                date_created: 'ASC',
             },
         });
 
