@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import * as firebaseAdmin from 'firebase-admin';
 import { Ticket, User } from '../entity';
 import { auth } from 'firebase-admin';
+import { STATUS_CODES } from 'http';
 
 @Injectable()
 export class FirebaseService {
@@ -23,15 +24,24 @@ export class FirebaseService {
     const db = firebaseAdmin.firestore();
     const ticketsRef = db.collection('tickets').doc(`${ticket.id}`);
 
-    await ticketsRef.update({
-      users: firebaseAdmin.firestore.FieldValue.arrayUnion({
-        uid: user.uid,
-        name: user.displayName,
-        photoUrl: 'abcd',
-        ticketItems: [],
-      }),
-      uids: firebaseAdmin.firestore.FieldValue.arrayUnion(user.uid),
-    });
+    const ticketDoc = await ticketsRef.get();
+    const { patrons } = ticketDoc.data()! as {
+      patrons: {uid: string}[];
+    };
+
+    if (!patrons.find( patron => patron.uid === user.uid)) {
+      await ticketsRef.update({
+        patrons: firebaseAdmin.firestore.FieldValue.arrayUnion({
+          uid: user.uid,
+          name: user.displayName,
+          // photoUrl: user.photoURL, // this doesn't work
+          photoUrl: 'http://images.panda.org/assets/images/pages/welcome/orangutan_1600x1000_279157.jpg',
+          ticketItems: [],
+          status: 'selecting', // make status an enum type?
+        }),
+        uids: firebaseAdmin.firestore.FieldValue.arrayUnion(user.uid),
+      });
+    }
   }
 
   async removeUserFromFirestoreTicket(ticket: Ticket, user: auth.UserRecord) { // not being called??
@@ -39,7 +49,7 @@ export class FirebaseService {
     const ticketsRef = db.collection('tickets').doc(`${ticket.id}`);
 
     await ticketsRef.update({
-      users: firebaseAdmin.firestore.FieldValue.arrayRemove({
+      patrons: firebaseAdmin.firestore.FieldValue.arrayRemove({
         uid: user.uid,
         name: user.displayName,
         photoUrl: 'abcd',
@@ -60,7 +70,7 @@ export class FirebaseService {
         ticket_number: ticket.ticket_number,
         location: ticket.location.name,
         date_created: ticket.date_created,
-        users: [],
+        patrons: [],
         uids: [],
         unclaimedItems: [],
         sharedItems: [],
