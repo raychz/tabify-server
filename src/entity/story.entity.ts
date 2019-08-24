@@ -5,7 +5,6 @@ import { Ticket } from './ticket.entity';
 
 @Entity()
 export class Story {
-
     @PrimaryGeneratedColumn()
     id!: number;
 

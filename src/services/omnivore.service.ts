@@ -44,6 +44,7 @@ export class OmnivoreService {
         phone: location.phone,
         google_place_id: location.google_place_id,
         tickets: [],
+        servers: [],
       }),
     );
   }

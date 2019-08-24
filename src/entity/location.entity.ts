@@ -6,6 +6,7 @@ import {
   OneToMany,
 } from 'typeorm';
 import { Ticket } from './ticket.entity';
+import { Server } from './server.entity';
 
 export interface ILocation {
   id?: number;
@@ -25,6 +26,7 @@ export interface ILocation {
   zip: string;
   google_place_id?: string;
   tickets: Ticket[];
+  servers: Server[];
 }
 
 @Entity()
@@ -80,6 +82,9 @@ export class Location implements ILocation {
 
   @OneToMany(type => Ticket, ticket => ticket.location)
   tickets!: Ticket[];
+
+  @OneToMany(type => Server, server => server.location)
+  servers!: Server[];
 
   constructor(location?: ILocation) {
     if (location) {
