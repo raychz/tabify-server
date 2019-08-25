@@ -6,3 +6,4 @@ export { FraudPreventionCodeController } from './fraud-prevention-code.controlle
 export { StoryController } from './story.controller';
 export { LikeController } from './like.controller';
 export { CommentController } from './comment.controller';
+export { ServerController } from './server.controller';
