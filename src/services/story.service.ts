@@ -58,7 +58,7 @@ export class StoryService {
         const storyRepo = await getRepository(StoryEntity);
         const detailedStory = await storyRepo.findOneOrFail({
             where: { id: storyId },
-            relations: ['ticket', 'ticket.users', 'ticket.location'],
+            relations: ['ticket', 'ticket.users', 'ticket.location', 'likes', 'likes.user'],
         });
 
         return detailedStory;
