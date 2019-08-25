@@ -29,6 +29,8 @@ export class StoryService {
             .innerJoinAndSelect('user.tickets', 'ticket', 'user.uid = :userId', { userId })
             .innerJoinAndSelect('ticket.story', 'story')
             .innerJoinAndSelect('ticket.location', 'location')
+            .leftJoinAndSelect('story.likes', 'likes')
+            .leftJoinAndSelect('likes.user', 'userLikes')
             .orderBy({
                 'story.date_created': 'DESC',
             })
