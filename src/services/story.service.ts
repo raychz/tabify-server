@@ -26,9 +26,9 @@ export class StoryService {
 
         // get all tickets, and sort them by story.date_created in DESC
         const stories = await userRepo.createQueryBuilder('user')
-            .innerJoinAndSelect('user.tickets', 'ticket', 'user.uid = :userId', { userId })
-            .innerJoinAndSelect('ticket.story', 'story')
-            .innerJoinAndSelect('ticket.location', 'location')
+            .leftJoinAndSelect('user.tickets', 'ticket', 'user.uid = :userId', { userId })
+            .leftJoinAndSelect('ticket.story', 'story')
+            .leftJoinAndSelect('ticket.location', 'location')
             .leftJoinAndSelect('story.likes', 'likes')
             .leftJoinAndSelect('likes.user', 'userLikes')
             .orderBy({
@@ -36,11 +36,7 @@ export class StoryService {
             })
             .getOne();
 
-        if (stories === undefined) {
-            return [];
-        } else {
-            return stories;
-        }
+        return stories;
     }
 
     async readStory(storyId: number, manager?: EntityManager) {
