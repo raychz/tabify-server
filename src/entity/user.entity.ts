@@ -1,4 +1,4 @@
-import { Entity, Column, ManyToMany, OneToMany, JoinTable, OneToOne } from 'typeorm';
+import { Entity, Column, ManyToMany, OneToMany, OneToOne } from 'typeorm';
 import { Ticket, TicketItem, FraudPreventionCode, PaymentMethod } from '.';
 import { Comment } from './comment.entity';
 import { Like } from './like.entity';
