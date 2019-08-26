@@ -36,7 +36,11 @@ export class StoryService {
             })
             .getOne();
 
-        return stories;
+        if (stories === undefined) {
+            return [];
+        } else {
+            return stories;
+        }
     }
 
     async readStory(storyId: number, manager?: EntityManager) {
