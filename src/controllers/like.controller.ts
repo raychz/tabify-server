@@ -22,12 +22,5 @@ export class LikeController {
     const response = await this.likeService.handleLike(storyId, uid);
 
     res.status(200).send(response);
-
-    // Fix This
-    // if (status === true) {
-    //   res.status(201).send();
-    // } else {
-    //   res.status(500).send();
-    // }
   }
 }

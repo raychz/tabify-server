@@ -21,13 +21,15 @@ export class LikeService {
         // open a new transaction:
         await queryRunner.startTransaction();
 
+        let res = {};
+
         const likeExists = await this.checkIfLikeExists(storyId, uid, queryRunner.manager);
 
         try {
             if (likeExists) {
-                await this.deleteLike(storyId, uid, queryRunner.manager);
+                res = await this.deleteLike(storyId, uid, queryRunner.manager);
             } else {
-                await this.createLike(storyId, uid, queryRunner.manager);
+                res = await this.createLike(storyId, uid, queryRunner.manager);
             }
 
             // commit transaction
@@ -42,8 +44,8 @@ export class LikeService {
             await queryRunner.release();
         }
 
-        // True means like deleted. False means like created
-        return likeExists;
+        // res.likeCreated = True means like created. False means like deleted
+        return res;
     }
 
     async createLike(storyId: number, uid: any, manager: EntityManager) {
@@ -58,45 +60,30 @@ export class LikeService {
         user.uid = uid;
         newLike.user = user;
 
+        let res: any;
+
         // save new like
-        await manager.save(newLike);
+        res = await manager.save(newLike);
 
-        // increment like count on story
-        const incrementLikeOutput = await manager
-            .createQueryBuilder()
-            .update(StoryEntity)
-            .set({ like_count: linkedStory.like_count + 1 })
-            .where({ id: storyId })
-            .execute();
-
-        if (incrementLikeOutput.raw.affectedRows === 0) {
-            throw new Error('ID does not exist.');
-        }
+        res.likeCreated = true;
+        return res;
     }
 
     async deleteLike(storyId: number, uid: any, manager: EntityManager) {
         const linkedStory = await this.storyService.readStory(storyId);
 
+        let res: any;
+
         // delete like on story
-        const deleteLikeOutput = await manager
+        res = await manager
             .createQueryBuilder()
             .delete()
             .from(LikeEntity)
             .where({ user: uid, story: storyId })
-            // .where('userUid = :user AND storyId = :story', { user: uid, story: storyId })
             .execute();
 
-        // decrement like count on story
-        const decrementLikeOutput = await manager
-            .createQueryBuilder()
-            .update(StoryEntity)
-            .set({ like_count: linkedStory.like_count - 1 })
-            .where({ id: storyId })
-            .execute();
-
-        if (decrementLikeOutput.raw.affectedRows === 0 || deleteLikeOutput.raw.affectedRows === 0) {
-            throw new Error('ID does not exist.');
-        }
+        res.likeCreated = false;
+        return res;
     }
 
     // check if like on a story exists by a particular user
