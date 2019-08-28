@@ -3,6 +3,9 @@ import * as firebaseAdmin from 'firebase-admin';
 import { Ticket, User } from '../entity';
 import { auth } from 'firebase-admin';
 
+export enum ticketStatus { open, closed }
+export enum userStatus { selecting, waiting, confirmed, paid }
+
 @Injectable()
 export class FirebaseService {
   async getUserInfo(uid: string) {
@@ -27,12 +30,14 @@ export class FirebaseService {
       users: firebaseAdmin.firestore.FieldValue.arrayUnion({
         uid: user.uid,
         name: user.displayName,
+        status: userStatus.selecting,
+        photoUrl: 'http://images.panda.org/assets/images/pages/welcome/orangutan_1600x1000_279157.jpg',
       }),
       uids: firebaseAdmin.firestore.FieldValue.arrayUnion(user.uid),
     });
   }
 
-  async removeUserFromFirestoreTicket(ticket: Ticket, user: auth.UserRecord) {
+  async removeUserFromFirestoreTicket(ticket: Ticket, user: auth.UserRecord) { // currently not being called
     const db = firebaseAdmin.firestore();
     const ticketsRef = db.collection('tickets').doc(`${ticket.id}`);
 
@@ -40,8 +45,6 @@ export class FirebaseService {
       users: firebaseAdmin.firestore.FieldValue.arrayRemove({
         uid: user.uid,
         name: user.displayName,
-        status: 'selecting', // make enum??
-        photoUrl: 'http://images.panda.org/assets/images/pages/welcome/orangutan_1600x1000_279157.jpg',
       }),
       uids: firebaseAdmin.firestore.FieldValue.arrayRemove(user.uid),
     });
@@ -59,6 +62,7 @@ export class FirebaseService {
         ticket_number: ticket.ticket_number,
         location: ticket.location.name,
         date_created: ticket.date_created,
+        status: ticketStatus.open,
         users: [],
         uids: [],
       }),
