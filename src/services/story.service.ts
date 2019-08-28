@@ -29,6 +29,8 @@ export class StoryService {
             .leftJoinAndSelect('user.tickets', 'ticket', 'user.uid = :userId', { userId })
             .leftJoinAndSelect('ticket.story', 'story')
             .leftJoinAndSelect('ticket.location', 'location')
+            .leftJoinAndSelect('ticket.users', 'ticketUsers')
+            .leftJoinAndSelect('ticketUsers.userDetail', 'userDetail')
             .leftJoinAndSelect('story.likes', 'likes')
             .leftJoinAndSelect('likes.user', 'userLikes')
             .orderBy({
