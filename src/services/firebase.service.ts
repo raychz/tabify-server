@@ -40,6 +40,8 @@ export class FirebaseService {
       users: firebaseAdmin.firestore.FieldValue.arrayRemove({
         uid: user.uid,
         name: user.displayName,
+        status: 'selecting', // make enum??
+        photoUrl: 'http://images.panda.org/assets/images/pages/welcome/orangutan_1600x1000_279157.jpg',
       }),
       uids: firebaseAdmin.firestore.FieldValue.arrayRemove(user.uid),
     });
