@@ -65,4 +65,15 @@ export class StoryService {
 
         return detailedStory;
     }
+
+    // returns story object, with detailed list of likers
+    async getStoryLikers(storyId: number) {
+        const storyRepo = await getRepository(StoryEntity);
+        const likers = await storyRepo.findOneOrFail({
+            where: { id: storyId },
+            relations: ['likes', 'likes.user', 'likes.user.userDetail'],
+        });
+
+        return likers;
+    }
 }

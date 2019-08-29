@@ -32,4 +32,14 @@ export class StoryController {
     const story = await this.storyService.readDetailedStory(storyId);
     res.send(story);
   }
+
+  @Get(':storyId/likers')
+  async getStoryLikers(
+    @Res() res: ServerResponse,
+    @Param('storyId') storyId: number,
+  ) {
+
+    const likers = await this.storyService.getStoryLikers(storyId);
+    res.send(likers);
+  }
 }
