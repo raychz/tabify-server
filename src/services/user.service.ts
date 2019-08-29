@@ -26,7 +26,7 @@ export class UserService {
             refinedUserDetails.email = userDetails.email;
             refinedUserDetails.displayName = userDetails.displayName;
 
-            if (referralCode.referralCode.length !== 0) {
+            if (referralCode.referralCode && referralCode.referralCode.length !== 0) {
                 const serverRepo = await getRepository(ServerEntity);
                 const referringServer = await serverRepo.findOne({ where: { referralCode: referralCode.referralCode } });
 
@@ -37,6 +37,8 @@ export class UserService {
 
             if (userDetails.photo_url !== undefined) {
                 refinedUserDetails.photo_url = userDetails.photo_url;
+            } else {
+                refinedUserDetails.photo_url = 'https://cdn.business2community.com/wp-content/uploads/2017/08/blank-profile-picture-973460_640.png'
             }
 
             await userDetailsRepo.save(refinedUserDetails);

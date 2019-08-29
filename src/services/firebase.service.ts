@@ -3,8 +3,9 @@ import * as firebaseAdmin from 'firebase-admin';
 import { Ticket, User } from '../entity';
 import { auth } from 'firebase-admin';
 
-export enum ticketStatus { open, closed }
-export enum userStatus { selecting, waiting, confirmed, paid }
+// please keep the user status enum in order of execution as they are used for calculations
+export enum UserStatus { Selecting, Waiting, Confirmed, Paid }
+export enum TicketStatus { Open, Closed }
 
 @Injectable()
 export class FirebaseService {
@@ -26,15 +27,20 @@ export class FirebaseService {
     const db = firebaseAdmin.firestore();
     const ticketsRef = db.collection('tickets').doc(`${ticket.id}`);
 
-    await ticketsRef.update({
-      users: firebaseAdmin.firestore.FieldValue.arrayUnion({
-        uid: user.uid,
-        name: user.displayName,
-        status: userStatus.selecting,
-        photoUrl: 'http://images.panda.org/assets/images/pages/welcome/orangutan_1600x1000_279157.jpg',
-      }),
-      uids: firebaseAdmin.firestore.FieldValue.arrayUnion(user.uid),
-    });
+    const ticketDoc = await ticketsRef.get();
+    const userUids = ticketDoc.get('uids') as string[];
+
+    if (!userUids.find( uid => uid === user.uid )) {
+      await ticketsRef.update({
+        users: firebaseAdmin.firestore.FieldValue.arrayUnion({
+          uid: user.uid,
+          name: user.displayName,
+          status: UserStatus.Selecting,
+          photoUrl: 'https://cdn.business2community.com/wp-content/uploads/2017/08/blank-profile-picture-973460_640.png',
+        }),
+        uids: firebaseAdmin.firestore.FieldValue.arrayUnion(user.uid),
+      });
+    }
   }
 
   async removeUserFromFirestoreTicket(ticket: Ticket, user: auth.UserRecord) { // currently not being called
@@ -62,7 +68,8 @@ export class FirebaseService {
         ticket_number: ticket.ticket_number,
         location: ticket.location.name,
         date_created: ticket.date_created,
-        status: ticketStatus.open,
+        status: TicketStatus.Open,
+        overallUsersProgress: UserStatus.Selecting,
         users: [],
         uids: [],
       }),
