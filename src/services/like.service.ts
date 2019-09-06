@@ -1,8 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { Like as LikeEntity } from '../entity';
-import { Story as StoryEntity } from '../entity';
-import { User as UserEntity } from '../entity';
 import { getConnection, EntityManager } from 'typeorm';
+import { Like as LikeEntity, Story as StoryEntity, User as UserEntity } from '@tabify/entities';
 import { StoryService } from './story.service';
 
 @Injectable()

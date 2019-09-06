@@ -1,6 +1,6 @@
 import { Controller, Query, Res, Post, Param, Header, Put, HttpStatus } from '@nestjs/common';
 import { Response as ServerResponse } from 'express-serve-static-core';
-import { LikeService } from 'src/services/like.service';
+import { LikeService } from '@tabify/services';
 
 @Controller('stories/:storyId/likes')
 export class LikeController {

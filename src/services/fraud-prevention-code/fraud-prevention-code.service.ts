@@ -1,10 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { getManager, getRepository, EntityManager, getConnection } from 'typeorm';
 import {
   FraudPreventionCode as FraudPreventionCodeEntity,
   User as UserEntity,
-} from '../../entity';
-import { getManager, getRepository, EntityManager, getConnection } from 'typeorm';
-import { FirebaseService } from '../firebase.service';
+} from '@tabify/entities';
+import { FirebaseService } from '@tabify/services';
 import badWords from './bad-words';
 
 @Injectable()

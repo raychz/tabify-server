@@ -1,7 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany, OneToOne, JoinColumn, CreateDateColumn } from 'typeorm';
-import { Comment } from './comment.entity';
-import { Like } from './like.entity';
-import { Ticket } from './ticket.entity';
+import { Comment, Like, Ticket } from '@tabify/entities';
 
 @Entity()
 export class Story {

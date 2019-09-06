@@ -1,8 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { Story as StoryEntity } from '../entity';
 import { getRepository, EntityManager } from 'typeorm';
-import { Ticket as TicketEntity } from '../entity';
-import { User as UserEntity } from '../entity';
+import { Story as StoryEntity, Ticket as TicketEntity, User as UserEntity } from '@tabify/entities';
 
 @Injectable()
 export class StoryService {

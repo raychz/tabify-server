@@ -1,8 +1,6 @@
 import { Get, Controller, Query, Res, Post, Body, Param } from '@nestjs/common';
-import { StoryService } from '../services/story.service';
-import { async } from 'rxjs/internal/scheduler/async';
-import { resolve } from 'path';
 import { Response as ServerResponse } from 'express-serve-static-core';
+import { StoryService } from '@tabify/services';
 
 @Controller('stories')
 export class StoryController {

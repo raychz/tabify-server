@@ -6,7 +6,7 @@ import {
   ManyToMany,
   JoinTable,
 } from 'typeorm';
-import { Ticket, User } from '.';
+import { Ticket, User } from '@tabify/entities';
 
 export interface ITicketItem {
   id?: number;

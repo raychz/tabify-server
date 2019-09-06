@@ -5,8 +5,7 @@ import {
   Unique,
   OneToMany,
 } from 'typeorm';
-import { Ticket } from './ticket.entity';
-import { Server } from './server.entity';
+import { Server, Ticket } from '@tabify/entities';
 
 export interface ILocation {
   id?: number;

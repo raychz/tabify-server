@@ -7,7 +7,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Ticket, User } from '.';
+import { Ticket, User } from '@tabify/entities';
 
 @Entity()
 export class PaymentMethod {

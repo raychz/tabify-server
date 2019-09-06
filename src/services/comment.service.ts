@@ -1,10 +1,11 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
-import { Story as StoryEntity } from '../entity';
-import { Comment as CommentEntity } from '../entity';
-import { User as UserEntity } from '../entity';
 import { getConnection, getRepository } from 'typeorm';
+import { Comment as CommentEntity, Story as StoryEntity, User as UserEntity } from '@tabify/entities';
 import { StoryService } from './story.service';
 import { UserService } from './user.service';
+// Tracking the issue with the import below here:
+// https://github.com/nestjs/nest/issues/2897
+// import { StoryService, UserService } from '@tabify/services';
 
 @Injectable()
 export class CommentService {
