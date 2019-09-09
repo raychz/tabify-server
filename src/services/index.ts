@@ -10,3 +10,4 @@ export * from './spreedly.service';
 export * from './story.service';
 export * from './ticket.service';
 export * from './user.service';
+export * from './server-reward.service';
