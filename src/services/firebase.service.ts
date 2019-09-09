@@ -4,7 +4,7 @@ import { Ticket, User } from '../entity';
 import { auth } from 'firebase-admin';
 
 // please keep the user status enum in order of execution as they are used for calculations
-export enum UserStatus { Selecting, Waiting, Confirmed, Paid }
+export enum UserStatus { Selecting, Waiting, Confirmed, Paying, Paid }
 export enum TicketStatus { Open, Closed }
 
 @Injectable()
@@ -36,7 +36,7 @@ export class FirebaseService {
           uid: user.uid,
           name: user.displayName,
           status: UserStatus.Selecting,
-          photoUrl: 'https://cdn.business2community.com/wp-content/uploads/2017/08/blank-profile-picture-973460_640.png',
+          photoUrl: 'https://cdn2.iconfinder.com/data/icons/avatar-profile/476/profile_avatar_contact_account_user_default-512.png',
         }),
         uids: firebaseAdmin.firestore.FieldValue.arrayUnion(user.uid),
       });
