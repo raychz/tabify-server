@@ -10,7 +10,10 @@ import {
   ManyToOne,
   OneToOne,
 } from 'typeorm';
-import { FraudPreventionCode, ILocation, ITicketItem, Location, Story, TicketItem, User } from '@tabify/entities';
+import {
+  FraudPreventionCode, ILocation, ITicketItem,
+  Location, Story, TicketItem, User, ServerReward,
+} from '@tabify/entities';
 
 export interface ITicket {
   id?: number;
@@ -67,4 +70,7 @@ export class Ticket implements ITicket {
     })
   @JoinTable()
   users!: User[];
+
+  @OneToOne(type => ServerReward, serverReward => serverReward.ticket)
+  serverReward!: ServerReward;
 }
