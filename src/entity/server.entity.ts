@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, ManyToOne, Column, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, ManyToOne, Column, OneToMany, Unique } from 'typeorm';
 import { Location, UserDetail, ServerReward } from '@tabify/entities';
 
 @Entity()
@@ -9,7 +9,7 @@ export class Server {
     @Column({type: 'varchar', nullable: false})
     displayName!: string;
 
-    @Column({type: 'varchar', nullable: false})
+    @Column({type: 'varchar', nullable: false, unique: true})
     email!: string;
 
     @Column({type: 'varchar', nullable: false})

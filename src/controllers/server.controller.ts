@@ -20,7 +20,7 @@ export class ServerController {
     @Post()
     async postServer(
         @Res() res: ServerResponse,
-        @Body('serverDetails') serverDetails: any,
+        @Body() serverDetails: any,
     ) {
         const server = await this.serverService.postServer(serverDetails);
         res.send(server);

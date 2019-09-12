@@ -16,7 +16,9 @@ export class ServerService {
     }
 
     async postServer(serverDetails: any) {
-
+        serverDetails.referralCode = this.generateReferralCode();
+        const serverRepo = await getRepository(ServerEntity);
+        return await serverRepo.save(serverDetails);
     }
 
     generateReferralCode() {
