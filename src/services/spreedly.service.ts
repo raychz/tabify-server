@@ -36,7 +36,7 @@ export class SpreedlyService {
 
   private async createSpreedlyRequest<B = {}>(
     endpoint: string,
-    method: 'GET' | 'POST' = 'GET',
+    method: 'GET' | 'POST' | 'PUT' = 'GET',
     body?: B,
   ): Promise<Response> {
     return await fetch(
@@ -207,6 +207,16 @@ export class SpreedlyService {
     return (await this.handleSpreedlyResponse<Spreedly.PaymentMethodResponse>(
       this.createSpreedlyRequest(`/payment_methods/${token}`)
     )).payment_method;
+  }
+
+  /**
+   * Retain (keep in the Spreedly vault for future use) a payment method.
+   * See https://docs.spreedly.com/reference/api/v1/#retain36
+   */
+  public async retainPaymentMethod(token: string) {
+    return (await this.handleSpreedlyResponse<Spreedly.PaymentMethodResponse>(
+      this.createSpreedlyRequest(`/payment_methods/${token}/retain`, 'PUT'),
+    ));
   }
 
   /**
