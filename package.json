@@ -2,7 +2,6 @@
   "name": "tabify-server",
   "version": "0.0.1",
   "description": "description",
-  "author": "Davi DeBarros",
   "license": "MIT",
   "scripts": {
     "build": "tsc -p tsconfig.json",
