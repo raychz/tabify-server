@@ -1,9 +1,6 @@
 import { Get, Controller, Query, Res, Post, Body } from '@nestjs/common';
-import { TicketService } from '../services/ticket-service';
-import { FraudPreventionCodeService } from '../services/fraud-prevention-code/fraud-prevention-code.service';
 import { Response as ServerResponse } from 'express-serve-static-core';
-import { FirebaseService } from '../services/firebase.service';
-// import { IoServer } from 'modules/socket/socket-server';
+import { FirebaseService, FraudPreventionCodeService, TicketService } from '@tabify/services';
 
 @Controller('ticket')
 export class TicketController {

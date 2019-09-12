@@ -1,11 +1,8 @@
 import { Injectable, HttpStatus } from '@nestjs/common';
-import fetch from 'node-fetch';
-import { Location as LocationEntity } from '../entity';
-import { ILocation } from '../entity/location.entity';
 import { getManager, EntityManager, getRepository } from 'typeorm';
-import { ITicket } from '../entity/ticket.entity';
-import { ITicketItem } from '../entity/ticket-item.entity';
-import { LocationService } from './location.service';
+import fetch from 'node-fetch';
+import { ILocation, ITicket, ITicketItem, Location as LocationEntity } from '@tabify/entities';
+import { LocationService } from '@tabify/services';
 
 @Injectable()
 export class OmnivoreService {

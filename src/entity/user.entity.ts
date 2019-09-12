@@ -1,8 +1,5 @@
 import { Entity, Column, ManyToMany, OneToMany, OneToOne } from 'typeorm';
-import { Ticket, TicketItem, FraudPreventionCode, PaymentMethod } from '.';
-import { Comment } from './comment.entity';
-import { Like } from './like.entity';
-import { UserDetail } from './user-detail.entity';
+import { Comment, FraudPreventionCode, Like, Ticket, TicketItem, UserDetail, PaymentMethod } from '@tabify/entities';
 
 @Entity()
 export class User {

@@ -1,6 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, ManyToOne, CreateDateColumn } from 'typeorm';
-import { Story } from './story.entity';
-import { User } from './user.entity';
+import { Story, User } from '@tabify/entities';
 
 @Entity()
 export class Comment {

@@ -1,9 +1,9 @@
-export { UserController } from './user.controller';
-export { PaymentController } from './payment.controller';
-export { TicketController } from './ticket.controller';
-export { LocationController } from './location.controller';
-export { FraudPreventionCodeController } from './fraud-prevention-code.controller';
-export { StoryController } from './story.controller';
-export { LikeController } from './like.controller';
-export { CommentController } from './comment.controller';
-export { ServerController } from './server.controller';
+export * from './comment.controller';
+export * from './fraud-prevention-code.controller';
+export * from './like.controller';
+export * from './location.controller';
+export * from './payment.controller';
+export * from './server.controller';
+export * from './story.controller';
+export * from './ticket.controller';
+export * from './user.controller';

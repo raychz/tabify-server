@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as firebaseAdmin from 'firebase-admin';
-import { Ticket, User } from '../entity';
 import { auth } from 'firebase-admin';
+import { Ticket, User } from '@tabify/entities';
 
 @Injectable()
 export class FirebaseService {

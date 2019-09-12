@@ -8,7 +8,7 @@ import {
   UpdateDateColumn,
   Unique,
 } from 'typeorm';
-import { User } from '.';
+import { Ticket, User } from '@tabify/entities';
 
 @Entity()
 @Unique(['user', 'fingerprint'])

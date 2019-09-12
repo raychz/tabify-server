@@ -1,10 +1,7 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
-import { Story as StoryEntity } from '../entity';
-import { Comment as CommentEntity } from '../entity';
-import { User as UserEntity } from '../entity';
 import { getConnection, getRepository } from 'typeorm';
-import { StoryService } from './story.service';
-import { UserService } from './user.service';
+import { Comment as CommentEntity, Story as StoryEntity, User as UserEntity } from '@tabify/entities';
+import { StoryService, UserService } from '@tabify/services';
 
 @Injectable()
 export class CommentService {
@@ -18,7 +15,11 @@ export class CommentService {
     async readComments(storyId: number) {
         const commentRepo = await getRepository(CommentEntity);
         const comments = await commentRepo.find({
-            where: { story: storyId }, relations: ['user', 'user.userDetail'],
+            where: { story: storyId },
+            relations: ['user', 'user.userDetail'],
+            order: {
+                date_created: 'ASC',
+            },
         });
 
         return comments;

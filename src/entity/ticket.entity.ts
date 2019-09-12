@@ -10,10 +10,7 @@ import {
   ManyToOne,
   OneToOne,
 } from 'typeorm';
-import { TicketItem, User, FraudPreventionCode } from '.';
-import { ILocation, Location } from './location.entity';
-import { ITicketItem } from './ticket-item.entity';
-import { Story } from './story.entity';
+import { FraudPreventionCode, ILocation, ITicketItem, Location, Story, TicketItem, User } from '@tabify/entities';
 
 export interface ITicket {
   id?: number;

@@ -1,6 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToOne, JoinColumn, ManyToOne } from 'typeorm';
-import { User } from './user.entity';
-import { Server } from './server.entity';
+import { Server, User } from '@tabify/entities';
 
 @Entity()
 export class UserDetail {
