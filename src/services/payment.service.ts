@@ -31,17 +31,44 @@ export class PaymentService {
         paymentMethod.user = user;
 
         const paymentMethodRepo = await getRepository(PaymentMethodEntity);
+        let newPaymentMethod;
+        // Save new or update existing payment method
         try {
-            const newPaymentMethod = await paymentMethodRepo.save(paymentMethod);
-            const retainResponse = await this.spreedlyService.retainPaymentMethod(paymentMethod.token);
-            return newPaymentMethod;
+            newPaymentMethod = await paymentMethodRepo.save(paymentMethod);
         } catch (e) {
             const { code } = e;
+            // If payment method already exists, update it
             if (code === 'ER_DUP_ENTRY') {
-                throw new BadRequestException('This card already exists. Please delete the old one first.', e);
+                newPaymentMethod = await this.updatePaymentMethod(uid, paymentMethod);
             } else {
-                throw new BadRequestException('An unknown error occurred.', e);
+                throw new BadRequestException('An unknown error occurred while saving this payment method. Please try again.', e);
             }
+        }
+
+        if (!newPaymentMethod) {
+            throw new BadRequestException('An unknown error occurred while updating this payment method. Please try again.');
+        }
+
+        // Retain payment method on Spreedly
+        try {
+            const retainResponse = await this.spreedlyService.retainPaymentMethod(newPaymentMethod.token);
+            return newPaymentMethod;
+        } catch (e) {
+            throw new BadRequestException('An unknown error occurred while retaining this payment method. Please try again.', e);
+        }
+    }
+
+    async updatePaymentMethod(uid: string, newPaymentMethod: PaymentMethodEntity) {
+        try {
+            const paymentMethodRepo = await getRepository(PaymentMethodEntity);
+            const existingPaymentMethod = await paymentMethodRepo.findOneOrFail({
+                where: { user: newPaymentMethod.user, fingerprint: newPaymentMethod.fingerprint },
+            });
+            await paymentMethodRepo.update(existingPaymentMethod.id, newPaymentMethod);
+            const updatedPaymentMethod = await paymentMethodRepo.findOneOrFail(existingPaymentMethod.id);
+            return updatedPaymentMethod;
+        } catch {
+            return null;
         }
     }
 
