@@ -30,7 +30,6 @@ export class CommentController {
     } = res;
 
     const response = await this.commentService.createComment(storyId, uid, newComment);
-
     res.send(response);
   }
 
@@ -47,7 +46,6 @@ export class CommentController {
     } = res;
 
     const response = await this.commentService.deleteComment(storyId, commentId, uid);
-
     res.send(response);
   }
 }

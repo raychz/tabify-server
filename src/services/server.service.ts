@@ -11,8 +11,12 @@ export class ServerService {
 
     async getServerByRefCode(refCode: string) {
         const serverRepo = await getRepository(ServerEntity);
-        const server = await serverRepo.find({where: {referralCode: refCode}, relations: ['location']});
+        const server = await serverRepo.find({ where: { referralCode: refCode }, relations: ['location'] });
         return server;
+    }
+
+    async postServer(serverDetails: any) {
+
     }
 
     generateReferralCode() {
@@ -22,5 +26,5 @@ export class ServerService {
         const chars = this.allowedCodeLetterOptions;
         for (let i = length; i > 0; --i) result += chars[Math.round(Math.random() * (chars.length - 1))];
         return result;
-      }
+    }
 }
