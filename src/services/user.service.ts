@@ -1,8 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { UserDetail as UserDetailEntity } from '../entity';
 import { getRepository } from 'typeorm';
-import { User as UserEntity } from '../entity';
-import { Server as ServerEntity } from '../entity';
+import { Server as ServerEntity, User as UserEntity, UserDetail as UserDetailEntity } from '@tabify/entities';
 
 // This service handles operations for the User and UserDetails entities
 @Injectable()

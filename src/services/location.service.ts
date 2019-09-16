@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { Location as LocationEntity } from '../entity';
 import { getRepository, FindOneOptions } from 'typeorm';
+import { Location as LocationEntity } from '@tabify/entities';
 
 @Injectable()
 export class LocationService {

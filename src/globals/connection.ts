@@ -1,5 +1,5 @@
 import { createConnection, Connection, getConnectionOptions } from 'typeorm';
-import * as Entities from '../entity';
+import * as Entities from '@tabify/entities';
 
 const entities = Object.values(Entities);
 

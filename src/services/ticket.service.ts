@@ -1,20 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { OmnivoreService } from '../services/omnivore.service';
 import { getManager, getRepository, EntityManager } from 'typeorm';
+import { auth } from 'firebase-admin';
+import { FirebaseService, OmnivoreService, StoryService } from '@tabify/services';
 import {
+  ITicketItem,
+  ITicket,
   Location as LocationEntity,
   Ticket as TicketEntity,
-  User as UserEntity,
-  User,
-} from '../entity';
-import { ITicket, Ticket } from '../entity/ticket.entity';
-import {
   TicketItem as TicketItemEntity,
-  ITicketItem,
-} from '../entity/ticket-item.entity';
-import { FirebaseService } from './firebase.service';
-import { auth } from 'firebase-admin';
-import { StoryService } from './story.service';
+  User as UserEntity,
+} from '@tabify/entities';
 
 @Injectable()
 export class TicketService {

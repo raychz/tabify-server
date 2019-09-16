@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { getRepository } from 'typeorm';
-import { Server as ServerEntity } from '../entity';
+import { Server as ServerEntity } from '@tabify/entities';
 
 // This service handles operations for the Server entity
 @Injectable()

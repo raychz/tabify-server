@@ -1,8 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { Story as StoryEntity } from '../entity';
 import { getRepository, EntityManager } from 'typeorm';
-import { Ticket as TicketEntity } from '../entity';
-import { User as UserEntity } from '../entity';
+import { Story as StoryEntity, Ticket as TicketEntity, User as UserEntity } from '@tabify/entities';
 
 @Injectable()
 export class StoryService {
@@ -14,21 +12,31 @@ export class StoryService {
         return await storyRepo.save(newStory);
     }
 
-    // get all tickets associated with the logged-in user
-    // each ticket has a story object, location, and user/user details.
-    async readStories(userId: any) {
+    /**
+     * get all !!! Tickets !!! associated with the logged-in user
+     * !!!!! each ticket has a story object, location, and user/user details. !!!!!
+     * @param userId: string
+     */
+    async readStories(userId: string) {
 
-        let stories: any = [];
-
+        // starting from user Id table
         const userRepo = await getRepository(UserEntity);
-        stories = await userRepo.find(
-            {
-                where: { uid: userId },
-                relations: ['tickets', 'tickets.story', 'tickets.location',
-                    'tickets.users', 'tickets.users.userDetail'],
-            });
 
-        return stories[0];
+        // get all tickets, and sort them by story.date_created in DESC
+        const stories = await userRepo.createQueryBuilder('user')
+            .leftJoinAndSelect('user.tickets', 'ticket', 'user.uid = :userId', { userId })
+            .leftJoinAndSelect('ticket.story', 'story')
+            .leftJoinAndSelect('ticket.location', 'location')
+            .leftJoinAndSelect('ticket.users', 'ticketUsers')
+            .leftJoinAndSelect('ticketUsers.userDetail', 'userDetail')
+            .leftJoinAndSelect('story.likes', 'likes')
+            .leftJoinAndSelect('likes.user', 'userLikes')
+            .orderBy({
+                'story.date_created': 'DESC',
+            })
+            .getOne();
+
+        return stories;
     }
 
     async readStory(storyId: number, manager?: EntityManager) {
@@ -48,11 +56,23 @@ export class StoryService {
 
     async readDetailedStory(storyId: number) {
         const storyRepo = await getRepository(StoryEntity);
-        const detailedStory = await storyRepo.find({
-            where: { id: storyId }, relations: ['likes', 'comments', 'ticket',
-                'ticket.users', 'ticket.location'],
+        const detailedStory = await storyRepo.findOneOrFail({
+            where: { id: storyId },
+            relations: ['ticket', 'ticket.users', 'ticket.users.userDetail',
+                'ticket.location', 'likes', 'likes.user'],
         });
 
-        return detailedStory[0];
+        return detailedStory;
+    }
+
+    // returns story object, with detailed list of likers
+    async getStoryLikers(storyId: number) {
+        const storyRepo = await getRepository(StoryEntity);
+        const likers = await storyRepo.findOneOrFail({
+            where: { id: storyId },
+            relations: ['likes', 'likes.user', 'likes.user.userDetail'],
+        });
+
+        return likers;
     }
 }

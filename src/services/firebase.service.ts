@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as firebaseAdmin from 'firebase-admin';
-import { Ticket, User } from '../entity';
 import { auth } from 'firebase-admin';
+import { Ticket, User } from '@tabify/entities';
 
 // please keep the user status enum in order of execution as they are used for calculations
 export enum UserStatus { Selecting, Waiting, Confirmed, Paying, Paid }

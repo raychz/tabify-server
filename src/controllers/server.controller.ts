@@ -1,6 +1,6 @@
 import { Get, Controller, Res, Param } from '@nestjs/common';
-import { ServerService } from 'src/services/server.service';
 import { Response as ServerResponse } from 'express-serve-static-core';
+import { ServerService } from '@tabify/services';
 
 @Controller('server')
 export class ServerController {

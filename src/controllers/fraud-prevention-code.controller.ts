@@ -1,6 +1,6 @@
 import { Get, Controller, Query, Res, Post, Body } from '@nestjs/common';
-import { FraudPreventionCodeService } from '../services/fraud-prevention-code/fraud-prevention-code.service';
 import { Response as ServerResponse } from 'express-serve-static-core';
+import { FraudPreventionCodeService } from '@tabify/services';
 
 @Controller('fraud-prevention-code')
 export class FraudPreventionCodeController {

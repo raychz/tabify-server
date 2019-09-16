@@ -1,6 +1,5 @@
 import { Get, Controller, Body, Post } from '@nestjs/common';
-import { LocationService } from '../services/location.service';
-import { OmnivoreService } from '../services/omnivore.service';
+import { LocationService, OmnivoreService} from '@tabify/services';
 
 @Controller('locations')
 export class LocationController {

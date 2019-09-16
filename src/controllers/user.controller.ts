@@ -1,9 +1,8 @@
 import { Get, Controller, Res, Post, Headers, Body } from '@nestjs/common';
-import { FirebaseService } from '../services/firebase.service';
 import { Response as ServerResponse } from 'express-serve-static-core';
 import { getRepository } from 'typeorm';
-import { User as UserEntity } from '../entity';
-import { UserService } from 'src/services/user.service';
+import { User as UserEntity } from '@tabify/entities';
+import { FirebaseService, UserService } from '@tabify/services';
 
 @Controller('user')
 export class UserController {

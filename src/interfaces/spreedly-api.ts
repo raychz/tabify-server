@@ -96,7 +96,7 @@ export interface PaymentMethod extends ShippingAddress, TimeTrackedToken {
   eligible_for_card_updater: Nullable<boolean>;
   email: Nullable<string>;
   errors: any[];
-  fingerprint: Nullable<string>;
+  fingerprint: string;
   first_name: string;
   first_six_digits: string;
   full_name: string;
@@ -117,6 +117,7 @@ export interface PaymentMethod extends ShippingAddress, TimeTrackedToken {
   test: boolean;
   verification_value: string;
   year: number;
+  zip: string;
 }
 
 export type PaymentMethodResponse = RootResponse<

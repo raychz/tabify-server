@@ -1,7 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany, OneToOne, JoinColumn, CreateDateColumn } from 'typeorm';
-import { Comment } from './comment.entity';
-import { Like } from './like.entity';
-import { Ticket } from './ticket.entity';
+import { Comment, Like, Ticket } from '@tabify/entities';
 
 @Entity()
 export class Story {
@@ -10,9 +8,6 @@ export class Story {
 
     @OneToMany(type => Comment, comment => comment.story)
     comments!: Comment[];
-
-    @Column({ type: 'int', nullable: false, default: 0})
-    like_count!: number;
 
     @Column({ type: 'int', nullable: false, default: 0})
     comment_count!: number;

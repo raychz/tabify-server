@@ -2,7 +2,7 @@
   "compilerOptions": {
     "module": "commonjs",
     "moduleResolution": "node",
-    "declaration": true,
+    "declaration": false,
     "noImplicitAny": true,
     "removeComments": true,
     "noLib": false,
@@ -10,18 +10,25 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "target": "es6",
-    "lib": ["es2017", "es2015"],
+    "lib": ["es7"],
     "sourceMap": true,
     "skipLibCheck": true,
     "outDir": "./dist",
-    "baseUrl": "./",
-    // "paths": {
-    //   "*": [
-    //     "*",
-    //     "./*",
-    //     "./src/*",
-    //   ]
-    // },
+    "baseUrl": "./src",
+    "paths": {
+      "@tabify/controllers": [
+        "./controllers"
+      ],
+      "@tabify/entities": [
+        "./entity"
+      ],
+      "@tabify/interfaces": [
+        "./interfaces"
+      ],
+      "@tabify/services": [
+        "./services"
+      ]
+    },
     "strict": true
   },
   "include": [

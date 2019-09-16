@@ -1,7 +1,6 @@
 import { Controller, Query, Res, Post, Param, Delete, Body, Get } from '@nestjs/common';
 import { Response as ServerResponse } from 'express-serve-static-core';
-import { CommentService } from 'src/services/comment.service';
-import { async } from 'rxjs/internal/scheduler/async';
+import { CommentService } from '@tabify/services';
 
 @Controller('stories/:storyId/comments')
 export class CommentController {
