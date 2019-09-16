@@ -4,8 +4,8 @@ import { auth } from 'firebase-admin';
 import { Ticket, User } from '@tabify/entities';
 
 // please keep the user status enum in order of execution as they are used for calculations
-export enum UserStatus { Selecting, Waiting, Confirmed, Paying, Paid }
-export enum TicketStatus { Open, Closed }
+enum UserStatus { Selecting, Waiting, Confirmed, Paying, Paid }
+enum TicketStatus { Open, Closed }
 
 @Injectable()
 export class FirebaseService {
