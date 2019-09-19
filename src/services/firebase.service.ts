@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, ForbiddenException } from '@nestjs/common';
 import * as firebaseAdmin from 'firebase-admin';
 import { auth } from 'firebase-admin';
 import { Ticket, User } from '@tabify/entities';
@@ -28,9 +28,13 @@ export class FirebaseService {
     const ticketsRef = db.collection('tickets').doc(`${ticket.id}`);
 
     const ticketDoc = await ticketsRef.get();
+    const overallUsersProgress = ticketDoc.get('overallUsersProgress') as UserStatus;
     const userUids = ticketDoc.get('uids') as string[];
 
     if (!userUids.find( uid => uid === user.uid )) {
+      if (overallUsersProgress >= UserStatus.Paying) {
+        throw new ForbiddenException('The patrons of this tab have already selected their items and moved on to payment.');
+      }
       await ticketsRef.update({
         users: firebaseAdmin.firestore.FieldValue.arrayUnion({
           uid: user.uid,
