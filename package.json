@@ -16,7 +16,8 @@
     "lint": "tslint -p tsconfig.json -c tslint.json",
     "test": "jest",
     "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
-    "webpack": "webpack --config webpack.config.js"
+    "webpack": "webpack --config webpack.config.js",
+    "preinstall": "node -e 'if(!/yarn\\.js$/.test(process.env.npm_execpath)) throw new Error(\"Use yarn\")'"
   },
   "jest": {
     "moduleFileExtensions": [
