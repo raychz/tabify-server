@@ -40,7 +40,7 @@ export class FirebaseService {
           uid: user.uid,
           name: user.displayName,
           status: UserStatus.Selecting,
-          photoUrl: 'https://cdn2.iconfinder.com/data/icons/avatar-profile/476/profile_avatar_contact_account_user_default-512.png',
+          photoUrl: null,
         }),
         uids: firebaseAdmin.firestore.FieldValue.arrayUnion(user.uid),
       });
