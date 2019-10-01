@@ -67,4 +67,7 @@ export class Ticket implements ITicket {
     })
   @JoinTable()
   users!: User[];
+
+  @Column()
+  ticket_status!: boolean;
 }
