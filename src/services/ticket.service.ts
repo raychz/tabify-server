@@ -1,11 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { getManager, getRepository, EntityManager } from 'typeorm';
+import { getRepository, getConnection } from 'typeorm';
 import { auth } from 'firebase-admin';
 import { FirebaseService, OmnivoreService, StoryService } from '@tabify/services';
 import {
   ITicketItem,
   ITicket,
-  Location as LocationEntity,
   Ticket as TicketEntity,
   TicketItem as TicketItemEntity,
   User as UserEntity,
@@ -17,7 +16,7 @@ export class TicketService {
     private readonly omnivoreService: OmnivoreService,
     private readonly firebaseService: FirebaseService,
     private storyService: StoryService,
-  ) {}
+  ) { }
 
   /**
    * Attemps to load a ticket from local database if exists,
@@ -88,6 +87,21 @@ export class TicketService {
     });
     nTicket.items = ticketItems;
     return await ticketRepo.save(nTicket);
+  }
+
+  /**
+   * update the status of a ticket to 'false', which means the ticket has been closed
+   * @param ticketId
+   */
+  async closeTicket(ticketId: number) {
+    const res = await getConnection()
+      .createQueryBuilder()
+      .update(TicketEntity)
+      .set({ ticket_status: false })
+      .where('id = :id', { id: ticketId })
+      .execute();
+
+    return res;
   }
 
   /**
