@@ -8,6 +8,7 @@ import {
   Ticket as TicketEntity,
   TicketItem as TicketItemEntity,
   User as UserEntity,
+  TicketStatus,
 } from '@tabify/entities';
 
 @Injectable()
@@ -96,7 +97,7 @@ export class TicketService {
     const res = await getConnection()
       .createQueryBuilder()
       .update(TicketEntity)
-      .set({ ticket_status: false })
+      .set({ ticket_status: TicketStatus.CLOSED })
       .where('id = :id', { id: ticketId })
       .execute();
 
