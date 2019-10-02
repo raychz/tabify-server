@@ -90,6 +90,7 @@ export class FirebaseService {
           name: item.name,
           price: item.price,
           ticket_item_id: item.ticket_item_id,
+          quantity: item.quantity,
           users: [],
         }),
       );
