@@ -24,6 +24,11 @@ export interface ITicket {
   story?: Story;
 }
 
+export enum TicketStatus {
+  OPEN = 'open',
+  CLOSED = 'closed',
+}
+
 @Entity()
 @Unique(['ticket_number', 'tab_id', 'location'])
 export class Ticket implements ITicket {
@@ -68,6 +73,10 @@ export class Ticket implements ITicket {
   @JoinTable()
   users!: User[];
 
-  @Column()
-  ticket_status!: boolean;
+  @Column({
+    type: 'enum',
+    enum: TicketStatus,
+    default: TicketStatus.OPEN,
+  })
+  ticket_status!: TicketStatus;
 }
