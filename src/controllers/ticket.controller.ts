@@ -88,7 +88,7 @@ export class TicketController {
     } = res;
   }
 
-  @Put('closeTicket/:ticketId')
+  @Put(':ticketId/closeTicket')
   async closeTicket(
     @Res() res: ServerResponse,
     @Param('ticketId') ticketId: number,
