@@ -75,6 +75,7 @@ export class TicketService {
     nTicket.location = ticket.location;
     nTicket.ticket_number = ticket.ticket_number;
     nTicket.tab_id = ticket.tab_id;
+    nTicket.ticket_status = TicketStatus.OPEN;
 
     const ticketItems = ticket.items.map((item: ITicketItem) => {
       const ticketItem = new TicketItemEntity();
