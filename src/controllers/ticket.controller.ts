@@ -1,4 +1,4 @@
-import { Get, Controller, Query, Res, Post, Body, Param } from '@nestjs/common';
+import { Get, Controller, Query, Res, Post, Body, Put, Param } from '@nestjs/common';
 import { Response as ServerResponse } from 'express-serve-static-core';
 import { FirebaseService, FraudPreventionCodeService, TicketService, OmnivoreService } from '@tabify/services';
 
@@ -96,6 +96,15 @@ export class TicketController {
   @Post()
   async openDemoTickets(@Param('numberOfTickets') numberOfTickets: number) {
     return await this.omnivoreService.openDemoTickets(numberOfTickets);
+  }
+
+  @Put(':ticketId/closeTicket')
+  async closeTicket(
+    @Res() res: ServerResponse,
+    @Param('ticketId') ticketId: number,
+  ) {
+    const response = await this.ticketService.closeTicket(ticketId);
+    res.send(response);
   }
 
   // async removeTicketItem() {
