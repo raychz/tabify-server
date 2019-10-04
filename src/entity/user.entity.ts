@@ -6,7 +6,7 @@ export class User {
   @Column('varchar', { length: 255, primary: true, nullable: false })
   uid!: string;
 
-  @ManyToMany(type => TicketItem)
+  @ManyToMany(type => TicketItem, { onDelete: 'CASCADE' })
   ticketItems!: TicketItem[];
 
   @OneToMany(type => FraudPreventionCode, fraudPreventionCode => fraudPreventionCode.id)
@@ -21,10 +21,7 @@ export class User {
   @OneToMany(type => Like, like => like.user)
   likes!: Like[];
 
-  // If a user is deleted, delete associated user-details. Not viceversa
-  @OneToOne(type => UserDetail, userDetail => userDetail.user, {
-    onDelete: 'CASCADE',
-  })
+  @OneToOne(type => UserDetail, userDetail => userDetail.user)
   userDetail!: UserDetail;
 
   @ManyToMany(type => Ticket, ticket => ticket.users)
