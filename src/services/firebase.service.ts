@@ -1,7 +1,11 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, ForbiddenException } from '@nestjs/common';
 import * as firebaseAdmin from 'firebase-admin';
 import { auth } from 'firebase-admin';
 import { Ticket, User } from '@tabify/entities';
+
+// please keep the user status enum in order of execution as they are used for calculations
+enum UserStatus { Selecting, Waiting, Confirmed, Paying, Paid }
+enum TicketStatus { Open, Closed }
 
 @Injectable()
 export class FirebaseService {
@@ -23,16 +27,27 @@ export class FirebaseService {
     const db = firebaseAdmin.firestore();
     const ticketsRef = db.collection('tickets').doc(`${ticket.id}`);
 
-    await ticketsRef.update({
-      users: firebaseAdmin.firestore.FieldValue.arrayUnion({
-        uid: user.uid,
-        name: user.displayName,
-      }),
-      uids: firebaseAdmin.firestore.FieldValue.arrayUnion(user.uid),
-    });
+    const ticketDoc = await ticketsRef.get();
+    const overallUsersProgress = ticketDoc.get('overallUsersProgress') as UserStatus;
+    const userUids = ticketDoc.get('uids') as string[];
+
+    if (!userUids.find( uid => uid === user.uid )) {
+      if (overallUsersProgress >= UserStatus.Paying) {
+        throw new ForbiddenException('The patrons of this tab have already selected their items and moved on to payment.');
+      }
+      await ticketsRef.update({
+        users: firebaseAdmin.firestore.FieldValue.arrayUnion({
+          uid: user.uid,
+          name: user.displayName,
+          status: UserStatus.Selecting,
+          photoUrl: null,
+        }),
+        uids: firebaseAdmin.firestore.FieldValue.arrayUnion(user.uid),
+      });
+    }
   }
 
-  async removeUserFromFirestoreTicket(ticket: Ticket, user: auth.UserRecord) {
+  async removeUserFromFirestoreTicket(ticket: Ticket, user: auth.UserRecord) { // currently not being called
     const db = firebaseAdmin.firestore();
     const ticketsRef = db.collection('tickets').doc(`${ticket.id}`);
 
@@ -57,6 +72,8 @@ export class FirebaseService {
         ticket_number: ticket.ticket_number,
         location: ticket.location.name,
         date_created: ticket.date_created,
+        status: TicketStatus.Open,
+        overallUsersProgress: UserStatus.Selecting,
         users: [],
         uids: [],
       }),
