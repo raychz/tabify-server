@@ -1,6 +1,6 @@
 import { Get, Controller, Query, Res, Post, Body, Put, Param } from '@nestjs/common';
 import { Response as ServerResponse } from 'express-serve-static-core';
-import { FirebaseService, FraudPreventionCodeService, TicketService } from '@tabify/services';
+import { FirebaseService, FraudPreventionCodeService, TicketService, OmnivoreService } from '@tabify/services';
 
 @Controller('ticket')
 export class TicketController {
@@ -8,6 +8,7 @@ export class TicketController {
     private readonly ticketService: TicketService,
     private readonly firebaseService: FirebaseService,
     private readonly fraudPreventionCodeService: FraudPreventionCodeService,
+    private omnivoreService: OmnivoreService,
   ) { }
 
   @Get()
@@ -86,6 +87,15 @@ export class TicketController {
         auth: { uid },
       },
     } = res;
+  }
+
+  /**
+   * Opens `numberOfTickets` demo tickets on Virtual POS, up to a max of 25 at a time
+   * @param numberOfTickets
+   */
+  @Post()
+  async openDemoTickets(@Param('numberOfTickets') numberOfTickets: number) {
+    return await this.omnivoreService.openDemoTickets(numberOfTickets);
   }
 
   @Put(':ticketId/closeTicket')
