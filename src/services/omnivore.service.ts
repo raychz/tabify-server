@@ -4,6 +4,7 @@ import fetch from 'node-fetch';
 import { ILocation, ITicket, ITicketItem, Location as LocationEntity } from '@tabify/entities';
 import { LocationService } from '@tabify/services';
 import { sleep } from '../utilities/general.utilities';
+import { ITicketServiceCharge } from '../entity/ticket-service-charge.entity';
 
 @Injectable()
 export class OmnivoreService {
@@ -116,6 +117,12 @@ export class OmnivoreService {
         sent: item.sent,
         sent_at: item.sent_at,
         split: item.split,
+      })),
+      service_charges: json._embedded.service_charges.map((service_charge: ITicketServiceCharge) => ({
+        omnivore_id: service_charge.id,
+        comment: service_charge.comment,
+        name: service_charge.name,
+        price: service_charge.price,
       })),
     };
     return ticket;

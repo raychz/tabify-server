@@ -11,6 +11,7 @@ import {
   OneToOne,
 } from 'typeorm';
 import { FraudPreventionCode, ILocation, ITicketItem, Location, Story, TicketItem, User } from '@tabify/entities';
+import { ITicketServiceCharge } from './ticket-service-charge.entity';
 
 export interface ITicket {
   id?: number;
@@ -22,6 +23,7 @@ export interface ITicket {
   date_modified?: Date;
   users?: User[];
   story?: Story;
+  service_charges: ITicketServiceCharge[];
 }
 
 export enum TicketStatus {
