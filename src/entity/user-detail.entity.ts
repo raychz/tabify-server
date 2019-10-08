@@ -6,17 +6,17 @@ export class UserDetail {
     @PrimaryGeneratedColumn()
     id!: number;
 
-    @Column({type: 'varchar', nullable: false})
+    @Column({ type: 'varchar', nullable: false })
     displayName!: string;
 
     @Column({ type: 'varchar', nullable: false })
     email!: string;
 
-    @Column({type: 'varchar', nullable: true})
+    @Column({ type: 'varchar', nullable: true })
     photo_url!: string;
 
     // Bi-directional one-to-one
-    @OneToOne(type => User, user => user.userDetail)
+    @OneToOne(type => User, user => user.userDetail, { onDelete: 'CASCADE' })
     @JoinColumn()
     user!: User;
 

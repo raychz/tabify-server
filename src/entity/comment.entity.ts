@@ -9,7 +9,7 @@ export class Comment {
     @Column({ type: 'varchar', nullable: false })
     text!: string;
 
-    @ManyToOne(type => Story, story => story.comments)
+    @ManyToOne(type => Story, story => story.comments, { onDelete: 'CASCADE' })
     story!: Story;
 
     @ManyToOne(type => User, user => user.comments)

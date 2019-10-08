@@ -60,10 +60,7 @@ export class Ticket implements ITicket {
   })
   fraudPreventionCodes!: FraudPreventionCode[];
 
-  // If a ticket is deleted, delete story. Not viceversa
-  @OneToOne(type => Story, story => story.ticket, {
-    onDelete: 'CASCADE',
-  })
+  @OneToOne(type => Story, story => story.ticket)
   story!: Story;
 
   @ManyToMany(type => User, user => user.tickets,
