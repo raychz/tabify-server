@@ -50,7 +50,7 @@
     "rxjs": "6",
     "rxjs-compat": "6",
     "socket.io": "^2.2.0",
-    "typeorm": "^0.2.7",
+    "typeorm": "^0.2.19",
     "typescript": "3.4.5"
   },
   "devDependencies": {
