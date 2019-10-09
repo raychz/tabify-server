@@ -2,7 +2,7 @@ import { Get, Controller, Query, Res, Post, Body, Put, Param } from '@nestjs/com
 import { Response as ServerResponse } from 'express-serve-static-core';
 import { FirebaseService, FraudPreventionCodeService, TicketService, OmnivoreService } from '@tabify/services';
 
-@Controller('ticket')
+@Controller('tickets')
 export class TicketController {
   constructor(
     private readonly ticketService: TicketService,
@@ -21,10 +21,11 @@ export class TicketController {
     } = res;
 
     if (!ticket_number || !location || !fraudPreventionCodeId) {
-      res.status(400);
-      res.send({
-        message: 'Missing ticket, location, or fraud prevention code',
-      });
+      res
+        .status(400)
+        .send({
+          message: 'Missing ticket, location, or fraud prevention code',
+        });
       return;
     }
 
