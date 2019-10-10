@@ -1,6 +1,6 @@
-import { Get, Controller, Query, Res, Post, Body, Put, Param } from '@nestjs/common';
-import { Response as ServerResponse } from 'express-serve-static-core';
+import { Get, Controller, Query, Res, Post, Body, Put, Param, BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { FirebaseService, FraudPreventionCodeService, TicketService, OmnivoreService } from '@tabify/services';
+import { User } from '../decorators/user.decorator';
 
 @Controller('tickets')
 export class TicketController {
@@ -12,83 +12,56 @@ export class TicketController {
   ) { }
 
   @Get()
-  async getTicket(@Res() res: ServerResponse, @Query() params: any) {
+  async getTicket(
+    @User('uid') uid: string,
+    @Query() params: any,
+  ) {
     const { ticket_number, location, fraudPreventionCodeId } = params;
-    const {
-      locals: {
-        auth: { uid },
-      },
-    } = res;
 
     if (!ticket_number || !location || !fraudPreventionCodeId) {
-      res
-        .status(400)
-        .send({
-          message: 'Missing ticket, location, or fraud prevention code',
-        });
-      return;
+      throw new BadRequestException('Missing ticket, location, or fraud prevention code');
     }
 
     const user = await this.firebaseService.getUserInfo(uid);
     const ticketObj = await this.ticketService.getTicket(
       location,
       ticket_number,
-      user,
     );
 
     if (!ticketObj || !ticketObj.id) {
-      res.status(500);
-      res.send({
-        message: 'There was an error getting your ticket',
-      });
-      return;
+      throw new InternalServerErrorException('There was an error while getting your ticket');
     }
 
     await this.fraudPreventionCodeService.addTicketNumberToCode(ticketObj.id, fraudPreventionCodeId);
 
-    res.send(ticketObj);
+    return ticketObj;
   }
 
   @Get('/items')
-  async getTicketItems(@Res() res: ServerResponse, @Query() params: any) {
+  async getTicketItems(
+    @User('uid') uid: string,
+    @Query() params: any,
+  ) {
     const { ticket_number, location } = params;
-    const {
-      locals: {
-        auth: { uid },
-      },
-    } = res;
 
     if (!ticket_number || !location) {
-      res.status(400);
-      res.send({
-        message: 'Missing ticket and/or Location',
-      });
-      return;
+      throw new BadRequestException('Missing ticket and/or location');
     }
 
     const ticketObj = await this.ticketService.getTicket(
       location,
       ticket_number,
-      uid,
     );
 
     if (!ticketObj) {
-      res.status(500);
-      res.send({
-        message: 'There was an error getting your ticket',
-      });
-      return;
+      throw new InternalServerErrorException('There was an error while getting your ticket items');
     }
-    res.send(ticketObj.items);
+    return ticketObj.items;
   }
 
-  async addTicketItem(@Res() res: ServerResponse) {
-    const {
-      locals: {
-        auth: { uid },
-      },
-    } = res;
-  }
+  async addTicketItem(
+    @User('uid') uid: string,
+  ) {}
 
   /**
    * Opens `numberOfTickets` demo tickets on Virtual POS, up to a max of 25 at a time
@@ -101,11 +74,11 @@ export class TicketController {
 
   @Put(':ticketId/closeTicket')
   async closeTicket(
-    @Res() res: ServerResponse,
+    @User('uid') uid: string,
     @Param('ticketId') ticketId: number,
   ) {
     const response = await this.ticketService.closeTicket(ticketId);
-    res.send(response);
+    return response;
   }
 
   // async removeTicketItem() {

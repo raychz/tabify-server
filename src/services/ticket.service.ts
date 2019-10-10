@@ -28,7 +28,6 @@ export class TicketService {
   async getTicket(
     omnivoreLocationId: string,
     ticket_number: string,
-    user: auth.UserRecord,
   ) {
     const ticketRepo = await getRepository(TicketEntity);
     const ticket = await ticketRepo.findOne({
@@ -36,27 +35,7 @@ export class TicketService {
       relations: ['items', 'location', 'users'],
     });
 
-    if (ticket) {
-      await this.firebaseService.addUserToFirestoreTicket(ticket, user);
-      return ticket;
-    } else {
-      try {
-        const ticketObj = await this.omnivoreService.getTicket(
-          omnivoreLocationId,
-          ticket_number,
-        );
-        const newTicket = await this.saveTicket(ticketObj, user.uid);
-
-        // Save new story
-        await this.storyService.saveStory(newTicket);
-
-        await this.firebaseService.addTicketToFirestore(newTicket);
-        await this.firebaseService.addUserToFirestoreTicket(newTicket, user);
-        return newTicket;
-      } catch (error) {
-        Logger.error(error.message);
-      }
-    }
+    return ticket;
   }
 
   /**

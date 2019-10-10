@@ -71,8 +71,7 @@ export class OmnivoreService {
   }
 
   /**
-   * @description Loads a single ticket from the omnivore api given
-   * a location id and ticket number
+   * Loads a single ticket from the Omnivore API given a location id and ticket number
    * @param omnivoreLocationId
    * @param ticket_number
    */

@@ -1,6 +1,6 @@
 import { Controller, Query, Res, Post, Param, Delete, Body, Get } from '@nestjs/common';
-import { Response as ServerResponse } from 'express-serve-static-core';
 import { CommentService } from '@tabify/services';
+import { User } from '../decorators/user.decorator';
 
 @Controller('stories/:storyId/comments')
 export class CommentController {
@@ -9,45 +9,29 @@ export class CommentController {
   ) { }
 
   @Get()
-  async getComments(
-    @Param('storyId') storyId: number,
-    @Res() res: ServerResponse) {
-
+  async getComments(@Param('storyId') storyId: number) {
     const comments = await this.commentService.readComments(storyId);
-    res.send(comments);
+    return comments;
   }
 
   @Post()
   async postComment(
+    @User('uid') uid: string,
     @Param('storyId') storyId: number,
     @Body('newComment') newComment: string,
-    @Res() res: ServerResponse) {
-    // get currently logged-in user
-    const {
-      locals: {
-        auth: { uid },
-      },
-    } = res;
-
+  ) {
     const response = await this.commentService.createComment(storyId, uid, newComment);
-
-    res.send(response);
+    return response;
   }
 
   @Delete(':commentId')
   async deleteComment(
+    @User('uid') uid: string,
     @Param('storyId') storyId: number,
     @Param('commentId') commentId: number,
-    @Res() res: ServerResponse) {
-    // get currently logged-in user
-    const {
-      locals: {
-        auth: { uid },
-      },
-    } = res;
-
+  ) {
     const response = await this.commentService.deleteComment(storyId, commentId, uid);
 
-    res.send(response);
+    return response;
   }
 }

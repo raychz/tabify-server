@@ -1,6 +1,6 @@
 import { Get, Controller, Query, Res, Post, Body, Param } from '@nestjs/common';
-import { Response as ServerResponse } from 'express-serve-static-core';
 import { StoryService } from '@tabify/services';
+import { User } from '../decorators/user.decorator';
 
 @Controller('stories')
 export class StoryController {
@@ -9,35 +9,31 @@ export class StoryController {
   ) { }
 
   @Get()
-  async getStories(@Res() res: ServerResponse, @Query() params: any) {
-    // get currently logged-in user
-    const {
-      locals: {
-        auth: { uid },
-      },
-    } = res;
-
+  async getStories(
+    @User('uid') uid: string,
+    @Query() params: any,
+  ) {
     const stories = await this.storyService.readStories(uid);
-    res.send(stories);
+    return stories;
   }
 
   @Get(':storyId')
   async getDetailedStory(
-    @Res() res: ServerResponse,
+    @User('uid') uid: string,
     @Param('storyId') storyId: number,
   ) {
 
     const story = await this.storyService.readDetailedStory(storyId);
-    res.send(story);
+    return story;
   }
 
   @Get(':storyId/likers')
   async getStoryLikers(
-    @Res() res: ServerResponse,
+    @User('uid') uid: string,
     @Param('storyId') storyId: number,
   ) {
 
     const likers = await this.storyService.getStoryLikers(storyId);
-    res.send(likers);
+    return likers;
   }
 }
