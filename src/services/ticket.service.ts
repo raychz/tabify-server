@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { getRepository, getConnection } from 'typeorm';
+import { getRepository, getConnection, FindOneOptions, FindConditions } from 'typeorm';
 import { auth } from 'firebase-admin';
 import { FirebaseService, OmnivoreService, StoryService } from '@tabify/services';
 import {
@@ -20,37 +20,29 @@ export class TicketService {
   ) { }
 
   /**
-   * Attemps to load a ticket from local database if exists,
-   * if not, fetch it from omnivore, add it to our database, then return ticket.
-   *
-   * This function also creates a new story, to be associated with a new ticket
+   * Attemps to load a ticket from local database if it exists
    */
   async getTicket(
-    omnivoreLocationId: string,
-    ticket_number: string,
+    where: FindConditions<TicketEntity>,
+    relations: string[] = ['items', 'location', 'users'],
   ) {
     const ticketRepo = await getRepository(TicketEntity);
     const ticket = await ticketRepo.findOne({
-      where: { locationId: omnivoreLocationId, ticket_number },
-      relations: ['items', 'location', 'users'],
+      where,
+      relations,
     });
 
     return ticket;
   }
 
   /**
-   * Saves the ticket then return the ticket object
+   * Creates the ticket then returns the ticket object
    * @param ticket
    */
-  async saveTicket(ticket: ITicket, uid: string): Promise<TicketEntity> {
+  async createTicket(ticket: ITicket): Promise<TicketEntity> {
     const ticketRepo = await getRepository(TicketEntity);
 
-    // Add current user to ticket
-    const user = new UserEntity();
-    user.uid = uid;
-
     const nTicket = new TicketEntity();
-    nTicket.users = [user];
     nTicket.location = ticket.location;
     nTicket.ticket_number = ticket.ticket_number;
     nTicket.tab_id = ticket.tab_id;

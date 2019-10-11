@@ -1,4 +1,4 @@
-import { Injectable, HttpStatus } from '@nestjs/common';
+import { Injectable, HttpStatus, NotFoundException, BadGatewayException, InternalServerErrorException } from '@nestjs/common';
 import { getManager, EntityManager, getRepository } from 'typeorm';
 import fetch from 'node-fetch';
 import { ILocation, ITicket, ITicketItem, Location as LocationEntity } from '@tabify/entities';
@@ -75,10 +75,10 @@ export class OmnivoreService {
    * @param omnivoreLocationId
    * @param ticket_number
    */
-  async getTicket(omnivoreLocationId: string, ticketNumber: string): Promise<ITicket> {
+  async getTicket(locationId: number, ticketNumber: number): Promise<ITicket> {
     const location = await this.locationService.getLocation({
       where: {
-        omnivore_id: omnivoreLocationId,
+        id: locationId,
       },
     }) as ILocation;
 
@@ -90,23 +90,38 @@ export class OmnivoreService {
       'Content-Type': 'application/json',
       'Api-Key': process.env.OMNIVORE_API_KEY || '',
     };
-
-    const url = `${
-      OmnivoreService.API_URL
-      }/locations/${omnivoreLocationId}/tickets/${ticketNumber}`;
-
+    // Omnivore query args used here. See https://panel.omnivore.io/docs/api/1.0/queries
+    const where = `and(eq(open,true),eq(ticket_number,${ticketNumber}))`;
+    const fields = `totals,ticket_number,@items(price,name,quantity,comment,sent,sent_at,split)`;
+    const url = `${OmnivoreService.API_URL}/locations/${location.omnivore_id}/tickets?where=${where}&fields=${fields}`;
     const res = await fetch(url, { headers });
     const json = await res.json();
 
-    if (this.hasError(json) || res.status !== HttpStatus.OK) {
-      throw Error('Failed fetching ticket from source');
+    if (res.status === HttpStatus.NOT_FOUND) {
+      throw new NotFoundException('The ticket could not be found in Omnivore.');
     }
 
+    if (this.hasError(json) || res.status !== HttpStatus.OK) {
+      throw new BadGatewayException('Failed fetching ticket from source');
+    }
+
+    const { _embedded: { tickets } } = json;
+
+    if (tickets.length > 1) {
+      throw new InternalServerErrorException('Multiple open tickets correspond to this ticket number.');
+    }
+
+    if (tickets.length === 0) {
+      throw new InternalServerErrorException('No open tickets correspond to this ticket number.');
+    }
+
+    const [ customerTicket ] = tickets;
+
     const ticket: ITicket = {
-      tab_id: json.id,
+      tab_id: customerTicket.id,
       location,
-      ticket_number: json.ticket_number,
-      items: json._embedded.items.map((item: ITicketItem) => ({
+      ticket_number: customerTicket.ticket_number,
+      items: customerTicket._embedded.items.map((item: ITicketItem) => ({
         ticket_item_id: item.id,
         name: item.name,
         comment: item.comment,

@@ -9,6 +9,7 @@ import {
   JoinTable,
   ManyToOne,
   OneToOne,
+  Index,
 } from 'typeorm';
 import { FraudPreventionCode, ILocation, ITicketItem, Location, Story, TicketItem, User } from '@tabify/entities';
 
@@ -30,7 +31,7 @@ export enum TicketStatus {
 }
 
 @Entity()
-@Unique(['ticket_number', 'tab_id', 'location'])
+@Unique(['tab_id', 'location'])
 export class Ticket implements ITicket {
   @PrimaryGeneratedColumn()
   id?: number;
@@ -70,6 +71,7 @@ export class Ticket implements ITicket {
   @JoinTable()
   users!: User[];
 
+  @Index()
   @Column({
     type: 'enum',
     enum: TicketStatus,
