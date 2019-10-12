@@ -23,9 +23,9 @@ export class FirebaseService {
     }
   }
 
-  async addUserToFirestoreTicket(ticket: Ticket, user: auth.UserRecord) {
+  async addUserToFirestoreTicket(ticketId: number, user: auth.UserRecord) {
     const db = firebaseAdmin.firestore();
-    const ticketsRef = db.collection('tickets').doc(`${ticket.id}`);
+    const ticketsRef = db.collection('tickets').doc(`${ticketId}`);
 
     const ticketDoc = await ticketsRef.get();
     const overallUsersProgress = ticketDoc.get('overallUsersProgress') as UserStatus;

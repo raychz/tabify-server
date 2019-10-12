@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { getRepository, getConnection, FindOneOptions, FindConditions } from 'typeorm';
 import { auth } from 'firebase-admin';
 import { FirebaseService, OmnivoreService, StoryService } from '@tabify/services';
@@ -16,7 +16,6 @@ export class TicketService {
   constructor(
     private readonly omnivoreService: OmnivoreService,
     private readonly firebaseService: FirebaseService,
-    private storyService: StoryService,
   ) { }
 
   /**
@@ -77,9 +76,20 @@ export class TicketService {
   }
 
   /**
-   * Add user to existing ticket
+   * Add user to existing database ticket
    */
-  // async addUserToTicket(ticket: ITicket): Promise<TicketEntity> {
-
-  // }
+  async addUserToDatabaseTicket(ticketId: number, uid: string) {
+    try {
+      await getConnection()
+        .createQueryBuilder()
+        .relation(TicketEntity, 'users')
+        .of(ticketId)
+        .add(uid);
+    } catch (e) {
+      const { code } = e;
+      if (code !== 'ER_DUP_ENTRY') {
+        throw new BadRequestException('An unknown error occurred. Please try again.', e);
+      }
+    }
+  }
 }
