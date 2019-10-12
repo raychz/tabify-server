@@ -91,7 +91,7 @@ export class OmnivoreService {
       'Api-Key': process.env.OMNIVORE_API_KEY || '',
     };
     // Omnivore query args used here. See https://panel.omnivore.io/docs/api/1.0/queries
-    const where = `and(eq(open,true),eq(ticket_number,${ticketNumber}))`;
+    const where = `and(eq(open,true),eq(ticket_number,${encodeURIComponent(String(ticketNumber))}))`;
     const fields = `totals,ticket_number,@items(price,name,quantity,comment,sent,sent_at,split)`;
     const url = `${OmnivoreService.API_URL}/locations/${location.omnivore_id}/tickets?where=${where}&fields=${fields}`;
     const res = await fetch(url, { headers });
@@ -112,10 +112,10 @@ export class OmnivoreService {
     }
 
     if (tickets.length === 0) {
-      throw new InternalServerErrorException('No open tickets correspond to this ticket number.');
+      throw new NotFoundException('No open tickets correspond to this ticket number.');
     }
 
-    const [ customerTicket ] = tickets;
+    const [customerTicket] = tickets;
 
     const ticket: ITicket = {
       tab_id: customerTicket.id,
