@@ -1,4 +1,4 @@
-import { Injectable, HttpStatus, NotFoundException, BadGatewayException, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, HttpStatus, NotFoundException, BadGatewayException, InternalServerErrorException, UnprocessableEntityException } from '@nestjs/common';
 import { getManager, EntityManager, getRepository } from 'typeorm';
 import fetch from 'node-fetch';
 import { ILocation, ITicketItem, Location as LocationEntity, Ticket } from '@tabify/entities';
@@ -116,6 +116,11 @@ export class OmnivoreService {
     }
 
     const [customerTicket] = tickets;
+
+    // Temporarily disable this check while Omnivore resolves a ticket/service charge creation bug
+    // if (customerTicket.totals.service_charges > 0 || customerTicket.totals.other_charges > 0) {
+    //   throw new UnprocessableEntityException('Tickets with service/other charges are not currently supported.');
+    // }
 
     const ticket: Ticket = {
       tab_id: customerTicket.id,
