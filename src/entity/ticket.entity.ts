@@ -10,20 +10,10 @@ import {
   ManyToOne,
   OneToOne,
   Index,
+  UpdateDateColumn,
 } from 'typeorm';
 import { FraudPreventionCode, ILocation, ITicketItem, Location, Story, TicketItem, User } from '@tabify/entities';
-
-export interface ITicket {
-  id?: number;
-  tab_id: number;
-  ticket_number: number;
-  location: ILocation;
-  items: ITicketItem[];
-  date_created?: Date;
-  date_modified?: Date;
-  users?: User[];
-  story?: Story;
-}
+import { TicketTotal } from './ticket-total.entity';
 
 export enum TicketStatus {
   OPEN = 'open',
@@ -32,7 +22,7 @@ export enum TicketStatus {
 
 @Entity()
 @Unique(['tab_id', 'location'])
-export class Ticket implements ITicket {
+export class Ticket {
   @PrimaryGeneratedColumn()
   id?: number;
 
@@ -51,25 +41,25 @@ export class Ticket implements ITicket {
   items!: TicketItem[];
 
   @CreateDateColumn()
-  date_created!: Date;
+  date_created?: Date;
 
-  @CreateDateColumn()
-  date_modified!: Date;
+  @UpdateDateColumn()
+  date_modified?: Date;
 
   @OneToMany(type => FraudPreventionCode, fraudPreventionCode => fraudPreventionCode.id, {
     cascade: true,
   })
-  fraudPreventionCodes!: FraudPreventionCode[];
+  fraudPreventionCodes?: FraudPreventionCode[];
 
   @OneToOne(type => Story, story => story.ticket)
-  story!: Story;
+  story?: Story;
 
   @ManyToMany(type => User, user => user.tickets,
     {
       cascade: true,
     })
   @JoinTable()
-  users!: User[];
+  users?: User[];
 
   @Index()
   @Column({
@@ -77,5 +67,8 @@ export class Ticket implements ITicket {
     enum: TicketStatus,
     default: TicketStatus.OPEN,
   })
-  ticket_status!: TicketStatus;
+  ticket_status?: TicketStatus;
+
+  @OneToOne(type => TicketTotal, ticketTotal => ticketTotal.ticket, { cascade: true })
+  ticketTotal?: TicketTotal;
 }

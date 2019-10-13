@@ -4,7 +4,6 @@ import { auth } from 'firebase-admin';
 import { FirebaseService, OmnivoreService, StoryService } from '@tabify/services';
 import {
   ITicketItem,
-  ITicket,
   Ticket as TicketEntity,
   TicketItem as TicketItemEntity,
   User as UserEntity,
@@ -38,26 +37,9 @@ export class TicketService {
    * Creates the ticket then returns the ticket object
    * @param ticket
    */
-  async createTicket(ticket: ITicket): Promise<TicketEntity> {
+  async createTicket(ticket: TicketEntity): Promise<TicketEntity> {
     const ticketRepo = await getRepository(TicketEntity);
-
-    const nTicket = new TicketEntity();
-    nTicket.location = ticket.location;
-    nTicket.ticket_number = ticket.ticket_number;
-    nTicket.tab_id = ticket.tab_id;
-    nTicket.ticket_status = TicketStatus.OPEN;
-
-    const ticketItems = ticket.items.map((item: ITicketItem) => {
-      const ticketItem = new TicketItemEntity();
-      ticketItem.name = item.name;
-      // ticketItem.ticket = nTicket;
-      ticketItem.price = item.price;
-      ticketItem.quantity = item.quantity;
-      ticketItem.ticket_item_id = item.ticket_item_id;
-      return ticketItem;
-    });
-    nTicket.items = ticketItems;
-    return await ticketRepo.save(nTicket);
+    return await ticketRepo.save(ticket);
   }
 
   /**

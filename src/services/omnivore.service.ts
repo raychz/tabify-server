@@ -1,7 +1,7 @@
 import { Injectable, HttpStatus, NotFoundException, BadGatewayException, InternalServerErrorException } from '@nestjs/common';
 import { getManager, EntityManager, getRepository } from 'typeorm';
 import fetch from 'node-fetch';
-import { ILocation, ITicket, ITicketItem, Location as LocationEntity } from '@tabify/entities';
+import { ILocation, ITicketItem, Location as LocationEntity, Ticket } from '@tabify/entities';
 import { LocationService } from '@tabify/services';
 import { sleep } from '../utilities/general.utilities';
 
@@ -75,7 +75,7 @@ export class OmnivoreService {
    * @param omnivoreLocationId
    * @param ticket_number
    */
-  async getTicket(locationId: number, ticketNumber: number): Promise<ITicket> {
+  async getTicket(locationId: number, ticketNumber: number): Promise<Ticket> {
     const location = await this.locationService.getLocation({
       where: {
         id: locationId,
@@ -117,7 +117,7 @@ export class OmnivoreService {
 
     const [customerTicket] = tickets;
 
-    const ticket: ITicket = {
+    const ticket: Ticket = {
       tab_id: customerTicket.id,
       location,
       ticket_number: customerTicket.ticket_number,
@@ -131,6 +131,18 @@ export class OmnivoreService {
         sent_at: item.sent_at,
         split: item.split,
       })),
+      ticketTotal: {
+        discounts: customerTicket.totals.discounts,
+        due: customerTicket.totals.due,
+        items: customerTicket.totals.items,
+        other_charges: customerTicket.totals.other_charges,
+        paid: customerTicket.totals.paid,
+        service_charges: customerTicket.totals.service_charges,
+        sub_total: customerTicket.totals.sub_total,
+        tax: customerTicket.totals.tax,
+        tips: customerTicket.totals.tips,
+        total: customerTicket.totals.total,
+      },
     };
     return ticket;
   }
