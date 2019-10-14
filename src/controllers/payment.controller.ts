@@ -1,13 +1,14 @@
 import { Get, Controller, Body, Param, Post, Delete, Res } from '@nestjs/common';
-import { PaymentMethodService, SpreedlyService, TicketService } from '@tabify/services';
+import { PaymentMethodService, SpreedlyService, TicketService, LocationService } from '@tabify/services';
 import { User } from '../decorators/user.decorator';
 
-@Controller('payment')
+@Controller('tickets/:ticketId/payments')
 export class PaymentController {
   constructor(
     private readonly paymentService: PaymentMethodService,
     private readonly spreedlyService: SpreedlyService,
     private readonly ticketService: TicketService,
+    private readonly locationService: LocationService,
   ) { }
 
   /**
@@ -17,29 +18,24 @@ export class PaymentController {
   @Post()
   async makePayment(
     @User('uid') uid: string,
-    @Body('ticketId') ticketId: string,
+    @Param('ticketId') ticketId: number,
     @Body('paymentMethodId') paymentMethodId: number,
     @Body('amount') amount: number,
     @Body('tip') tip: number,
   ) {
+    const paymentMethod = await this.paymentService.readPaymentMethod(uid, paymentMethodId);
+    const { token } = paymentMethod!;
+    const ticket = await this.ticketService.getTicket({ id: ticketId }, ['location']);
+    const { location: { omnivore_id: omnivoreLocationId }, tab_id: omnivoreTicketId } = ticket!;
 
-    console.log({
-      ticketId,
-      paymentMethodId,
+    const spreedlyResponse = await this.spreedlyService.sendPayment(
+      omnivoreLocationId,
+      omnivoreTicketId,
+      token,
       amount,
       tip,
-    });
+    );
 
-    // const ticket = await this.ticketService.getTicket()
-    const paymentMethod = await this.paymentService.readPaymentMethod(uid, paymentMethodId);
-    console.log('GIVEN PAYMENT METHOD', paymentMethod);
-    // return this.spreedlyService.sendPayment(
-    //   location,
-    //   ticketId,
-    //   paymentMethodId,
-    //   amount,
-    //   tip,
-    // );
-    return paymentMethod;
+    return spreedlyResponse;
   }
 }

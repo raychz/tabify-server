@@ -119,10 +119,10 @@ export class TicketController {
     return await this.omnivoreService.openDemoTickets(numberOfTickets);
   }
 
-  @Put(':ticketId/closeTicket')
+  @Put(':id/closeTicket')
   async closeTicket(
     @User('uid') uid: string,
-    @Param('ticketId') ticketId: number,
+    @Param('id') ticketId: number,
   ) {
     const response = await this.ticketService.closeTicket(ticketId);
     return response;

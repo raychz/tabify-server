@@ -10,7 +10,7 @@ export class PaymentMethodService {
 
     async readPaymentMethod(uid: string, paymentMethodId: number) {
         const paymentMethodRepo = await getRepository(PaymentMethodEntity);
-        return await paymentMethodRepo.find({ where: { user: { uid }, id: paymentMethodId } });
+        return await paymentMethodRepo.findOne({ where: { user: { uid }, id: paymentMethodId } });
     }
 
     async readPaymentMethods(uid: string) {
