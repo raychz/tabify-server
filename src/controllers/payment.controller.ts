@@ -5,7 +5,7 @@ import { User } from '../decorators/user.decorator';
 @Controller('tickets/:ticketId/payments')
 export class PaymentController {
   constructor(
-    private readonly paymentService: PaymentMethodService,
+    private readonly paymentMethodService: PaymentMethodService,
     private readonly spreedlyService: SpreedlyService,
     private readonly ticketService: TicketService,
     private readonly locationService: LocationService,
@@ -23,7 +23,7 @@ export class PaymentController {
     @Body('amount') amount: number,
     @Body('tip') tip: number,
   ) {
-    const paymentMethod = await this.paymentService.readPaymentMethod(uid, paymentMethodId);
+    const paymentMethod = await this.paymentMethodService.readPaymentMethod(uid, paymentMethodId);
     const { token } = paymentMethod!;
     const ticket = await this.ticketService.getTicket({ id: ticketId }, ['location']);
     const { location: { omnivore_id: omnivoreLocationId }, tab_id: omnivoreTicketId } = ticket!;
