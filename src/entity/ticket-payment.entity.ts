@@ -26,15 +26,25 @@ export class TicketPayment {
     @UpdateDateColumn()
     date_updated?: Date;
 
-    /** Corresponds to the Spreedly transaction message */
+    @Column({ type: 'int' })
+    amount?: number;
+
+    @Column({ type: 'int' })
+    tip?: number;
+
+    /** Spreedly transaction message */
     @Column({ type: 'varchar' })
     message?: string;
 
-    /** Corresponds to Omnivore's response to Spreedly's payment method delivery */
+    /** Omnivore's payment id */
+    @Column({ type: 'varchar' })
+    omnivore_id?: string;
+
+    /** Omnivore's response to Spreedly's payment method delivery */
     @Column({ type: 'simple-json' })
     omnivore_response?: string;
 
-    /** Corresponds to the Spreedly transaction token */
+    /** Spreedly transaction token */
     @Column({ type: 'varchar' })
     transaction_token?: string;
 

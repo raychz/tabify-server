@@ -1,7 +1,7 @@
+import { Ticket } from '@tabify/entities';
+
 export interface TicketPaymentInterface {
-    omnivoreLocationId: string;
-    omnivoreTicketId: string;
-    ticketId: number;
+    ticket: Ticket;
     paymentMethodToken: string;
     amount: number;
     tip: number;

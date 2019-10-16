@@ -70,7 +70,7 @@ export class FirebaseService {
       this.toPlainObject({
         tab_id: ticket.tab_id,
         ticket_number: ticket.ticket_number,
-        location: ticket.location.name,
+        location: ticket.location!.name,
         date_created: ticket.date_created,
         status: TicketStatus.Open,
         overallUsersProgress: UserStatus.Selecting,
@@ -79,7 +79,7 @@ export class FirebaseService {
       }),
     );
 
-    ticket.items.forEach((item: any) => {
+    ticket.items!.forEach((item: any) => {
       const ticketItemsRef = ticketsRef
         .collection('ticketItems')
         .doc(`${item.id}`);

@@ -1,7 +1,7 @@
 import { Injectable, HttpStatus, NotFoundException, BadGatewayException, InternalServerErrorException, UnprocessableEntityException } from '@nestjs/common';
-import { getManager, EntityManager, getRepository } from 'typeorm';
+import { getManager, EntityManager } from 'typeorm';
 import fetch from 'node-fetch';
-import { ILocation, ITicketItem, Location as LocationEntity, Ticket } from '@tabify/entities';
+import { ITicketItem, Location as LocationEntity, Ticket } from '@tabify/entities';
 import { LocationService } from '@tabify/services';
 import { sleep } from '../utilities/general.utilities';
 
@@ -11,7 +11,7 @@ export class OmnivoreService {
 
   constructor(private locationService: LocationService) { }
 
-  async getLocations(): Promise<ILocation[]> {
+  async getLocations(): Promise<LocationEntity[]> {
     const headers = {
       'Content-Type': 'application/json',
       'Api-Key': process.env.OMNIVORE_API_KEY || '',
@@ -26,7 +26,7 @@ export class OmnivoreService {
     }
 
     return (json._embedded.locations as Array<any>).map(
-      (location: any): ILocation => ({
+      (location: any): LocationEntity => ({
         name: location.name,
         longitude: location.longitude,
         latitude: location.latitude,
@@ -59,7 +59,7 @@ export class OmnivoreService {
         .insert()
         .orIgnore()
         .into(LocationEntity)
-        .values(locations.map(location => new LocationEntity(location)))
+        .values(locations)
         // .onConflict(`("omnivore_id") DO NOTHING`)
         .execute();
       try {
@@ -80,7 +80,7 @@ export class OmnivoreService {
       where: {
         id: locationId,
       },
-    }) as ILocation;
+    });
 
     if (!location) {
       throw Error('Location not found');
@@ -117,10 +117,10 @@ export class OmnivoreService {
 
     const [customerTicket] = tickets;
 
-    // Temporarily disable this check while Omnivore resolves a ticket/service charge creation bug
-    // if (customerTicket.totals.service_charges > 0 || customerTicket.totals.other_charges > 0) {
-    //   throw new UnprocessableEntityException('Tickets with service/other charges are not currently supported.');
-    // }
+    // TODO: Support tickets with service/other charges
+    if (location.omnivore_id !== 'i8yBgkjT' && customerTicket.totals.service_charges > 0 || customerTicket.totals.other_charges > 0) {
+      throw new UnprocessableEntityException('Tickets with service/other charges are not currently supported.');
+    }
 
     const ticket: Ticket = {
       tab_id: customerTicket.id,
