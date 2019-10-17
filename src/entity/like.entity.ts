@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, ManyToOne, Unique } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, ManyToOne, Unique } from 'typeorm';
 import { Story, User } from '@tabify/entities';
 
 @Entity()
