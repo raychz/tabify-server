@@ -58,6 +58,9 @@ export class Location {
   @Column({ type: 'varchar', nullable: true })
   google_place_id?: string;
 
+  @Column({ type: 'float', nullable: true })
+  tax_rate?: number;
+
   @OneToMany(type => Ticket, ticket => ticket.location)
   tickets!: Ticket[];
 
