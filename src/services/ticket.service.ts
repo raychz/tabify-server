@@ -22,7 +22,7 @@ export class TicketService {
    */
   async getTicket(
     where: FindConditions<TicketEntity>,
-    relations: string[] = ['items', 'location', 'users'],
+    relations: string[],
   ) {
     const ticketRepo = await getRepository(TicketEntity);
     const ticket = await ticketRepo.findOne({

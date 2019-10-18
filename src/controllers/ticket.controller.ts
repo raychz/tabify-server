@@ -23,7 +23,7 @@ export class TicketController {
       throw new BadRequestException('Missing ticket number and/or location');
     }
 
-    const ticket = await this.ticketService.getTicket(params);
+    const ticket = await this.ticketService.getTicket(params, ['items', 'location', 'users', 'ticketTotal']);
 
     if (!ticket) {
       throw new NotFoundException('The requested ticket could not be found.');
@@ -97,7 +97,7 @@ export class TicketController {
     }
 
     const ticketObj = await this.ticketService.getTicket(
-      { ticket_number, location },
+      { ticket_number, location }, ['items'],
     );
 
     if (!ticketObj) {
