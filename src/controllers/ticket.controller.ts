@@ -73,6 +73,15 @@ export class TicketController {
     await this.firebaseService.addUserToFirestoreTicket(ticketId, user);
   }
 
+  /** Finalize totals for each user on Firestore */
+  @Post(':id/finalizeTotals')
+  async finalizeTotals(
+    @User('uid') uid: string,
+    @Param('id') ticketId: number,
+  ) {
+    return await this.firebaseService.finalizeUserTotals(ticketId);
+  }
+
   /** Add ticket number to fraud code */
   @Post(':id/fraudCode')
   async addTicketNumberToCode(

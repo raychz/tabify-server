@@ -106,10 +106,15 @@ export class TicketPaymentService {
     /*
     TODO: Remove this hack once Omnivore has fixed on their end.
     Omnivore's test tickets always include a service charge fee of $5. This hack will check for the service fee
-    and close the ticket if it is the only item due
+    and submit a $5 payment if it is the only item due
     */
-    if (details.ticket.location!.omnivore_id === 'i8yBgkjT' && responseTicket.totals.due === 500 && responseTicket.service_charges === 500) {
-      await this.ticketService.closeTicket(details.ticket.id!);
+    if (details.ticket.location!.omnivore_id === 'i8yBgkjT' && responseTicket.totals.due === 500 && responseTicket.totals.service_charges === 500) {
+      await this.sendTicketPayment(uid, {
+        amount: 500,
+        paymentMethodToken: details.paymentMethodToken,
+        ticket: details.ticket,
+        tip: details.tip,
+      });
     }
 
     // Get updated ticket total and join with the ticket
