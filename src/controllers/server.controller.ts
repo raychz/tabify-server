@@ -1,6 +1,6 @@
 import { Get, Controller, Res, Param } from '@nestjs/common';
-import { Response as ServerResponse } from 'express-serve-static-core';
 import { ServerService } from '@tabify/services';
+import { User } from '../decorators/user.decorator';
 
 @Controller('server')
 export class ServerController {
@@ -10,10 +10,10 @@ export class ServerController {
 
     @Get('getServerByRefCode/:refCode')
     async getUserInfo(
-        @Res() res: ServerResponse,
+        @User('uid') uid: string,
         @Param('refCode') refCode: string,
     ) {
         const server = await this.serverService.getServerByRefCode(refCode);
-        res.send(server);
+        return server;
     }
 }

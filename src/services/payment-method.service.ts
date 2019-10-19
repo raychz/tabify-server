@@ -5,8 +5,13 @@ import { PaymentMethod as IPaymentMethod } from '../interfaces/spreedly-api';
 import { SpreedlyService } from './spreedly.service';
 
 @Injectable()
-export class PaymentService {
+export class PaymentMethodService {
     constructor(private spreedlyService: SpreedlyService) { }
+
+    async readPaymentMethod(uid: string, paymentMethodId: number) {
+        const paymentMethodRepo = await getRepository(PaymentMethodEntity);
+        return await paymentMethodRepo.findOne({ where: { user: { uid }, id: paymentMethodId } });
+    }
 
     async readPaymentMethods(uid: string) {
         const paymentMethodRepo = await getRepository(PaymentMethodEntity);

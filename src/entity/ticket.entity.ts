@@ -9,20 +9,10 @@ import {
   JoinTable,
   ManyToOne,
   OneToOne,
+  Index,
+  UpdateDateColumn,
 } from 'typeorm';
-import { FraudPreventionCode, ILocation, ITicketItem, Location, Story, TicketItem, User } from '@tabify/entities';
-
-export interface ITicket {
-  id?: number;
-  tab_id: number;
-  ticket_number: number;
-  location: ILocation;
-  items: ITicketItem[];
-  date_created?: Date;
-  date_modified?: Date;
-  users?: User[];
-  story?: Story;
-}
+import { FraudPreventionCode, Location, Story, TicketItem, TicketTotal, TicketPayment, User } from '@tabify/entities';
 
 export enum TicketStatus {
   OPEN = 'open',
@@ -30,50 +20,59 @@ export enum TicketStatus {
 }
 
 @Entity()
-@Unique(['ticket_number', 'tab_id', 'location'])
-export class Ticket implements ITicket {
+@Unique(['tab_id', 'location'])
+export class Ticket {
   @PrimaryGeneratedColumn()
   id?: number;
 
-  @Column({ type: 'int', nullable: false })
-  tab_id!: number;
+  @Column({ type: 'varchar', nullable: false })
+  tab_id?: string;
 
   @Column({ type: 'int', nullable: false })
-  ticket_number!: number;
+  ticket_number?: number;
 
   @ManyToOne(type => Location, location => location.tickets)
-  location!: Location;
+  location?: Location;
 
   @OneToMany(type => TicketItem, (item: TicketItem) => item.ticket, {
     cascade: true,
   })
-  items!: TicketItem[];
+  items?: TicketItem[];
 
   @CreateDateColumn()
-  date_created!: Date;
+  date_created?: Date;
 
-  @CreateDateColumn()
-  date_modified!: Date;
+  @UpdateDateColumn()
+  date_modified?: Date;
 
   @OneToMany(type => FraudPreventionCode, fraudPreventionCode => fraudPreventionCode.id, {
     cascade: true,
   })
-  fraudPreventionCodes!: FraudPreventionCode[];
+  fraudPreventionCodes?: FraudPreventionCode[];
 
   @OneToOne(type => Story, story => story.ticket)
-  story!: Story;
+  story?: Story;
 
   @ManyToMany(type => User, user => user.tickets,
     {
       cascade: true,
     })
   @JoinTable()
-  users!: User[];
+  users?: User[];
 
+  @Index()
   @Column({
     type: 'enum',
     enum: TicketStatus,
     default: TicketStatus.OPEN,
   })
-  ticket_status!: TicketStatus;
+  ticket_status?: TicketStatus;
+
+  @OneToOne(type => TicketTotal, ticketTotal => ticketTotal.ticket, { cascade: true })
+  ticketTotal?: TicketTotal;
+
+  @OneToMany(type => TicketPayment, (payment: TicketPayment) => payment.ticket, {
+    cascade: true,
+  })
+  ticketPayments?: TicketPayment[];
 }

@@ -1,62 +1,41 @@
-import { Get, Controller, Res, Post, Headers, Body } from '@nestjs/common';
-import { Response as ServerResponse } from 'express-serve-static-core';
+import { Get, Controller, Res, Post, Headers, Body, InternalServerErrorException } from '@nestjs/common';
 import { getRepository } from 'typeorm';
 import { User as UserEntity } from '@tabify/entities';
 import { FirebaseService, UserService } from '@tabify/services';
+import { User } from '../decorators/user.decorator';
 
 @Controller('user')
 export class UserController {
   constructor(
     private readonly firService: FirebaseService,
     private readonly userService: UserService,
-    ) {}
+  ) { }
 
   /**
    * Returns the user info based on authenticated user, uid
    * should be passed from auth middleware
    */
   @Get()
-  async getUserInfo(@Res() res: ServerResponse) {
-    const { uid } = res.locals.auth;
-    res.send(this.firService.getUserInfo(uid)); // HMrwQHUTTTasdYSscKNwee6PmS63
+  async getUserInfo(
+    @User('uid') uid: string,
+  ) {
+    return this.firService.getUserInfo(uid);
   }
-
-  // Vulnerability!
-  // @Get(':uid')
-  // async getUserById(@Param('uid') uid: string): Promise<auth.UserRecord> {
-  //   return this.firService.getUserInfo(uid);
-  // }
 
   /**
    * Adds a user uid to the database if does not exist.
    */
   @Post()
   async saveUser(
-    @Res() res: ServerResponse,
+    @User('uid') uid: string,
     @Headers('authorization') authorization: string,
     @Body() referralCode: string,
   ) {
-    if (!authorization) {
-      return res.status(401).send({
-        message: 'Missing Authorization header.',
-      });
-    }
-    const uid = await this.firService.getUidFromToken(authorization);
-    if (!uid) {
-      return res.status(401).send({
-        message: 'Missing User ID.',
-      });
-    }
-
     const user = await this.firService
-      .getUserInfo(uid)
-      .catch(() => res.status(400));
+      .getUserInfo(uid);
 
     if (!user) {
-      res.send({
-        message: 'User does not exist.',
-      });
-      return;
+      throw new InternalServerErrorException('This user does not exist in Firebase.');
     }
 
     const userRepo = await getRepository(UserEntity);
@@ -65,16 +44,15 @@ export class UserController {
     // save user details
     const savedUserDetails = await this.userService.createUserDetails(user, referralCode);
 
-    res.send(savedUserDetails);
+    return savedUserDetails;
   }
 
   /**
    * Returns userDetails from DB, if they exist
    */
   @Get('/userDetails')
-  async getUserDetailsFromDB(@Res() res: ServerResponse) {
-    const { uid } = res.locals.auth;
+  async getUserDetailsFromDB(@User('uid') uid: string) {
     const userDetails = await this.userService.getUserDetails(uid);
-    res.send(userDetails);
+    return userDetails;
   }
 }

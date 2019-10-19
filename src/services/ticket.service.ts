@@ -1,10 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { getRepository, getConnection } from 'typeorm';
+import { Injectable, Logger, BadRequestException } from '@nestjs/common';
+import { getRepository, getConnection, FindOneOptions, FindConditions } from 'typeorm';
 import { auth } from 'firebase-admin';
 import { FirebaseService, OmnivoreService, StoryService } from '@tabify/services';
 import {
   ITicketItem,
-  ITicket,
   Ticket as TicketEntity,
   TicketItem as TicketItemEntity,
   User as UserEntity,
@@ -16,78 +15,31 @@ export class TicketService {
   constructor(
     private readonly omnivoreService: OmnivoreService,
     private readonly firebaseService: FirebaseService,
-    private storyService: StoryService,
   ) { }
 
   /**
-   * Attemps to load a ticket from local database if exists,
-   * if not, fetch it from omnivore, add it to our database, then return ticket.
-   *
-   * This function also creates a new story, to be associated with a new ticket
+   * Attemps to load a ticket from local database if it exists
    */
   async getTicket(
-    omnivoreLocationId: string,
-    ticket_number: string,
-    user: auth.UserRecord,
+    where: FindConditions<TicketEntity>,
+    relations: string[],
   ) {
     const ticketRepo = await getRepository(TicketEntity);
     const ticket = await ticketRepo.findOne({
-      where: { locationId: omnivoreLocationId, ticket_number },
-      relations: ['items', 'location', 'users'],
+      where,
+      relations,
     });
 
-    if (ticket) {
-      await this.firebaseService.addUserToFirestoreTicket(ticket, user);
-      return ticket;
-    } else {
-      try {
-        const ticketObj = await this.omnivoreService.getTicket(
-          omnivoreLocationId,
-          ticket_number,
-        );
-        const newTicket = await this.saveTicket(ticketObj, user.uid);
-
-        // Save new story
-        await this.storyService.saveStory(newTicket);
-
-        await this.firebaseService.addTicketToFirestore(newTicket);
-        await this.firebaseService.addUserToFirestoreTicket(newTicket, user);
-        return newTicket;
-      } catch (error) {
-        Logger.error(error.message);
-      }
-    }
+    return ticket;
   }
 
   /**
-   * Saves the ticket then return the ticket object
+   * Creates the ticket then returns the ticket object
    * @param ticket
    */
-  async saveTicket(ticket: ITicket, uid: string): Promise<TicketEntity> {
+  async createTicket(ticket: TicketEntity): Promise<TicketEntity> {
     const ticketRepo = await getRepository(TicketEntity);
-
-    // Add current user to ticket
-    const user = new UserEntity();
-    user.uid = uid;
-
-    const nTicket = new TicketEntity();
-    nTicket.users = [user];
-    nTicket.location = ticket.location;
-    nTicket.ticket_number = ticket.ticket_number;
-    nTicket.tab_id = ticket.tab_id;
-    nTicket.ticket_status = TicketStatus.OPEN;
-
-    const ticketItems = ticket.items.map((item: ITicketItem) => {
-      const ticketItem = new TicketItemEntity();
-      ticketItem.name = item.name;
-      // ticketItem.ticket = nTicket;
-      ticketItem.price = item.price;
-      ticketItem.quantity = item.quantity;
-      ticketItem.ticket_item_id = item.ticket_item_id;
-      return ticketItem;
-    });
-    nTicket.items = ticketItems;
-    return await ticketRepo.save(nTicket);
+    return await ticketRepo.save(ticket);
   }
 
   /**
@@ -106,9 +58,20 @@ export class TicketService {
   }
 
   /**
-   * Add user to existing ticket
+   * Add user to existing database ticket
    */
-  // async addUserToTicket(ticket: ITicket): Promise<TicketEntity> {
-
-  // }
+  async addUserToDatabaseTicket(ticketId: number, uid: string) {
+    try {
+      await getConnection()
+        .createQueryBuilder()
+        .relation(TicketEntity, 'users')
+        .of(ticketId)
+        .add(uid);
+    } catch (e) {
+      const { code } = e;
+      if (code !== 'ER_DUP_ENTRY') {
+        throw new BadRequestException('An unknown error occurred. Please try again.', e);
+      }
+    }
+  }
 }

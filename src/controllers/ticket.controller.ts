@@ -1,110 +1,140 @@
-import { Get, Controller, Query, Res, Post, Body, Put, Param } from '@nestjs/common';
-import { Response as ServerResponse } from 'express-serve-static-core';
-import { FirebaseService, FraudPreventionCodeService, TicketService, OmnivoreService } from '@tabify/services';
+import { Get, Controller, Query, Res, Post, Body, Put, Param, BadRequestException, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { FirebaseService, FraudPreventionCodeService, TicketService, OmnivoreService, StoryService } from '@tabify/services';
+import { User } from '../decorators/user.decorator';
 
-@Controller('ticket')
+@Controller('tickets')
 export class TicketController {
   constructor(
     private readonly ticketService: TicketService,
+    private readonly storyService: StoryService,
     private readonly firebaseService: FirebaseService,
     private readonly fraudPreventionCodeService: FraudPreventionCodeService,
     private omnivoreService: OmnivoreService,
   ) { }
 
   @Get()
-  async getTicket(@Res() res: ServerResponse, @Query() params: any) {
-    const { ticket_number, location, fraudPreventionCodeId } = params;
-    const {
-      locals: {
-        auth: { uid },
-      },
-    } = res;
+  async getTicket(
+    @User('uid') uid: string,
+    @Query() params: any,
+  ) {
+    const { id, ticket_number, location } = params;
 
-    if (!ticket_number || !location || !fraudPreventionCodeId) {
-      res.status(400);
-      res.send({
-        message: 'Missing ticket, location, or fraud prevention code',
-      });
-      return;
+    if (!location && (!ticket_number || !id)) {
+      throw new BadRequestException('Missing ticket number and/or location');
     }
 
-    const user = await this.firebaseService.getUserInfo(uid);
-    const ticketObj = await this.ticketService.getTicket(
+    const ticket = await this.ticketService.getTicket(params, ['items', 'location', 'users', 'ticketTotal']);
+
+    if (!ticket) {
+      throw new NotFoundException('The requested ticket could not be found.');
+    }
+
+    return ticket;
+  }
+
+  @Post()
+  async createTicket(@Body() body: any) {
+    const { ticket_number, location } = body;
+
+    // Get ticket data from Omnivore
+    const omnivoreTicket = await this.omnivoreService.getTicket(
       location,
       ticket_number,
-      user,
     );
 
-    if (!ticketObj || !ticketObj.id) {
-      res.status(500);
-      res.send({
-        message: 'There was an error getting your ticket',
-      });
-      return;
-    }
+    // Save ticket in our database
+    const newTicket = await this.ticketService.createTicket(omnivoreTicket);
 
-    await this.fraudPreventionCodeService.addTicketNumberToCode(ticketObj.id, fraudPreventionCodeId);
+    // Save new story
+    await this.storyService.saveStory(newTicket);
 
-    res.send(ticketObj);
+    // Add ticket to Firestore
+    await this.firebaseService.addTicketToFirestore(newTicket);
+
+    return newTicket;
+  }
+
+  /** Adds user to Tabify database ticket */
+  @Post(':id/addDatabaseUser')
+  async addUserToDatabaseTicket(
+    @User('uid') uid: string,
+    @Param('id') ticketId: number,
+  ) {
+    await this.ticketService.addUserToDatabaseTicket(ticketId, uid);
+  }
+
+  /** Adds user to Firestore ticket */
+  @Post(':id/addFirestoreUser')
+  async addUserToFirestoreTicket(
+    @User('uid') uid: string,
+    @Param('id') ticketId: number,
+  ) {
+    const user = await this.firebaseService.getUserInfo(uid);
+    await this.firebaseService.addUserToFirestoreTicket(ticketId, user);
+  }
+
+  /** Finalize totals for each user on Firestore */
+  @Post(':id/finalizeTotals')
+  async finalizeTotals(
+    @User('uid') uid: string,
+    @Param('id') ticketId: number,
+  ) {
+    return await this.firebaseService.finalizeUserTotals(ticketId);
+  }
+
+  /** Add ticket number to fraud code */
+  @Post(':id/fraudCode')
+  async addTicketNumberToCode(
+    @Param('id') ticketId: number,
+    @Body() body: any,
+  ) {
+    const { fraudPreventionCodeId } = body;
+
+    // Add ticket number to fraud code
+    await this.fraudPreventionCodeService.addTicketNumberToCode(ticketId, fraudPreventionCodeId);
   }
 
   @Get('/items')
-  async getTicketItems(@Res() res: ServerResponse, @Query() params: any) {
+  async getTicketItems(
+    @User('uid') uid: string,
+    @Query() params: any,
+  ) {
     const { ticket_number, location } = params;
-    const {
-      locals: {
-        auth: { uid },
-      },
-    } = res;
 
     if (!ticket_number || !location) {
-      res.status(400);
-      res.send({
-        message: 'Missing ticket and/or Location',
-      });
-      return;
+      throw new BadRequestException('Missing ticket and/or location');
     }
 
     const ticketObj = await this.ticketService.getTicket(
-      location,
-      ticket_number,
-      uid,
+      { ticket_number, location }, ['items'],
     );
 
     if (!ticketObj) {
-      res.status(500);
-      res.send({
-        message: 'There was an error getting your ticket',
-      });
-      return;
+      throw new InternalServerErrorException('There was an error while getting your ticket items');
     }
-    res.send(ticketObj.items);
+    return ticketObj.items;
   }
 
-  async addTicketItem(@Res() res: ServerResponse) {
-    const {
-      locals: {
-        auth: { uid },
-      },
-    } = res;
-  }
+  async addTicketItem(
+    @User('uid') uid: string,
+  ) { }
 
   /**
    * Opens `numberOfTickets` demo tickets on Virtual POS, up to a max of 25 at a time
    * @param numberOfTickets
    */
-  @Post()
+  @Post('demo-tickets')
   async openDemoTickets(@Param('numberOfTickets') numberOfTickets: number) {
     return await this.omnivoreService.openDemoTickets(numberOfTickets);
   }
 
-  @Put(':ticketId/closeTicket')
+  @Put(':id/closeTicket')
   async closeTicket(
-    @Res() res: ServerResponse,
-    @Param('ticketId') ticketId: number,
+    @User('uid') uid: string,
+    @Param('id') ticketId: number,
   ) {
     const response = await this.ticketService.closeTicket(ticketId);
-    res.send(response);
+    return response;
   }
 
   // async removeTicketItem() {

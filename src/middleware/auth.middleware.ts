@@ -1,18 +1,17 @@
-import { NestMiddleware, Injectable, HttpStatus } from '@nestjs/common';
+import { NestMiddleware, Injectable, HttpStatus, UnauthorizedException } from '@nestjs/common';
 import { FirebaseService } from '../services/firebase.service';
-import { RequestHandler } from '@nestjs/common/interfaces';
-import { Response } from 'express-serve-static-core';
+import { MiddlewareFunction } from '@nestjs/common/interfaces';
 
 @Injectable()
 export class AuthMiddleware implements NestMiddleware {
-  constructor(private readonly firService: FirebaseService) {}
+  constructor(private readonly firService: FirebaseService) { }
 
-  resolve(): RequestHandler {
+  resolve(): MiddlewareFunction {
     return async (req, res, next) => {
       // token id should be placed in the request headers
       if (!req.headers || !req.headers.authorization) {
-        res.locals.auth = { isAuthenticated: false, uid: null };
-        this.responseMessage(res, 401, 'Missing auth token');
+        req.user = { isAuthenticated: false, uid: null };
+        throw new UnauthorizedException('Unable to authenticate using provided token.');
       } else {
         try {
           const uid = await this.firService.getUidFromToken(
@@ -20,13 +19,9 @@ export class AuthMiddleware implements NestMiddleware {
           );
 
           if (!uid) {
-            this.responseMessage(
-              res,
-              401,
-              'Unable to authentica using provided token',
-            );
+            throw new UnauthorizedException('Unable to authenticate using provided token.');
           } else {
-            res.locals.auth = {
+            req.user = {
               isAuthenticated: true,
               uid,
             };
@@ -35,17 +30,9 @@ export class AuthMiddleware implements NestMiddleware {
             }
           }
         } catch (error) {
-          this.responseMessage(
-            res,
-            401,
-            'Unable to authentica using provided token',
-          );
+          throw new UnauthorizedException('Unable to authenticate using provided token.');
         }
       }
     };
-  }
-
-  responseMessage(res: Response, statusCode: HttpStatus, message: string) {
-    res.status(401).send({ message });
   }
 }

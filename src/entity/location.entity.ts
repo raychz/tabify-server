@@ -7,35 +7,14 @@ import {
 } from 'typeorm';
 import { Server, Ticket } from '@tabify/entities';
 
-export interface ILocation {
-  id?: number;
-  omnivore_id: string;
-  name: string;
-  city: string;
-  country: string;
-  state: string;
-  street1: string;
-  street2: string;
-  longitude: string;
-  latitude: string;
-  phone: string;
-  timezone: string;
-  website: string;
-  photo_url?: string;
-  zip: string;
-  google_place_id?: string;
-  tickets: Ticket[];
-  servers: Server[];
-}
-
 @Entity()
 @Unique(['omnivore_id'])
-export class Location implements ILocation {
+export class Location {
   @PrimaryGeneratedColumn()
   id?: number;
 
   @Column({ type: 'varchar', nullable: false })
-  omnivore_id!: string;
+  omnivore_id?: string;
 
   @Column({ type: 'varchar', nullable: false })
   name!: string;
@@ -64,7 +43,7 @@ export class Location implements ILocation {
   @Column({ type: 'varchar', nullable: true })
   phone!: string;
 
-  @Column({ type: 'varchar', nullable: true})
+  @Column({ type: 'varchar', nullable: true })
   timezone!: string;
 
   @Column({ type: 'varchar', nullable: true })
@@ -79,17 +58,12 @@ export class Location implements ILocation {
   @Column({ type: 'varchar', nullable: true })
   google_place_id?: string;
 
+  @Column({ type: 'float', nullable: true })
+  tax_rate?: number;
+
   @OneToMany(type => Ticket, ticket => ticket.location)
   tickets!: Ticket[];
 
   @OneToMany(type => Server, server => server.location)
   servers!: Server[];
-
-  constructor(location?: ILocation) {
-    if (location) {
-      Object.keys(location).forEach((key: string) => {
-        this[key as keyof ILocation] = location[key as keyof ILocation];
-      });
-    }
-  }
 }
