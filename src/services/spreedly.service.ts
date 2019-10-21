@@ -82,7 +82,9 @@ export class SpreedlyService {
    * @param {number}        amount       The amount (in USD) to be paid against the ticket
    * @param {number = 0.0}  tip The amount (in USD) to be added as a ticket
    */
-  public async sendPayment(locationId: string, ticketId: string, paymentToken: string, amount: number, tip: number = 0.0) {
+  public async sendPayment(
+    locationId: string, ticketId: string, paymentToken: string, amount: number, tip: number = 0.0, comment?: string
+  ) {
     // This is the response from Spreedly (assuming handleSpreedlyResponse didn't throw)
     const json = (await this.handleSpreedlyResponse<Spreedly.TransactionResponse>(
       this.createSpreedlyRequest(
@@ -102,15 +104,16 @@ export class SpreedlyService {
                 "exp_year": ${Spreedly.ReceiverVariables.CARD_EXPIRATION_YEAR},
                 "number": "${Spreedly.ReceiverVariables.CARD_NUMBER}"
               },
-              "type": "card_not_present"
+              "type": "card_not_present",
+              "comment": "${comment}"
             }`,
           }
         },
       )
     ));
-
     // This extracts the response from the Omnivore server (provided as a string in transaction.response.body)
-    return JSON.parse(json.transaction.response.body as string) as (Omnivore.PaymentComplete | Omnivore.Error);
+    json.transaction.response.body = JSON.parse(json.transaction.response.body as string) as (Omnivore.PaymentComplete | Omnivore.Error);
+    return json;
   }
 
   /**

@@ -10,7 +10,6 @@ export class LocationController {
    */
   @Get()
   getLocations() {
-    const a = 'hello';
     return this.locationService.getLocations();
   }
 

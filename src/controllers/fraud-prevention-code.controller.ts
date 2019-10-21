@@ -1,6 +1,6 @@
-import { Get, Controller, Query, Res, Post, Body } from '@nestjs/common';
-import { Response as ServerResponse } from 'express-serve-static-core';
+import { Get, Controller, Query, Res, Post, Body, HttpException, BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { FraudPreventionCodeService } from '@tabify/services';
+import { User } from '../decorators/user.decorator';
 
 @Controller('fraud-prevention-code')
 export class FraudPreventionCodeController {
@@ -9,22 +9,11 @@ export class FraudPreventionCodeController {
   ) { }
 
   @Get()
-  async getFraudPreventionCode(@Res() res: ServerResponse, @Query() params: any) {
-    const {
-      locals: {
-        auth: { uid },
-      },
-    } = res;
-
+  async getFraudPreventionCode(@User('uid') uid: string) {
     const result = await this.fraudPreventionCodeService.getFraudPreventionCode(uid);
     if (!result) {
-      res.status(500);
-      res.send({
-        message: 'There was an error getting the fraud prevention code',
-      });
-      return;
+      throw new InternalServerErrorException('There was an error getting the fraud prevention code');
     }
-
-    res.send(result);
+    return result;
   }
 }

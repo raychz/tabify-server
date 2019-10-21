@@ -1,12 +1,12 @@
 import { Entity, Column, ManyToMany, OneToMany, OneToOne } from 'typeorm';
-import { Comment, FraudPreventionCode, Like, Ticket, TicketItem, UserDetail, PaymentMethod } from '@tabify/entities';
+import { Comment, FraudPreventionCode, Like, Ticket, TicketItem, TicketPayment, UserDetail, PaymentMethod } from '@tabify/entities';
 
 @Entity()
 export class User {
   @Column('varchar', { length: 255, primary: true, nullable: false })
   uid!: string;
 
-  @ManyToMany(type => TicketItem)
+  @ManyToMany(type => TicketItem, { onDelete: 'CASCADE' })
   ticketItems!: TicketItem[];
 
   @OneToMany(type => FraudPreventionCode, fraudPreventionCode => fraudPreventionCode.id)
@@ -21,10 +21,10 @@ export class User {
   @OneToMany(type => Like, like => like.user)
   likes!: Like[];
 
-  // If a user is deleted, delete associated user-details. Not viceversa
-  @OneToOne(type => UserDetail, userDetail => userDetail.user, {
-    onDelete: 'CASCADE',
-  })
+  @OneToMany(type => TicketPayment, ticketPayment => ticketPayment.user)
+  ticketPayments!: TicketPayment[];
+
+  @OneToOne(type => UserDetail, userDetail => userDetail.user)
   userDetail!: UserDetail;
 
   @ManyToMany(type => Ticket, ticket => ticket.users)
