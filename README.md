@@ -21,7 +21,7 @@ Install the following:
 
 Follow these steps to get a local dev environment set up.
 
-1. Populate .env with the necessary keys and secretes. Note that all .env files are git-ignored to avoid checking in sensitive keys and passwords.
+1. Populate .env with the necessary keys and secrets. Note that all .env files are git-ignored to avoid checking in sensitive keys and passwords.
 
 ```
 cp .env.example .env
