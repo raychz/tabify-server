@@ -85,6 +85,7 @@ export class SpreedlyService {
   public async sendPayment(
     locationId: string, ticketId: string, paymentToken: string, amount: number, tip: number = 0.0, comment?: string
   ) {
+    const apiKey = locationId === 'i8yBgkjT' ? process.env.OMNIVORE_API_KEY_DEV : process.env.OMNIVORE_API_KEY_PROD;
     // This is the response from Spreedly (assuming handleSpreedlyResponse didn't throw)
     const json = (await this.handleSpreedlyResponse<Spreedly.TransactionResponse>(
       this.createSpreedlyRequest(
@@ -94,7 +95,7 @@ export class SpreedlyService {
           delivery: {
             payment_method_token: paymentToken,
             url: `https://api.omnivore.io/1.0/locations/${encodeURIComponent(locationId)}/tickets/${encodeURIComponent(ticketId)}/payments`,
-            headers: `Content-Type: application/json;\r\nApi-Key: ${encodeURIComponent(process.env.OMNIVORE_API_KEY as string)}`,
+            headers: `Content-Type: application/json;\r\nApi-Key: ${encodeURIComponent(apiKey as string)}`,
             body: `{
               "amount": ${JSON.stringify(amount)},
               "tip": ${JSON.stringify(tip)},
@@ -107,7 +108,7 @@ export class SpreedlyService {
               "type": "card_not_present",
               "comment": "${comment}"
             }`,
-          }
+          },
         },
       )
     ));

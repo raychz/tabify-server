@@ -14,7 +14,7 @@ export class OmnivoreService {
   async getLocations(): Promise<LocationEntity[]> {
     const headers = {
       'Content-Type': 'application/json',
-      'Api-Key': process.env.OMNIVORE_API_KEY || '',
+      'Api-Key': process.env.OMNIVORE_API_KEY_DEV || '',
     };
 
     const url = `${OmnivoreService.API_URL}/locations`;
@@ -86,9 +86,10 @@ export class OmnivoreService {
       throw Error('Location not found');
     }
 
+    const apiKey = location.omnivore_id === 'i8yBgkjT' ? process.env.OMNIVORE_API_KEY_DEV : process.env.OMNIVORE_API_KEY_PROD;
     const headers = {
       'Content-Type': 'application/json',
-      'Api-Key': process.env.OMNIVORE_API_KEY || '',
+      'Api-Key': apiKey!,
     };
     // Omnivore query args used here. See https://panel.omnivore.io/docs/api/1.0/queries
     const where = `and(eq(open,true),eq(ticket_number,${encodeURIComponent(String(ticketNumber))}))`;
@@ -160,7 +161,7 @@ export class OmnivoreService {
 
     const headers = {
       'Content-Type': 'application/json',
-      'Api-Key': process.env.OMNIVORE_API_KEY || '',
+      'Api-Key': process.env.OMNIVORE_API_KEY_DEV!,
     };
 
     const url = `${

@@ -21,11 +21,11 @@ Install the following:
 
 Follow these steps to get a local dev environment set up.
 
-1. Create a local environment .env file and populate it with the necessary values. See [dotenv-flow](https://github.com/kerimdzhanov/dotenv-flow) for details on how the environment variables in the .env directory are loaded into process.env. Note that all .local files are git-ignored to avoid checking in sensitive keys and passwords.
+1. Populate .env with the necessary keys and secrets. Note that all .env files are git-ignored to avoid checking in sensitive keys and passwords.
 
 ```
-cp .env.development .env.development.local
-// Fill in the key-value pairs in .env.development.local
+cp .env.example .env
+// Fill in the key-value pairs in .env
 ```
 
 2. Initialize a local MySQL database using Docker Compose.

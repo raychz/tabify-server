@@ -3,9 +3,7 @@ version: '3'
 services:
     db:
       env_file:
-        - ./.env/.env
-        - ./.env/.env.development
-        - ./.env/.env.development.local
+        - ./.env
       image: mysql:5.6
       ports:
         - 3306:3306
