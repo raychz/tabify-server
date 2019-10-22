@@ -1,6 +1,3 @@
-const config = require('dotenv-flow').config;
-config({ cwd: '.env/' });
-
 const SOURCE_PATH =
   process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging'
     ? 'dist'
