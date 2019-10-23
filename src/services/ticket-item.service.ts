@@ -7,7 +7,7 @@ export class TicketItemService {
 
     async getTicketItems(ticketId: number) {
         const ticketItemRepo = await getRepository(TicketItemEntity);
-        const ticketItems = ticketItemRepo.find({where:  {ticketId}});
+        const ticketItems = ticketItemRepo.find({where:  {ticket: ticketId}});
         return ticketItems;
     }
 }
