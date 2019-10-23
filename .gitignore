@@ -1,8 +1,6 @@
 node_modules/
 build/
 dist/
-# local .env* files, see https://github.com/kerimdzhanov/dotenv-flow#files-under-version-control
-.env.local
-.env.*.local
+*.env
 .vscode
 .DS_Store

@@ -400,20 +400,6 @@
   resolved "https://registry.yarnpkg.com/@types/cookiejar/-/cookiejar-2.1.1.tgz#90b68446364baf9efd8e8349bb36bd3852b75b80"
   integrity sha512-aRnpPa7ysx3aNW60hTiCtLHlQaIFsXFCgQlpakNgDNVFzbtusSY8PwjAQgRWfSk0ekNoBjO51eQRB6upA9uuyw==
 
-"@types/dotenv-flow@^0.2.1":
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/@types/dotenv-flow/-/dotenv-flow-0.2.1.tgz#a3e48727a6b1d51169b0796146996b99c8f93ff2"
-  integrity sha512-kD1K1tEu5Ujteg4ZszSFe2nvHRV2zKPNrSaDE7Qv96/XSHV1zi2BgAiRj2x4f72aejbbEs0jZC4Bb0/zsdWZZg==
-  dependencies:
-    "@types/node" "*"
-
-"@types/dotenv@^4.0.3":
-  version "4.0.3"
-  resolved "https://registry.yarnpkg.com/@types/dotenv/-/dotenv-4.0.3.tgz#ebcfc40da7bc0728b705945b7db48485ec5b4b67"
-  integrity sha512-mmhpINC/HcLGQK5ikFJlLXINVvcxhlrV+ZOUJSN7/ottYl+8X4oSXzS9lBtDkmWAl96EGyGyLrNvk9zqdSH8Fw==
-  dependencies:
-    "@types/node" "*"
-
 "@types/express-serve-static-core@*", "@types/express-serve-static-core@^4.16.0":
   version "4.16.4"
   resolved "https://registry.yarnpkg.com/@types/express-serve-static-core/-/express-serve-static-core-4.16.4.tgz#56bb8be4559401d68af4a3624ae9dd3166103e60"
@@ -2288,17 +2274,22 @@ dot-prop@^4.1.0:
   dependencies:
     is-obj "^1.0.0"
 
-dotenv-flow@^0.2.0:
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/dotenv-flow/-/dotenv-flow-0.2.0.tgz#72b29d01c8a0e6c325b726f4262efd8049da8508"
-  integrity sha512-Lmw/iJmgvMMZ/TStj+RrsT38WlaFy+5y6jwmHKoCh4MJp8U2etajnXMjhcIdBYKEkjqXzle4UbRVLhFx0t5YKg==
+dotenv-safe@^8.1.0:
+  version "8.1.0"
+  resolved "https://registry.yarnpkg.com/dotenv-safe/-/dotenv-safe-8.1.0.tgz#9046f1c9b70183d49275c0b6c383db37f432b346"
+  integrity sha512-ONrR6gKNtaaQxV1GUvlLB4jHXtEixUe0a+x5QdnYdKJKelg9J/Kv6hPHXYBJqgJ6HBrEFtS2g2NcB6Hx78/l/Q==
   dependencies:
-    dotenv "^6.0.0"
+    dotenv "^8.1.0"
 
-dotenv@^6.0.0, dotenv@^6.2.0:
+dotenv@^6.2.0:
   version "6.2.0"
   resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-6.2.0.tgz#941c0410535d942c8becf28d3f357dbd9d476064"
   integrity sha512-HygQCKUBSFl8wKQZBSemMywRWcEDNidvNbjGVyZu3nbZ8qq9ubiPoGLMdRDpfSrpkkm9BXYFkpKxxFX38o/76w==
+
+dotenv@^8.1.0:
+  version "8.2.0"
+  resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-8.2.0.tgz#97e619259ada750eea3e4ea3e26bceea5424b16a"
+  integrity sha512-8sJ78ElpbDJBHNeBzUbUVLsqKdccaa/BXF1uPTw3GrvQTBgrQrtObr2mUrE38vzYd8cEv+m/JBfDLioYcfXoaw==
 
 duplexer3@^0.1.4:
   version "0.1.4"

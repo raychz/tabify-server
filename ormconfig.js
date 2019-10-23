@@ -1,5 +1,5 @@
-const config = require('dotenv-flow').config;
-config({ cwd: '.env/' });
+const config = require('dotenv-safe').config;	
+config();
 
 const SOURCE_PATH =
   process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging'
