@@ -211,4 +211,22 @@ export class FirebaseService {
   private toPlainObject(obj: any) {
     return JSON.parse(JSON.stringify(obj));
   }
+
+  /**
+   * This function serves the purpose of retrieving the users
+   * of ticket items, once the ticket is ready to be closed
+   * @param ticketId number
+   */
+  async retrieveTicketItemUsers(ticketId: number) {
+    const db = firebaseAdmin.firestore();
+    const ticketRef = db.collection('tickets').doc(`${ticketId}`);
+    const ticketItemsRef = ticketRef.collection('ticketItems');
+
+    const ticket = await ticketRef.get();
+    console.log(ticket);
+
+    const ticketItems = await ticketItemsRef.get();
+    console.log(ticketItems);
+    return ticketItems;
+  }
 }
