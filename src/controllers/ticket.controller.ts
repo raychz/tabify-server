@@ -43,13 +43,15 @@ export class TicketController {
     );
 
     // Save ticket in our database
-    const newTicket = await this.ticketService.createTicket(omnivoreTicket);
+    const newTicket = await this.ticketService.saveTicket(omnivoreTicket);
 
     // Save new story
     await this.storyService.saveStory(newTicket);
 
     // Add ticket to Firestore
-    await this.firebaseService.addTicketToFirestore(newTicket);
+    const ticketId = await this.firebaseService.addTicketToFirestore(newTicket);
+    newTicket.firestore_doc_id = ticketId;
+    await this.ticketService.saveTicket(newTicket);
 
     return newTicket;
   }
@@ -70,7 +72,8 @@ export class TicketController {
     @Param('id') ticketId: number,
   ) {
     const user = await this.firebaseService.getUserInfo(uid);
-    await this.firebaseService.addUserToFirestoreTicket(ticketId, user);
+    const firestoreDocumentId = await this.ticketService.getTicketFirestoreId(ticketId);
+    await this.firebaseService.addUserToFirestoreTicket(firestoreDocumentId, user);
   }
 
   /** Finalize totals for each user on Firestore */
@@ -79,7 +82,8 @@ export class TicketController {
     @User('uid') uid: string,
     @Param('id') ticketId: number,
   ) {
-    return await this.firebaseService.finalizeUserTotals(ticketId);
+    const firestoreDocumentId = await this.ticketService.getTicketFirestoreId(ticketId);
+    return await this.firebaseService.finalizeUserTotals(firestoreDocumentId);
   }
 
   /** Add ticket number to fraud code */

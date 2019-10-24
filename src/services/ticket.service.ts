@@ -1,4 +1,4 @@
-import { Injectable, Logger, BadRequestException } from '@nestjs/common';
+import { Injectable, Logger, BadRequestException, NotFoundException } from '@nestjs/common';
 import { getRepository, getConnection, FindOneOptions, FindConditions } from 'typeorm';
 import { auth } from 'firebase-admin';
 import { FirebaseService, OmnivoreService, StoryService } from '@tabify/services';
@@ -34,10 +34,10 @@ export class TicketService {
   }
 
   /**
-   * Creates the ticket then returns the ticket object
+   * Creates/Updates the ticket then returns the ticket object
    * @param ticket
    */
-  async createTicket(ticket: TicketEntity): Promise<TicketEntity> {
+  async saveTicket(ticket: TicketEntity): Promise<TicketEntity> {
     const ticketRepo = await getRepository(TicketEntity);
     return await ticketRepo.save(ticket);
   }
@@ -55,6 +55,18 @@ export class TicketService {
       .execute();
 
     return res;
+  }
+
+  async getTicketFirestoreId(id: number) {
+    const ticketRepo = await getRepository(TicketEntity);
+    const ticket = await ticketRepo.findOne({id});
+    if (!ticket) {
+      throw new NotFoundException(`Ticket with id ${id} could not be found`);
+    }
+    if (!ticket.firestore_doc_id) {
+      throw new NotFoundException(`Ticket with id ${id} does not have an associated Firestore Document Id`);
+    }
+    return ticket.firestore_doc_id;
   }
 
   /**

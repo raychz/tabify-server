@@ -25,7 +25,7 @@ export class FirebaseService {
     }
   }
 
-  async addUserToFirestoreTicket(ticketId: number, user: auth.UserRecord) {
+  async addUserToFirestoreTicket(ticketId: string, user: auth.UserRecord) {
     const db = firebaseAdmin.firestore();
     const ticketsRef = db.collection('tickets').doc(`${ticketId}`);
 
@@ -79,7 +79,8 @@ export class FirebaseService {
     const db = firebaseAdmin.firestore();
     const batch = db.batch();
 
-    const ticketsRef = db.collection('tickets').doc(`${ticket.id}`);
+    const ticketsRef = db.collection('tickets').doc();
+    const ticketId = ticketsRef.id;
     batch.set(
       ticketsRef,
       this.toPlainObject({
@@ -115,11 +116,11 @@ export class FirebaseService {
         }),
       );
     });
-
     await batch.commit();
+    return ticketId;
   }
 
-  async finalizeUserTotals(ticketId: number) {
+  async finalizeUserTotals(ticketId: string) {
     const db = firebaseAdmin.firestore();
     const ticketRef = db.collection('tickets').doc(`${ticketId}`);
     const ticketItemsRef = ticketRef.collection('ticketItems');
