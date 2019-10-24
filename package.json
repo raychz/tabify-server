@@ -6,13 +6,12 @@
     "build": "tsc -p tsconfig.json",
     "format": "prettier --write \"src/**/*.ts\"",
     "start:dev": "nodemon",
-    "prestart:prod": "rimraf dist && yarn build",
+    "prestart:prod": "rimraf dist && npm run build",
     "start:prod": "node -r ./tsconfig-paths-bootstrap.js -r dotenv-safe/config dist/main.js",
     "lint": "tslint -p tsconfig.json -c tslint.json",
     "test": "jest",
     "typeorm": "ts-node -r tsconfig-paths/register -r dotenv-safe/config ./node_modules/typeorm/cli.js",
-    "webpack": "webpack --config webpack.config.js",
-    "preinstall": "node -e 'if(!/yarn\\.js$/.test(process.env.npm_execpath)) throw new Error(\"Use yarn\")'"
+    "webpack": "webpack --config webpack.config.js"
   },
   "jest": {
     "moduleFileExtensions": [
@@ -41,9 +40,11 @@
     "firebase-admin": "^7.0.0",
     "mysql": "^2.16.0",
     "reflect-metadata": "^0.1.13",
+    "rimraf": "^2.6.2",
     "rxjs": "6",
     "rxjs-compat": "6",
     "socket.io": "^2.2.0",
+    "tsconfig-paths": "^3.8.0",
     "typeorm": "^0.2.19",
     "typescript": "3.4.5"
   },
@@ -57,12 +58,10 @@
     "jest": "^23.6.0",
     "nodemon": "^1.18.3",
     "prettier": "^1.14.2",
-    "rimraf": "^2.6.2",
     "supertest": "^3.1.0",
     "ts-jest": "^23.10.4",
     "ts-loader": "^5.3.3",
     "ts-node": "^8.0.2",
-    "tsconfig-paths": "^3.8.0",
     "tslint": "5.11.0",
     "webpack": "^4.16.5",
     "webpack-cli": "^3.1.0",

@@ -1,3 +1,4 @@
+export * from './app.controller';
 export * from './comment.controller';
 export * from './fraud-prevention-code.controller';
 export * from './like.controller';
