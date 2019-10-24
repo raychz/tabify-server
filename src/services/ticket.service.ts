@@ -9,12 +9,14 @@ import {
   User as UserEntity,
   TicketStatus,
 } from '@tabify/entities';
+import { TicketItemService } from './ticket-item.service';
 
 @Injectable()
 export class TicketService {
   constructor(
     private readonly omnivoreService: OmnivoreService,
     private readonly firebaseService: FirebaseService,
+    private readonly ticketItemService: TicketItemService,
   ) { }
 
   /**
@@ -47,6 +49,8 @@ export class TicketService {
    * @param ticketId
    */
   async closeTicket(ticketId: number) {
+    await this.ticketItemService.saveTicketItemUsers(ticketId);
+
     const res = await getConnection()
       .createQueryBuilder()
       .update(TicketEntity)
