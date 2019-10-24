@@ -8,6 +8,7 @@ export class AuthMiddleware implements NestMiddleware {
 
   resolve(): MiddlewareFunction {
     return async (req, res, next) => {
+      if (this.skipPermittedRoutes(req, next) && next) return next();
       // token id should be placed in the request headers
       if (!req.headers || !req.headers.authorization) {
         req.user = { isAuthenticated: false, uid: null };
@@ -34,5 +35,22 @@ export class AuthMiddleware implements NestMiddleware {
         }
       }
     };
+  }
+
+  /**
+   * Skip these permitted routes from middleware application.
+   *
+   * @param next express function to skip to the next route or middleware
+   */
+  skipPermittedRoutes(req: any, next: any) {
+    const permitted = ['/'];
+
+    return permitted.includes(req.originalUrl);
+    /*
+     * This is required here because consumer.apply().exclude
+     * does not exclude wildcard matches at this time.
+     * .exclude('/') // does not work
+     * .forRoutes('*')
+     */
   }
 }
