@@ -100,6 +100,7 @@ export class FirebaseService {
       batch.set(
         ticketItemsRef,
         this.toPlainObject({
+          id: item.id,
           name: item.name,
           price: item.price,
           ticket_item_id: item.ticket_item_id,
