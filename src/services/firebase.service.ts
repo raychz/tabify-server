@@ -221,12 +221,8 @@ export class FirebaseService {
     const db = firebaseAdmin.firestore();
     const ticketRef = db.collection('tickets').doc(`${ticketId}`);
     const ticketItemsRef = ticketRef.collection('ticketItems');
-
     const ticket = await ticketRef.get();
-    console.log(ticket);
-
     const ticketItems = await ticketItemsRef.get();
-    console.log(ticketItems);
     return ticketItems;
   }
 }

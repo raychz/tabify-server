@@ -44,7 +44,10 @@ export class TicketItem implements ITicketItem {
   @Column({ type: 'int', nullable: false })
   quantity!: number;
 
-  @ManyToMany(type => User)
+  @ManyToMany(type => User, user => user.ticketItems,
+    {
+      cascade: true,
+    })
   @JoinTable()
   users!: User[];
 }

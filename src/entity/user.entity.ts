@@ -6,7 +6,7 @@ export class User {
   @Column('varchar', { length: 255, primary: true, nullable: false })
   uid!: string;
 
-  @ManyToMany(type => TicketItem, { onDelete: 'CASCADE' })
+  @ManyToMany(type => TicketItem, ticketItem => ticketItem.users)
   ticketItems!: TicketItem[];
 
   @OneToMany(type => FraudPreventionCode, fraudPreventionCode => fraudPreventionCode.id)
