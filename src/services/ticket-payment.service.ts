@@ -1,5 +1,5 @@
 import { Injectable, BadRequestException, InternalServerErrorException } from '@nestjs/common';
-import { getRepository } from 'typeorm';
+import { getRepository, In } from 'typeorm';
 import { TicketPayment, TicketPaymentStatus, Ticket, User } from '@tabify/entities';
 import { SpreedlyService, TicketService } from '@tabify/services';
 import { TicketPaymentInterface } from '../interfaces';
@@ -126,5 +126,14 @@ export class TicketPaymentService {
   async saveTicketPayment(ticketPayment: TicketPayment) {
     const ticketPaymentRepo = await getRepository(TicketPayment);
     return await ticketPaymentRepo.save(ticketPayment);
+  }
+
+  async getTicketPaymentsByUsers(ticketId: number, userIds: number[]) {
+    const ticketPaymentRepo = await getRepository(TicketPayment);
+
+    const payments = await ticketPaymentRepo.find(
+      {
+        where: { ticketId, userId: In(userIds) },
+      });
   }
 }
