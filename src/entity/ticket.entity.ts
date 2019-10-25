@@ -26,6 +26,9 @@ export class Ticket {
   id?: number;
 
   @Column({ type: 'varchar', nullable: false })
+  firestore_doc_id?: string;
+
+  @Column({ type: 'varchar', nullable: false })
   tab_id?: string;
 
   @Column({ type: 'int', nullable: false })

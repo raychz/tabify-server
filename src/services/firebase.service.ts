@@ -1,7 +1,7 @@
 import { Injectable, Logger, ForbiddenException, InternalServerErrorException } from '@nestjs/common';
 import * as firebaseAdmin from 'firebase-admin';
 import { auth } from 'firebase-admin';
-import { Ticket, User } from '@tabify/entities';
+import { Ticket } from '@tabify/entities';
 import * as currency from 'currency.js';
 
 // please keep the user status enum in order of execution as they are used for calculations
@@ -24,16 +24,23 @@ export class FirebaseService {
     }
   }
 
-  async addUserToFirestoreTicket(ticketId: number, user: auth.UserRecord) {
+  async addUserToFirestoreTicket(ticketId: string, user: auth.UserRecord) {
     const db = firebaseAdmin.firestore();
     const ticketsRef = db.collection('tickets').doc(`${ticketId}`);
 
     const ticketDoc = await ticketsRef.get();
-    const overallUsersProgress = ticketDoc.get('overallUsersProgress') as UserStatus;
+    const users = ticketDoc.get('users') as {uid: number, status: UserStatus}[];
     const userUids = ticketDoc.get('uids') as string[];
 
     if (!userUids.find(uid => uid === user.uid)) {
-      if (overallUsersProgress >= UserStatus.Paying) {
+      let overallProgress = UserStatus.Paid;
+      if (users.length === 0) {
+        overallProgress = UserStatus.Selecting;
+      } else {
+        users.forEach( u => { if (u.status < overallProgress) overallProgress = u.status; });
+      }
+
+      if (overallProgress >= UserStatus.Paying) {
         throw new ForbiddenException('The patrons of this tab have already selected their items and moved on to payment.');
       }
       await ticketsRef.update({
@@ -71,7 +78,8 @@ export class FirebaseService {
     const db = firebaseAdmin.firestore();
     const batch = db.batch();
 
-    const ticketsRef = db.collection('tickets').doc(`${ticket.id}`);
+    const ticketsRef = db.collection('tickets').doc();
+    const ticketId = ticketsRef.id;
     batch.set(
       ticketsRef,
       this.toPlainObject({
@@ -84,7 +92,6 @@ export class FirebaseService {
         },
         date_created: ticket.date_created,
         status: TicketStatus.Open,
-        overallUsersProgress: UserStatus.Selecting,
         ticketTotalFinalized: false,
         ticketTotal: ticket.ticketTotal,
         users: [],
@@ -108,11 +115,11 @@ export class FirebaseService {
         }),
       );
     });
-
     await batch.commit();
+    return ticketId;
   }
 
-  async finalizeUserTotals(ticketId: number) {
+  async finalizeUserTotals(ticketId: string) {
     const db = firebaseAdmin.firestore();
     const ticketRef = db.collection('tickets').doc(`${ticketId}`);
     const ticketItemsRef = ticketRef.collection('ticketItems');
