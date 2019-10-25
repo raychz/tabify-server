@@ -10,13 +10,16 @@ export class TicketItemService {
         private readonly firebaseService: FirebaseService,
     ) { }
 
-    // gets a ticket, along with all its items, item users, and 
+    /**
+     * gets a ticket, along with all its items, item users, users' details and payments
+     * associated with that ticket
+     */
     async getTicketItems(ticketId: number) {
         const ticketRepo = await getRepository(TicketEntity);
 
         const ticketItems = await ticketRepo.findOneOrFail({
             where: { id: ticketId },
-            relations: ['items', 'items.users', 'items.users.userDetail'],
+            relations: ['items', 'items.users', 'items.users.userDetail', 'ticketPayments'],
         });
 
         return ticketItems;
