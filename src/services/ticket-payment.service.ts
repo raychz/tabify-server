@@ -35,6 +35,7 @@ export class TicketPaymentService {
         `TABIFY${ticketPaymentId}`,
       );
     } catch (error) {
+      console.error(error);
       // Something went wrong, so update the payment's status to failed
       await this.saveTicketPayment({
         id: ticketPaymentId,
@@ -59,6 +60,7 @@ export class TicketPaymentService {
         omnivore_id: response.body.id,
       });
     } else {
+      console.error('Error occurred while parsing the Spreedly response', spreedlyResponse);
       // Something went wrong, so update the payment's status to failed
       await this.saveTicketPayment({
         id: ticketPaymentId,
@@ -87,6 +89,7 @@ export class TicketPaymentService {
         total: responseTicket.totals.total,
       });
     } else {
+      console.error('Error occurred while parsing the Omnivore response', response);
       throw new BadRequestException('This payment could not be processed.', response);
     }
 
