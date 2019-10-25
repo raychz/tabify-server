@@ -29,35 +29,61 @@ export class FirebaseService {
     const ticketsRef = db.collection('tickets').doc(`${ticketId}`);
     const ticketUsersRef = ticketsRef.collection('users');
 
-    const ticketDoc = await ticketsRef.get();
-    const collectionData = await ticketUsersRef.get();
-    const users = collectionData.docs.map(doc => doc.data()) as {uid: number, status: UserStatus}[];
-    // const users = ticketDoc.get('users') as {uid: number, status: UserStatus}[];
-    const userUids = ticketDoc.get('uids') as string[];
+    try {
+      await db.runTransaction(async transaction => {
+        const ticketDoc = await transaction.get(ticketsRef);
+        const userCollectionData = await transaction.get(ticketUsersRef);
+        const users = userCollectionData.docs.map(doc => doc.data()) as {uid: number, status: UserStatus}[];
+        // const users = ticketDoc.get('users') as {uid: number, status: UserStatus}[];
+        const userUids = ticketDoc.get('uids') as string[];
 
-    if (!userUids.find(uid => uid === user.uid)) {
-      let overallProgress = UserStatus.Paid;
-      if (users.length === 0) {
-        overallProgress = UserStatus.Selecting;
-      } else {
-        users.forEach( u => { if (u.status < overallProgress) overallProgress = u.status; });
-      }
+        if (!userUids.find(uid => uid === user.uid)) {
+          let overallProgress = UserStatus.Paid;
+          if (users.length === 0) {
+            overallProgress = UserStatus.Selecting;
+          } else {
+            users.forEach( u => { if (u.status < overallProgress) overallProgress = u.status; });
+          }
 
-      if (overallProgress >= UserStatus.Paying) {
-        throw new ForbiddenException('The patrons of this tab have already selected their items and moved on to payment.');
-      }
-      await ticketUsersRef.add({
-        uid: user.uid,
-        name: user.displayName,
-        status: UserStatus.Selecting,
-        photoUrl: null,
-        totals: {
-          tax: 0, // user's share of the tax
-          tip: 0, // user's tip
-          subtotal: 0, // user's sum of the share of their selected items
-          total: 0, // user's tax + tip + subtotal
-        },
+          if (overallProgress >= UserStatus.Paying) {
+            throw new ForbiddenException('The patrons of this tab have already selected their items and moved on to payment.');
+          }
+
+          transaction.set(
+            ticketUsersRef.doc(),
+            {
+              uid: user.uid,
+              name: user.displayName,
+              status: UserStatus.Selecting,
+              photoUrl: null,
+              totals: {
+                tax: 0, // user's share of the tax
+                tip: 0, // user's tip
+                subtotal: 0, // user's sum of the share of their selected items
+                total: 0, // user's tax + tip + subtotal
+              },
+            },
+            {merge: false},
+          );
+
+          transaction.update(
+            ticketsRef,
+            {uids: firebaseAdmin.firestore.FieldValue.arrayUnion(user.uid)},
+          );
+
+        }
+        return transaction;
       });
+
+      return {
+        success: true,
+        message: 'User has been added',
+      };
+    } catch (e) {
+      throw new InternalServerErrorException(
+        e,
+        'The transaction failed, user not added.',
+      );
     }
   }
 
@@ -74,6 +100,10 @@ export class FirebaseService {
         break;
       }
     }
+
+    // ToDO: make this a transaction and include the arrayRemove on uids, see addUserToFirestoreTicket for example
+    // not doing for mvp since this method isn't used - leave commented code below for reference
+
     // await ticketUsersRef.update({
     //   users: firebaseAdmin.firestore.FieldValue.arrayRemove({
     //     uid: user.uid,
@@ -172,7 +202,6 @@ export class FirebaseService {
         let allUsersSubtotal = 0;
         let allUsersTax = 0;
         let allUsersTotal = 0;
-
 
         users.forEach((user: any, index: number) => {
           // Find sum of the selected items for this user
