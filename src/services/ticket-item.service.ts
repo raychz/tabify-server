@@ -14,7 +14,7 @@ export class TicketItemService {
     async getTicketItems(ticketId: number) {
         const ticketRepo = await getRepository(TicketEntity);
 
-        const ticketItems = await ticketRepo.find({
+        const ticketItems = await ticketRepo.findOneOrFail({
             where: { id: ticketId },
             relations: ['items', 'items.users', 'items.users.userDetail'],
         });
