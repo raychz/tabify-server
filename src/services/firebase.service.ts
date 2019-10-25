@@ -1,9 +1,8 @@
 import { Injectable, Logger, ForbiddenException, InternalServerErrorException } from '@nestjs/common';
 import * as firebaseAdmin from 'firebase-admin';
 import { auth } from 'firebase-admin';
-import { Ticket, User } from '@tabify/entities';
+import { Ticket } from '@tabify/entities';
 import * as currency from 'currency.js';
-import e = require('express');
 
 // please keep the user status enum in order of execution as they are used for calculations
 enum UserStatus { Selecting, Waiting, Confirmed, Paying, Paid }
