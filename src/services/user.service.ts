@@ -36,7 +36,8 @@ export class UserService {
             if (userDetails.photo_url !== undefined) {
                 refinedUserDetails.photo_url = userDetails.photo_url;
             } else {
-                refinedUserDetails.photo_url = 'https://cdn.business2community.com/wp-content/uploads/2017/08/blank-profile-picture-973460_640.png'
+                // tslint:disable-next-line: max-line-length
+                refinedUserDetails.photo_url = 'https://firebasestorage.googleapis.com/v0/b/tabify-40746.appspot.com/o/user-light.png?alt=media&token=9a1c24af-58cd-4b32-8080-361d1f6915ea';
             }
 
             await userDetailsRepo.save(refinedUserDetails);
