@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { getRepository, getConnection } from 'typeorm';
-import { TicketItem as TicketItemEntity } from '@tabify/entities';
+import { TicketItem as TicketItemEntity, Ticket as TicketEntity } from '@tabify/entities';
 import { FirebaseService } from '@tabify/services';
 
 @Injectable()
@@ -10,9 +10,15 @@ export class TicketItemService {
         private readonly firebaseService: FirebaseService,
     ) { }
 
+    // gets a ticket, along with all its items, item users, and 
     async getTicketItems(ticketId: number) {
-        const ticketItemRepo = await getRepository(TicketItemEntity);
-        const ticketItems = ticketItemRepo.find({ where: { ticket: ticketId } });
+        const ticketRepo = await getRepository(TicketEntity);
+
+        const ticketItems = await ticketRepo.find({
+            where: { id: ticketId },
+            relations: ['items', 'items.users', 'items.users.userDetail'],
+        });
+
         return ticketItems;
     }
 
