@@ -19,7 +19,7 @@ export class TicketItemService {
 
         const ticketItems = await ticketRepo.findOneOrFail({
             where: { id: ticketId },
-            relations: ['items', 'items.users', 'items.users.userDetail', 'ticketPayments'],
+            relations: ['items', 'items.users', 'items.users.userDetail', 'ticketPayments', 'ticketPayments.user'],
         });
 
         return ticketItems;
