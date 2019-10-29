@@ -1,7 +1,7 @@
 import { Injectable, Logger, ForbiddenException, InternalServerErrorException } from '@nestjs/common';
 import * as firebaseAdmin from 'firebase-admin';
 import { auth } from 'firebase-admin';
-import { Ticket, User } from '@tabify/entities';
+import { Ticket } from '@tabify/entities';
 import * as currency from 'currency.js';
 
 // please keep the user status enum in order of execution as they are used for calculations
@@ -24,54 +24,101 @@ export class FirebaseService {
     }
   }
 
-  async addUserToFirestoreTicket(ticketId: number, user: auth.UserRecord) {
+  async addUserToFirestoreTicket(ticketId: string, user: auth.UserRecord) {
     const db = firebaseAdmin.firestore();
     const ticketsRef = db.collection('tickets').doc(`${ticketId}`);
+    const ticketUsersRef = ticketsRef.collection('users');
 
-    const ticketDoc = await ticketsRef.get();
-    const overallUsersProgress = ticketDoc.get('overallUsersProgress') as UserStatus;
-    const userUids = ticketDoc.get('uids') as string[];
+    try {
+      await db.runTransaction(async transaction => {
+        const ticketDoc = await transaction.get(ticketsRef);
+        const userCollectionData = await transaction.get(ticketUsersRef);
+        const users = userCollectionData.docs.map(doc => doc.data()) as {uid: number, status: UserStatus}[];
+        // const users = ticketDoc.get('users') as {uid: number, status: UserStatus}[];
+        const userUids = ticketDoc.get('uids') as string[];
 
-    if (!userUids.find(uid => uid === user.uid)) {
-      if (overallUsersProgress >= UserStatus.Paying) {
-        throw new ForbiddenException('The patrons of this tab have already selected their items and moved on to payment.');
-      }
-      await ticketsRef.update({
-        users: firebaseAdmin.firestore.FieldValue.arrayUnion({
-          uid: user.uid,
-          name: user.displayName,
-          status: UserStatus.Selecting,
-          photoUrl: null,
-          totals: {
-            tax: 0, // user's share of the tax
-            tip: 0, // user's tip
-            subtotal: 0, // user's sum of the share of their selected items
-            total: 0, // user's tax + tip + subtotal
-          },
-        }),
-        uids: firebaseAdmin.firestore.FieldValue.arrayUnion(user.uid),
+        if (!userUids.find(uid => uid === user.uid)) {
+          let overallProgress = UserStatus.Paid;
+          if (users.length === 0) {
+            overallProgress = UserStatus.Selecting;
+          } else {
+            users.forEach( u => { if (u.status < overallProgress) overallProgress = u.status; });
+          }
+
+          if (overallProgress >= UserStatus.Paying) {
+            throw new ForbiddenException('The patrons of this tab have already selected their items and moved on to payment.');
+          }
+
+          transaction.set(
+            ticketUsersRef.doc(),
+            {
+              uid: user.uid,
+              name: user.displayName,
+              status: UserStatus.Selecting,
+              photoUrl: null,
+              totals: {
+                tax: 0, // user's share of the tax
+                tip: 0, // user's tip
+                subtotal: 0, // user's sum of the share of their selected items
+                total: 0, // user's tax + tip + subtotal
+              },
+            },
+            {merge: false},
+          );
+
+          transaction.update(
+            ticketsRef,
+            {uids: firebaseAdmin.firestore.FieldValue.arrayUnion(user.uid)},
+          );
+
+        }
+        return transaction;
       });
+
+      return {
+        success: true,
+        message: 'User has been added',
+      };
+    } catch (e) {
+      throw new InternalServerErrorException(
+        e,
+        'The transaction failed, user not added.',
+      );
     }
   }
 
   async removeUserFromFirestoreTicket(ticket: Ticket, user: auth.UserRecord) { // currently not being called
     const db = firebaseAdmin.firestore();
-    const ticketsRef = db.collection('tickets').doc(`${ticket.id}`);
+    const ticketUsersRef = db.collection('tickets').doc(`${ticket.id}`).collection('users');
+    const collectionData = await ticketUsersRef.get();
+    const docs = collectionData.docs;
 
-    await ticketsRef.update({
-      users: firebaseAdmin.firestore.FieldValue.arrayRemove({
-        uid: user.uid,
-        name: user.displayName,
-      }),
-      uids: firebaseAdmin.firestore.FieldValue.arrayRemove(user.uid),
-    });
+    for (const doc of docs) {
+      const userUid = doc.get('uid');
+      if (userUid === user.uid) {
+        doc.ref.delete();
+        break;
+      }
+    }
+
+    // ToDO: make this a transaction and include the arrayRemove on uids, see addUserToFirestoreTicket for example
+    // not doing for mvp since this method isn't used - leave commented code below for reference
+
+    // await ticketUsersRef.update({
+    //   users: firebaseAdmin.firestore.FieldValue.arrayRemove({
+    //     uid: user.uid,
+    //     name: user.displayName,
+    //   }),
+    //   uids: firebaseAdmin.firestore.FieldValue.arrayRemove(user.uid),
+    // });
   }
 
   async addTicketToFirestore(ticket: Ticket) {
     const db = firebaseAdmin.firestore();
     const batch = db.batch();
 
-    const ticketsRef = db.collection('tickets').doc(`${ticket.id}`);
+    const ticketsRef = db.collection('tickets').doc();
+    const ticketId = ticketsRef.id;
     batch.set(
       ticketsRef,
       this.toPlainObject({
@@ -84,10 +131,8 @@ export class FirebaseService {
         },
         date_created: ticket.date_created,
         status: TicketStatus.Open,
-        overallUsersProgress: UserStatus.Selecting,
         ticketTotalFinalized: false,
         ticketTotal: ticket.ticketTotal,
-        users: [],
         uids: [],
       }),
     );
@@ -109,14 +154,15 @@ export class FirebaseService {
         }),
       );
     });
-
     await batch.commit();
+    return ticketId;
   }
 
-  async finalizeUserTotals(ticketId: number) {
+  async finalizeUserTotals(ticketId: string) {
     const db = firebaseAdmin.firestore();
     const ticketRef = db.collection('tickets').doc(`${ticketId}`);
     const ticketItemsRef = ticketRef.collection('ticketItems');
+    const ticketUsersRef = ticketRef.collection('users');
 
     /*
     1. Determine if totals are finalized. If not, proceed.
@@ -135,7 +181,17 @@ export class FirebaseService {
           throw new Error('totals_already_finalized');
         }
 
-        const users = ticket.get('users') as any[];
+        // const users = ticket.get('users') as any[];
+
+        const _users = await transaction.get(ticketUsersRef);
+        const users: any[] = [];
+        _users.forEach(doc => {
+          users.push(doc.data());
+        });
+
+        // const userCollectionData = await ticketUsersRef.get();
+        // const users = userCollectionData.docs.map(doc => doc.data()) as any[];
+
         const _ticketItems = await transaction.get(ticketItemsRef);
         const ticketItems: any = [];
         _ticketItems.forEach(doc => {
@@ -147,6 +203,7 @@ export class FirebaseService {
         let allUsersSubtotal = 0;
         let allUsersTax = 0;
         let allUsersTotal = 0;
+
         users.forEach((user: any, index: number) => {
           // Find sum of the selected items for this user
           let subtotal = 0;
@@ -182,6 +239,18 @@ export class FirebaseService {
         ) {
           throw new Error('The users subtotal, tax, or total is not equal to the ticket totals!');
         }
+
+        _users.forEach(doc => {
+          const uid = doc.get('uid');
+          const user = users.find( u => u.uid === uid);
+          if (user) {
+            transaction.set(
+              doc.ref,
+              user,
+              { merge: true },
+            );
+          }
+        });
 
         transaction.set(
           ticketRef,

@@ -58,6 +58,7 @@ export class SpreedlyService {
     const json = await (response.json() as Promise<T | Spreedly.ErrorResponse>);
 
     if (isSpreedlyErrorResponse(json)) {
+      console.error('isSpreedlyErrorResponse is true:', json);
       const statusCode = (response.status < 200) || (response.status > 299)
         ? response.status
         : 400;
