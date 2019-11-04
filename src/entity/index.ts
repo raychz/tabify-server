@@ -11,3 +11,5 @@ export * from './user-detail.entity';
 export * from './user.entity';
 export * from './ticket-total.entity';
 export * from './ticket-payment.entity';
+export * from './ticket-item-user.entity';
+export * from './ticket-user.entity';

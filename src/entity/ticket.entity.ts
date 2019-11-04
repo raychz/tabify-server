@@ -12,7 +12,7 @@ import {
   Index,
   UpdateDateColumn,
 } from 'typeorm';
-import { FraudPreventionCode, Location, Story, TicketItem, TicketTotal, TicketPayment, User } from '@tabify/entities';
+import { FraudPreventionCode, Location, Story, TicketItem, TicketTotal, TicketPayment, User, TicketUser } from '@tabify/entities';
 
 export enum TicketStatus {
   OPEN = 'open',
@@ -56,12 +56,8 @@ export class Ticket {
   @OneToOne(type => Story, story => story.ticket)
   story?: Story;
 
-  @ManyToMany(type => User, user => user.tickets,
-    {
-      cascade: true,
-    })
-  @JoinTable()
-  users?: User[];
+  @OneToMany(type => TicketUser, ticketUser => ticketUser.ticket)
+  ticketUsers?: TicketUser[];
 
   @Index()
   @Column({

@@ -5,8 +5,9 @@ import {
   ManyToOne,
   ManyToMany,
   JoinTable,
+  OneToMany,
 } from 'typeorm';
-import { Ticket, User } from '@tabify/entities';
+import { Ticket, User, TicketItemUser} from '@tabify/entities';
 
 export interface ITicketItem {
   id?: number;
@@ -44,7 +45,6 @@ export class TicketItem implements ITicketItem {
   @Column({ type: 'int', nullable: false })
   quantity!: number;
 
-  @ManyToMany(type => User)
-  @JoinTable()
-  users!: User[];
+  @OneToMany(type => TicketItemUser, ticketItemUser => ticketItemUser.ticketItem)
+  ticketItemUsers!: TicketItemUser[];
 }

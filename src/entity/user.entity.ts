@@ -1,13 +1,13 @@
 import { Entity, Column, ManyToMany, OneToMany, OneToOne } from 'typeorm';
-import { Comment, FraudPreventionCode, Like, Ticket, TicketItem, TicketPayment, UserDetail, PaymentMethod } from '@tabify/entities';
+import { Comment, FraudPreventionCode, Like, Ticket, TicketItem, TicketPayment, UserDetail, PaymentMethod, TicketItemUser, TicketUser } from '@tabify/entities';
 
 @Entity()
 export class User {
   @Column('varchar', { length: 255, primary: true, nullable: false })
   uid!: string;
 
-  @ManyToMany(type => TicketItem, { onDelete: 'CASCADE' })
-  ticketItems!: TicketItem[];
+  @OneToMany(type => TicketItemUser, ticketItemUser => ticketItemUser.user)
+  ticketItemUsers!: TicketItemUser[];
 
   @OneToMany(type => FraudPreventionCode, fraudPreventionCode => fraudPreventionCode.id)
   fraudPreventionCodes!: FraudPreventionCode[];
@@ -27,6 +27,6 @@ export class User {
   @OneToOne(type => UserDetail, userDetail => userDetail.user)
   userDetail!: UserDetail;
 
-  @ManyToMany(type => Ticket, ticket => ticket.users)
-  tickets!: Ticket[];
+  @OneToMany(type => TicketUser, ticketUser => ticketUser.user)
+  ticketUsers!: TicketUser[];
 }
