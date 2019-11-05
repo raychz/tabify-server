@@ -19,24 +19,26 @@ export class StoryService {
      */
     async readStories(userId: string) {
 
-        // starting from user Id table
-        const userRepo = await getRepository(UserEntity);
+        // TODO: Hassan, please make the below work with the new table structure
+        // // starting from user Id table
+        // const userRepo = await getRepository(UserEntity);
 
-        // get all tickets, and sort them by story.date_created in DESC
-        const stories = await userRepo.createQueryBuilder('user')
-            .leftJoinAndSelect('user.tickets', 'ticket', 'user.uid = :userId', { userId })
-            .leftJoinAndSelect('ticket.story', 'story')
-            .leftJoinAndSelect('ticket.location', 'location')
-            .leftJoinAndSelect('ticket.users', 'ticketUsers')
-            .leftJoinAndSelect('ticketUsers.userDetail', 'userDetail')
-            .leftJoinAndSelect('story.likes', 'likes')
-            .leftJoinAndSelect('likes.user', 'userLikes')
-            .orderBy({
-                'story.date_created': 'DESC',
-            })
-            .getOne();
+        // // get all tickets, and sort them by story.date_created in DESC
+        // const stories = await userRepo.createQueryBuilder('user')
+        //     .leftJoinAndSelect('user.tickets', 'ticket', 'user.uid = :userId', { userId })
+        //     .leftJoinAndSelect('ticket.story', 'story')
+        //     .leftJoinAndSelect('ticket.location', 'location')
+        //     .leftJoinAndSelect('ticket.users', 'ticketUsers')
+        //     .leftJoinAndSelect('ticketUsers.userDetail', 'userDetail')
+        //     .leftJoinAndSelect('story.likes', 'likes')
+        //     .leftJoinAndSelect('likes.user', 'userLikes')
+        //     .orderBy({
+        //         'story.date_created': 'DESC',
+        //     })
+        //     .getOne();
 
-        return stories;
+        // return stories;
+        return await [];
     }
 
     async readStory(storyId: number, manager?: EntityManager) {
