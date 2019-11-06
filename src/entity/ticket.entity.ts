@@ -57,7 +57,7 @@ export class Ticket {
   story?: Story;
 
   @OneToMany(type => TicketUser, ticketUser => ticketUser.ticket)
-  ticketUsers?: TicketUser[];
+  users?: TicketUser[];
 
   @Index()
   @Column({

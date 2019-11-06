@@ -19,7 +19,7 @@ export interface ITicketItem {
   sent?: boolean;
   sent_at?: number;
   split?: number;
-  users?: User[];
+  users?: any[];
 }
 
 @Entity()
@@ -46,5 +46,5 @@ export class TicketItem implements ITicketItem {
   quantity!: number;
 
   @OneToMany(type => TicketItemUser, ticketItemUser => ticketItemUser.ticketItem)
-  ticketItemUsers!: TicketItemUser[];
+  users!: TicketItemUser[];
 }

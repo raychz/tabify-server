@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { getRepository, EntityManager } from 'typeorm';
-import { Story as StoryEntity, Ticket as TicketEntity, User as UserEntity } from '@tabify/entities';
+import { Story as StoryEntity, Ticket as TicketEntity, User as UserEntity, TicketUser } from '@tabify/entities';
 
 @Injectable()
 export class StoryService {
@@ -17,7 +17,7 @@ export class StoryService {
      * !!!!! each ticket has a story object, location, and user/user details. !!!!!
      * @param userId: string
      */
-    async readStories(userId: string) {
+    async readStories(uid: string) {
 
         // TODO: Hassan, please make the below work with the new table structure
         // // starting from user Id table
@@ -38,7 +38,23 @@ export class StoryService {
         //     .getOne();
 
         // return stories;
-        return await [];
+
+        // TODO: Hassan, please verify this rough implementation
+        // Ordering is likely still going to be an issue, so we may need to revert to query builder
+        const ticketRepo = await getRepository(TicketUser);
+        return ticketRepo.find({
+            where: { user: { uid } },
+            relations: [
+                'ticket',
+                'ticket.story',
+                'ticket.story.likes',
+                'ticket.story.likes.user',
+                'ticket.location',
+                'ticket.users',
+                'ticket.users.user',
+                'ticket.users.user.userDetail',
+            ],
+        });
     }
 
     async readStory(storyId: number, manager?: EntityManager) {

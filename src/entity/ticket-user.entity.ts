@@ -7,9 +7,9 @@ export class TicketUser {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @ManyToOne(type => Ticket, ticket => ticket.ticketUsers)
+  @ManyToOne(type => Ticket, ticket => ticket.users)
   ticket!: Ticket;
 
-  @ManyToOne(type => User, user => user.ticketUsers)
+  @ManyToOne(type => User, user => user.tickets)
   user!: User;
 }

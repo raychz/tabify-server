@@ -7,7 +7,7 @@ export class User {
   uid!: string;
 
   @OneToMany(type => TicketItemUser, ticketItemUser => ticketItemUser.user)
-  ticketItemUsers!: TicketItemUser[];
+  ticketItems!: TicketItemUser[];
 
   @OneToMany(type => FraudPreventionCode, fraudPreventionCode => fraudPreventionCode.id)
   fraudPreventionCodes!: FraudPreventionCode[];
@@ -28,5 +28,5 @@ export class User {
   userDetail!: UserDetail;
 
   @OneToMany(type => TicketUser, ticketUser => ticketUser.user)
-  ticketUsers!: TicketUser[];
+  tickets!: TicketUser[];
 }
