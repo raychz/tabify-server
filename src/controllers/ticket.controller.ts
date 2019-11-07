@@ -1,4 +1,4 @@
-import { Get, Controller, Query, Res, Post, Body, Put, Param, BadRequestException, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { Get, Controller, Query, Res, Post, Body, Put, Param, BadRequestException, NotFoundException, NotImplementedException } from '@nestjs/common';
 import { FirebaseService, FraudPreventionCodeService, TicketService, OmnivoreService, StoryService, TicketUserService } from '@tabify/services';
 import { User } from '../decorators/user.decorator';
 
@@ -6,7 +6,6 @@ import { User } from '../decorators/user.decorator';
 export class TicketController {
   constructor(
     private readonly ticketService: TicketService,
-    private readonly ticketUserService: TicketUserService,
     private readonly storyService: StoryService,
     private readonly firebaseService: FirebaseService,
     private readonly fraudPreventionCodeService: FraudPreventionCodeService,
@@ -57,15 +56,6 @@ export class TicketController {
     return newTicket;
   }
 
-  /** Adds user to Tabify database ticket */
-  @Post(':id/addDatabaseUser')
-  async addUserToDatabaseTicket(
-    @User('uid') uid: string,
-    @Param('id') ticketId: number,
-  ) {
-    return await this.ticketUserService.addUserToTicket(ticketId, uid);
-  }
-
   /** Adds user to Firestore ticket */
   @Post(':id/addFirestoreUser')
   async addUserToFirestoreTicket(
@@ -104,20 +94,21 @@ export class TicketController {
     @User('uid') uid: string,
     @Query() params: any,
   ) {
-    const { ticket_number, location } = params;
+    throw new NotImplementedException('This endpoint should not be called. See the ticket-item.controller.ts class.');
+    // const { ticket_number, location } = params;
 
-    if (!ticket_number || !location) {
-      throw new BadRequestException('Missing ticket and/or location');
-    }
+    // if (!ticket_number || !location) {
+    //   throw new BadRequestException('Missing ticket and/or location');
+    // }
 
-    const ticketObj = await this.ticketService.getTicket(
-      { ticket_number, location }, ['items'],
-    );
+    // const ticketObj = await this.ticketService.getTicket(
+    //   { ticket_number, location }, ['items'],
+    // );
 
-    if (!ticketObj) {
-      throw new InternalServerErrorException('There was an error while getting your ticket items');
-    }
-    return ticketObj.items;
+    // if (!ticketObj) {
+    //   throw new InternalServerErrorException('There was an error while getting your ticket items');
+    // }
+    // return ticketObj.items;
   }
 
   async addTicketItem(
