@@ -8,6 +8,7 @@ import {
   TicketItem as TicketItemEntity,
   User as UserEntity,
   TicketStatus,
+  TicketUser,
 } from '@tabify/entities';
 
 @Injectable()
@@ -59,7 +60,7 @@ export class TicketService {
 
   async getTicketFirestoreId(id: number) {
     const ticketRepo = await getRepository(TicketEntity);
-    const ticket = await ticketRepo.findOne({id});
+    const ticket = await ticketRepo.findOne({ id });
     if (!ticket) {
       throw new NotFoundException(`Ticket with id ${id} could not be found`);
     }
@@ -73,17 +74,11 @@ export class TicketService {
    * Add user to existing database ticket
    */
   async addUserToDatabaseTicket(ticketId: number, uid: string) {
-    try {
-      await getConnection()
-        .createQueryBuilder()
-        .relation(TicketEntity, 'users')
-        .of(ticketId)
-        .add(uid);
-    } catch (e) {
-      const { code } = e;
-      if (code !== 'ER_DUP_ENTRY') {
-        throw new BadRequestException('An unknown error occurred. Please try again.', e);
-      }
+    const ticketUserRepo = await getRepository(TicketUser);
+    const ticketUser = await ticketUserRepo.findOne({ ticket: { id: ticketId }, user: { uid } });
+    if (!ticketUser) {
+      return await ticketUserRepo.save({ ticket: { id: ticketId }, user: { uid } });
     }
+    return ticketUser;
   }
 }
