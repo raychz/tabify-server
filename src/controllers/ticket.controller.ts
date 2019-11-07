@@ -1,11 +1,12 @@
 import { Get, Controller, Query, Res, Post, Body, Put, Param, BadRequestException, InternalServerErrorException, NotFoundException } from '@nestjs/common';
-import { FirebaseService, FraudPreventionCodeService, TicketService, OmnivoreService, StoryService } from '@tabify/services';
+import { FirebaseService, FraudPreventionCodeService, TicketService, OmnivoreService, StoryService, TicketUserService } from '@tabify/services';
 import { User } from '../decorators/user.decorator';
 
 @Controller('tickets')
 export class TicketController {
   constructor(
     private readonly ticketService: TicketService,
+    private readonly ticketUserService: TicketUserService,
     private readonly storyService: StoryService,
     private readonly firebaseService: FirebaseService,
     private readonly fraudPreventionCodeService: FraudPreventionCodeService,
@@ -62,7 +63,7 @@ export class TicketController {
     @User('uid') uid: string,
     @Param('id') ticketId: number,
   ) {
-    await this.ticketService.addUserToDatabaseTicket(ticketId, uid);
+    return await this.ticketUserService.addUserToTicket(ticketId, uid);
   }
 
   /** Adds user to Firestore ticket */

@@ -13,10 +13,6 @@ import {
 
 @Injectable()
 export class TicketService {
-  constructor(
-    private readonly omnivoreService: OmnivoreService,
-    private readonly firebaseService: FirebaseService,
-  ) { }
 
   /**
    * Attemps to load a ticket from local database if it exists
@@ -68,17 +64,5 @@ export class TicketService {
       throw new NotFoundException(`Ticket with id ${id} does not have an associated Firestore Document Id`);
     }
     return ticket.firestore_doc_id;
-  }
-
-  /**
-   * Add user to existing database ticket
-   */
-  async addUserToDatabaseTicket(ticketId: number, uid: string) {
-    const ticketUserRepo = await getRepository(TicketUser);
-    const ticketUser = await ticketUserRepo.findOne({ ticket: { id: ticketId }, user: { uid } });
-    if (!ticketUser) {
-      return await ticketUserRepo.save({ ticket: { id: ticketId }, user: { uid } });
-    }
-    return ticketUser;
   }
 }

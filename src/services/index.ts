@@ -20,3 +20,4 @@ export * from './spreedly.service';
 export * from './ticket.service';
 export * from './ticket-payment.service';
 export * from './ticket-total.service';
+export * from './ticket-user.service';
