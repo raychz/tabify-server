@@ -12,7 +12,7 @@ import {
   Index,
   UpdateDateColumn,
 } from 'typeorm';
-import { FraudPreventionCode, Location, Story, TicketItem, TicketTotal, TicketPayment, User } from '@tabify/entities';
+import { FraudPreventionCode, Location, Story, TicketItem, TicketTotal, TicketPayment, User, ServerReward } from '@tabify/entities';
 
 export enum TicketStatus {
   OPEN = 'open',
@@ -78,4 +78,7 @@ export class Ticket {
     cascade: true,
   })
   ticketPayments?: TicketPayment[];
+
+  @OneToOne(type => ServerReward, serverReward => serverReward.ticket)
+  serverReward!: ServerReward;
 }
