@@ -7,13 +7,19 @@ export class Server {
     id!: number;
 
     @Column({type: 'varchar', nullable: false})
-    displayName!: string;
+    firstName!: string;
+
+    @Column({type: 'varchar', nullable: true})
+    lastName!: string;
 
     @Column({type: 'varchar', nullable: false})
     email!: string;
 
     @Column({type: 'varchar', nullable: false})
     password!: string;
+
+    @Column({type: 'varchar', length: 5, nullable: false})
+    employerIdCode!: string;
 
     @Column({type: 'varchar', length: 5, nullable: false, unique: true})
     referralCode!: string;
