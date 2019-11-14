@@ -31,6 +31,8 @@ export class Ticket {
   @Column({ type: 'varchar', nullable: false })
   tab_id?: string;
 
+  // TODO: Should this have an index?
+  @Index()
   @Column({ type: 'int', nullable: false })
   ticket_number?: number;
 
