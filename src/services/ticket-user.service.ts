@@ -9,10 +9,13 @@ export class TicketUserService {
    */
   async addUserToTicket(ticketId: number, uid: string) {
     const ticketUserRepo = await getRepository(TicketUser);
-    const ticketUser = await ticketUserRepo.findOne({ ticket: { id: ticketId }, user: { uid } });
+    let ticketUser = await ticketUserRepo.findOne({ ticket: { id: ticketId }, user: { uid } }, { relations: ['user', 'user.userDetail'] });
+
     if (!ticketUser) {
-      return await ticketUserRepo.save({ ticket: { id: ticketId }, user: { uid } });
+      await ticketUserRepo.insert({ ticket: { id: ticketId }, user: { uid } });
+      ticketUser = await ticketUserRepo.findOneOrFail({ ticket: { id: ticketId }, user: { uid } }, { relations: ['user', 'user.userDetail'] });
     }
+
     return ticketUser;
   }
 }

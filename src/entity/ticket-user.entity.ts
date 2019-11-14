@@ -12,4 +12,16 @@ export class TicketUser {
 
   @ManyToOne(type => User, user => user.tickets)
   user!: User;
+
+  @Column({ type: 'int', nullable: false })
+  sub_total!: number;
+
+  @Column({ type: 'int', nullable: false })
+  tax!: number;
+
+  @Column({ type: 'int', nullable: false })
+  tips!: number;
+
+  @Column({ type: 'int', nullable: false })
+  total!: number;
 }
