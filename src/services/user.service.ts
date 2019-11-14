@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { getRepository } from 'typeorm';
-import { Server as ServerEntity, User as UserEntity, UserDetail as UserDetailEntity } from '@tabify/entities';
+import {
+    Server as ServerEntity, User as UserEntity, UserDetail as UserDetailEntity, Ticket as TicketEntity
+} from '@tabify/entities';
 
 // This service handles operations for the User and UserDetails entities
 @Injectable()
@@ -49,7 +51,24 @@ export class UserService {
 
     async getUserDetails(uid: string) {
         const userDetailsRepo = await getRepository(UserDetailEntity);
-        const userDetail = await userDetailsRepo.find({ where: { user: uid }, relations: ['user']});
+        const userDetail = await userDetailsRepo.find({ where: { user: uid }, relations: ['user'] });
         return userDetail[0];
+    }
+
+    /**
+     * sets newUser of all users part of ticketId to false
+     * @param ticketId ticketId
+     */
+    async setNewUserFalse(ticketId: number) {
+        const userDetailRepo = getRepository(UserDetailEntity);
+
+        const res = await userDetailRepo.createQueryBuilder()
+            .leftJoinAndSelect('user', 'user')
+            .leftJoinAndSelect('user.tickets', 'ticket', 'ticket.id = :ticketId', { ticketId })
+            .update()
+            .set({ newUser: false })
+            .execute();
+
+        return res;
     }
 }
