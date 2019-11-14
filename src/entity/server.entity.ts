@@ -19,7 +19,7 @@ export class Server {
     password!: string;
 
     @Column({type: 'varchar', length: 5, nullable: false})
-    employerIdCode!: string;
+    employeeId!: string;
 
     @Column({type: 'varchar', length: 5, nullable: false, unique: true})
     referralCode!: string;
