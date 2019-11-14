@@ -22,4 +22,7 @@ export class UserDetail {
 
     @ManyToOne(type => Server, server => server.users)
     server!: Server;
+
+    @Column({type: 'boolean', nullable: false, default: true})
+    newUser!: boolean;
 }
