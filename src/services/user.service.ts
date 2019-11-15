@@ -59,16 +59,29 @@ export class UserService {
      * sets newUser of all users part of ticketId to false
      * @param ticketId ticketId
      */
-    async setNewUserFalse(ticketId: number) {
-        const userDetailRepo = getRepository(UserDetailEntity);
+    async setNewUsersFalse(ticketId: number) {
+        const userRepo = getRepository(UserEntity);
 
-        const res = await userDetailRepo.createQueryBuilder()
-            .leftJoinAndSelect('user', 'user')
-            .leftJoinAndSelect('user.tickets', 'ticket', 'ticket.id = :ticketId', { ticketId })
+        // get all users associated with the ticket
+        const users = await userRepo.createQueryBuilder('user')
+            .innerJoin('user.tickets', 'ticket')
+            .where('ticket.id = :ticketId', { ticketId })
+            .getMany();
+
+        const userDetailsRepo = await getRepository(UserDetailEntity);
+
+        // extract all uids
+        const userIDs = users.map(user => {
+            return user.uid;
+        });
+
+        // update their newUser status to false
+        const updateNewUsers = await userDetailsRepo.createQueryBuilder()
             .update()
             .set({ newUser: false })
+            .where('user.uid IN (:...userIDs)', { userIDs })
             .execute();
 
-        return res;
+        return updateNewUsers;
     }
 }
