@@ -9,3 +9,4 @@ export * from './story.controller';
 export * from './ticket.controller';
 export * from './user.controller';
 export * from './payment-method.controller';
+export * from './coupon.controller';
