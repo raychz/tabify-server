@@ -1,7 +1,7 @@
 import { Injectable, Logger, BadRequestException, NotFoundException } from '@nestjs/common';
 import { getRepository, getConnection, FindOneOptions, FindConditions } from 'typeorm';
 import { auth } from 'firebase-admin';
-import { FirebaseService, OmnivoreService, StoryService } from '@tabify/services';
+import { FirebaseService, OmnivoreService, UserService} from '@tabify/services';
 import {
   ITicketItem,
   Ticket as TicketEntity,
@@ -9,12 +9,15 @@ import {
   User as UserEntity,
   TicketStatus,
 } from '@tabify/entities';
+import { ServerService } from './server.service';
 
 @Injectable()
 export class TicketService {
   constructor(
     private readonly omnivoreService: OmnivoreService,
     private readonly firebaseService: FirebaseService,
+    private readonly serverService: ServerService,
+    private readonly userService: UserService,
   ) { }
 
   /**
@@ -47,6 +50,10 @@ export class TicketService {
    * @param ticketId
    */
   async closeTicket(ticketId: number) {
+
+    // add server rewards for new users referrals
+    await this.serverService.addServerReward(ticketId);
+
     const res = await getConnection()
       .createQueryBuilder()
       .update(TicketEntity)
@@ -54,12 +61,15 @@ export class TicketService {
       .where('id = :id', { id: ticketId })
       .execute();
 
+    // set newUser status to false on users completing their first ticket
+    await this.userService.setNewUsersFalse(ticketId);
+
     return res;
   }
 
   async getTicketFirestoreId(id: number) {
     const ticketRepo = await getRepository(TicketEntity);
-    const ticket = await ticketRepo.findOne({id});
+    const ticket = await ticketRepo.findOne({ id });
     if (!ticket) {
       throw new NotFoundException(`Ticket with id ${id} could not be found`);
     }
