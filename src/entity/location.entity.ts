@@ -6,6 +6,7 @@ import {
   OneToMany,
 } from 'typeorm';
 import { Server, Ticket } from '@tabify/entities';
+import { Coupon } from './coupon.entity';
 
 @Entity()
 @Unique(['omnivore_id'])
@@ -66,4 +67,9 @@ export class Location {
 
   @OneToMany(type => Server, server => server.location)
   servers!: Server[];
+
+  @OneToMany(type => Coupon, coupon => coupon.id, {
+    cascade: true,
+  })
+  coupons?: Coupon[];
 }

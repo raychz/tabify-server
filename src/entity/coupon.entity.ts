@@ -4,7 +4,9 @@ import {
     Column,
     CreateDateColumn,
     UpdateDateColumn,
+    ManyToOne,
   } from 'typeorm';
+import { Location } from './location.entity';
 
 @Entity()
   export class Coupon {
@@ -28,4 +30,7 @@ import {
 
     @Column({type: 'date', nullable: false})
     coupon_end_date!: Date;
+
+    @ManyToOne(type => Location, location => location.coupons)
+    location!: Location;
   }

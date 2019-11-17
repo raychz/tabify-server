@@ -10,7 +10,7 @@ export class CouponService {
     // get all comments from the server
     async getCoupons() {
         const couponsRepo = await getRepository(CouponEntity);
-        const coupons = await couponsRepo.find();
+        const coupons = await couponsRepo.createQueryBuilder('coupon').leftJoinAndSelect('coupon.location', 'location').getMany();
 
         return coupons;
     }
