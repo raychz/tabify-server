@@ -66,7 +66,9 @@ export class TicketController {
     );
 
     // Create ticket in our database
-    const { created, ticket: newTicket } = await this.ticketService.createTicket(omnivoreTicket);
+    const { created, ticket: newTicket } = await this.ticketService.createTicket(omnivoreTicket,
+      ['items', 'items.users', 'location', 'users', 'users.user', 'users.user.userDetail', 'ticketTotal'],
+    );
 
     if (created) {
       // Save new story
