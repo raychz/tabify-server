@@ -5,11 +5,14 @@ import { TicketItem, User } from '@tabify/entities';
 @Unique(['ticketItem', 'user'])
 export class TicketItemUser {
   @PrimaryGeneratedColumn()
-  id!: number;
+  id?: number;
 
   @ManyToOne(type => TicketItem, ticketItem => ticketItem.users)
   ticketItem!: TicketItem;
 
   @ManyToOne(type => User, user => user.ticketItems)
   user!: User;
+
+  @Column({ type: 'int', nullable: false })
+  price!: number;
 }
