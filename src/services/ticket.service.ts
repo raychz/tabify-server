@@ -3,12 +3,10 @@ import { getRepository, getConnection, FindOneOptions, FindConditions, InsertRes
 import { auth } from 'firebase-admin';
 import { FirebaseService, OmnivoreService, StoryService } from '@tabify/services';
 import {
-  ITicketItem,
   Ticket as TicketEntity,
   TicketItem as TicketItemEntity,
   User as UserEntity,
   TicketStatus,
-  TicketUser,
   TicketItem,
   TicketTotal,
 } from '@tabify/entities';
@@ -50,14 +48,14 @@ export class TicketService {
    * Creates the ticket, returns it if it already exists
    * @param ticket
    */
-  async createTicket(ticket: TicketEntity) {
+  async createTicket(ticket: TicketEntity, relations: string[]) {
     const ticketFindOptions = {
       where: { location: ticket.location, tab_id: ticket.tab_id, ticket_number: ticket.ticket_number, ticket_status: TicketStatus.OPEN },
-      relations: ['items', 'items.users', 'location', 'users', 'users.user', 'users.user.userDetail', 'ticketTotal'],
+      relations,
       lock: { mode: 'pessimistic_write' },
     };
 
-    const createdTicket = await getConnection().transaction(async transactionalEntityManager => {
+    return await getConnection().transaction(async transactionalEntityManager => {
       const ticketRepo = await transactionalEntityManager.getRepository(TicketEntity);
       let existingTicket = await ticketRepo.findOne(ticketFindOptions as FindOneOptions<TicketEntity>);
 
@@ -101,7 +99,6 @@ export class TicketService {
         return { created: true, ticket: existingTicket };
       }
     });
-    return createdTicket;
   }
 
   /**
