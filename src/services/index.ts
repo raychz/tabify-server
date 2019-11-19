@@ -22,3 +22,5 @@ export * from './ticket-payment.service';
 export * from './ticket-total.service';
 export * from './ticket-user.service';
 export * from './ably.service';
+export * from './ticket-item.service';
+export * from './ticket-item-user.service';
