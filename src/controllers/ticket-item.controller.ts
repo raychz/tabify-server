@@ -6,30 +6,25 @@ import { TicketItemService, AblyService } from '@tabify/services';
 export class TicketItemController {
   constructor(
     private readonly ticketItemService: TicketItemService,
-    private readonly ablyService: AblyService,
   ) { }
 
   /** Adds user to ticket item */
   @Post(':itemId/users')
   async addUserToTicketItem(
     @User('uid') uid: string,
+    @Param('ticketId') ticketId: number,
     @Param('itemId') itemId: number,
   ) {
-    return await this.ticketItemService.addUserToTicketItem(uid, itemId);
-    // const ticketUser = await this.ticketUserService.addUserToTicket(ticketId, uid);
-    // await this.ablyService.publish(TicketUpdates.TICKET_USER_ADDED, ticketUser, ticketId.toString());
-    // return ticketUser;
+    return await this.ticketItemService.addUserToTicketItem(uid, itemId, ticketId, true);
   }
 
   /** Removes user from ticket item */
   @Delete(':itemId/users')
   async removeUserFromTicketItem(
     @User('uid') uid: string,
+    @Param('ticketId') ticketId: number,
     @Param('itemId') itemId: number,
   ) {
-    return await this.ticketItemService.removeUserFromTicketItem(uid, itemId);
-    // const ticketUser = await this.ticketUserService.addUserToTicket(ticketId, uid);
-    // await this.ablyService.publish(TicketUpdates.TICKET_USER_ADDED, ticketUser, ticketId.toString());
-    // return ticketUser;
+    return await this.ticketItemService.removeUserFromTicketItem(uid, itemId, ticketId, true);
   }
 }
