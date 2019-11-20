@@ -6,10 +6,10 @@ import {
   Ticket as TicketEntity,
   TicketItem as TicketItemEntity,
   User as UserEntity,
-  TicketStatus,
   TicketItem,
   TicketTotal,
 } from '@tabify/entities';
+import { TicketStatus } from '../enums';
 
 @Injectable()
 export class TicketService {

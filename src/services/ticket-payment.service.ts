@@ -1,9 +1,10 @@
 import { Injectable, BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { getRepository } from 'typeorm';
-import { TicketPayment, TicketPaymentStatus, Ticket, User } from '@tabify/entities';
+import { TicketPayment, Ticket, User } from '@tabify/entities';
 import { SpreedlyService, TicketService } from '@tabify/services';
 import { TicketPaymentInterface } from '../interfaces';
 import { TicketTotalService } from './ticket-total.service';
+import { TicketPaymentStatus } from '../enums';
 
 @Injectable()
 export class TicketPaymentService {

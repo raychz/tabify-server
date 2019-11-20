@@ -1,3 +1,4 @@
+// Keep up to date with tabify/src/interfaces/ticket.interface.ts
 import {
   CreateDateColumn,
   Entity,
@@ -13,11 +14,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { FraudPreventionCode, Location, Story, TicketItem, TicketTotal, TicketPayment, User, TicketUser } from '@tabify/entities';
-
-export enum TicketStatus {
-  OPEN = 'open',
-  CLOSED = 'closed',
-}
+import { TicketStatus } from '../enums/ticket-status.enum';
 
 @Entity()
 @Unique(['tab_id', 'location'])

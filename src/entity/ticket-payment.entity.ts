@@ -7,12 +7,7 @@ import {
     ManyToOne,
 } from 'typeorm';
 import { Ticket, User } from '@tabify/entities';
-
-export enum TicketPaymentStatus {
-    PENDING = 'pending',
-    SUCCEEDED = 'succeeded',
-    FAILED = 'failed',
-}
+import { TicketPaymentStatus } from '../enums/ticket-payment-status.enum';
 
 /** Saves the ticket payment metadata that we get back from Omnivore */
 @Entity()
