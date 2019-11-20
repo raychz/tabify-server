@@ -24,7 +24,7 @@ export class TicketItemService {
       const ticketItem = await this.getTicketItem(itemId, transactionalEntityManager);
 
       // Add current user to array of ticket item users
-      ticketItemUsers.push({ ticketItem, user: { uid } as User, price: 0 });
+      ticketItemUsers.push({ ticketItem: { id: ticketItem.id }, user: { uid } as User, price: 0 });
 
       // Evenly distribute the cost of the item amongst the ticket item users
       this.distributeItemPrice(ticketItem.price!, ticketItemUsers);

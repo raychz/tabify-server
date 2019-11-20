@@ -43,9 +43,8 @@ export class TicketUserService {
       .select('SUM(ticketItemUser.price)', 'priceSum')
       .addSelect('COUNT(*)', 'selectedItemsCount')
       .leftJoin('ticketItemUser.ticketItem', 'ticketItem')
-      .leftJoin('ticketItem.ticket', 'ticket')
       .where('ticketItemUser.user = :uid', { uid })
-      .andWhere('ticket.id = :ticketId', { ticketId })
+      .andWhere('ticketItem.ticket = :ticketId', { ticketId })
       .getRawOne();
 
     const updatedTicketUser: TicketUser = await ticketUserRepo.save({ ...ticketUser, sub_total: priceSum, selectedItemsCount });
