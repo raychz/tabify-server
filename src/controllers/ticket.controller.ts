@@ -45,7 +45,7 @@ export class TicketController {
     }
 
     const ticket = await this.ticketService.getTicket(params,
-      ['items', 'items.users', 'location', 'users', 'users.user', 'users.user.userDetail', 'ticketTotal'],
+      ['items', 'items.users', 'items.users.user', 'items.users.user.userDetail', 'location', 'users', 'users.user', 'users.user.userDetail', 'ticketTotal'],
     );
 
     if (!ticket) {
@@ -67,7 +67,7 @@ export class TicketController {
 
     // Create ticket in our database
     const { created, ticket: newTicket } = await this.ticketService.createTicket(omnivoreTicket,
-      ['items', 'items.users', 'location', 'users', 'users.user', 'users.user.userDetail', 'ticketTotal'],
+      ['items', 'items.users', 'items.users.user', 'items.users.user.userDetail', 'location', 'users', 'users.user', 'users.user.userDetail', 'ticketTotal'],
     );
 
     if (created) {
