@@ -28,12 +28,12 @@ export class TicketUserService {
   }
 
   /** Update subtotal and selected items count for this user */
-  async updateTicketUserTotals(ticket: Ticket, user: User, manager: EntityManager) {
+  async updateTicketUserTotals(ticketId: number, uid: string, manager: EntityManager) {
     const ticketUserRepo = await manager.getRepository(TicketUser);
     const ticketItemUserRepo = await manager.getRepository(TicketItemUser);
 
     const ticketUser = await ticketUserRepo.findOneOrFail({
-      where: { ticket, user },
+      where: { ticket: ticketId, user: uid },
       lock: { mode: 'pessimistic_write' },
     });
 
@@ -44,8 +44,8 @@ export class TicketUserService {
       .addSelect('COUNT(*)', 'selectedItemsCount')
       .leftJoin('ticketItemUser.ticketItem', 'ticketItem')
       .leftJoin('ticketItem.ticket', 'ticket')
-      .where('ticketItemUser.user = :user', { user: user.uid })
-      .andWhere('ticket.id = :ticket', { ticket: ticket.id })
+      .where('ticketItemUser.user = :uid', { uid })
+      .andWhere('ticket.id = :ticketId', { ticketId })
       .getRawOne();
 
     const updatedTicketUser: TicketUser = await ticketUserRepo.save({ ...ticketUser, sub_total: priceSum, selectedItemsCount });
