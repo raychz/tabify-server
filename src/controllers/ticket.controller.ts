@@ -92,8 +92,8 @@ export class TicketController {
     @Param('id') ticketId: number,
   ) {
     const user = await this.firebaseService.getUserInfo(uid);
-    const firestoreDocumentId = await this.ticketService.getTicketFirestoreId(ticketId);
-    await this.firebaseService.addUserToFirestoreTicket(firestoreDocumentId, user);
+    // const firestoreDocumentId = await this.ticketService.getTicketFirestoreId(ticketId);
+    // await this.firebaseService.addUserToFirestoreTicket(firestoreDocumentId, user);
   }
 
   /** Finalize totals for each user on Firestore */
@@ -102,8 +102,8 @@ export class TicketController {
     @User('uid') uid: string,
     @Param('id') ticketId: number,
   ) {
-    const firestoreDocumentId = await this.ticketService.getTicketFirestoreId(ticketId);
-    return await this.firebaseService.finalizeUserTotals(firestoreDocumentId);
+    // const firestoreDocumentId = await this.ticketService.getTicketFirestoreId(ticketId);
+    // return await this.firebaseService.finalizeUserTotals(firestoreDocumentId);
   }
 
   /** Add ticket number to fraud code */

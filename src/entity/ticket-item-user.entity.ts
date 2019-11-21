@@ -1,4 +1,4 @@
-import { Entity, Column, ManyToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
+import { Entity, Column, ManyToOne, PrimaryGeneratedColumn, Unique, Index } from 'typeorm';
 import { TicketItem, User } from '@tabify/entities';
 
 @Entity()
@@ -7,10 +7,12 @@ export class TicketItemUser {
   @PrimaryGeneratedColumn()
   id?: number;
 
-  @ManyToOne(type => TicketItem, ticketItem => ticketItem.users)
+  @Index()
+  @ManyToOne(type => TicketItem, ticketItem => ticketItem.users, { nullable: false })
   ticketItem!: TicketItem;
 
-  @ManyToOne(type => User, user => user.ticketItems)
+  @Index()
+  @ManyToOne(type => User, user => user.ticketItems, { nullable: false })
   user!: User;
 
   @Column({ type: 'int', nullable: false })

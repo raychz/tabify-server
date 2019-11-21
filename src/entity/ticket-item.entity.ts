@@ -6,6 +6,7 @@ import {
   ManyToMany,
   JoinTable,
   OneToMany,
+  Index,
 } from 'typeorm';
 import { Ticket, User, TicketItemUser} from '@tabify/entities';
 
@@ -17,6 +18,7 @@ export class TicketItem {
   @Column({ type: 'int', nullable: false })
   ticket_item_id?: number;
 
+  @Index()
   @ManyToOne(type => Ticket, (ticket: Ticket) => ticket.items, {
     nullable: false,
     onDelete: 'CASCADE',

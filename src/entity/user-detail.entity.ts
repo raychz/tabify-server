@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToOne, JoinColumn, ManyToOne } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, OneToOne, JoinColumn, ManyToOne, Index } from 'typeorm';
 import { Server, User } from '@tabify/entities';
 
 @Entity()
@@ -16,6 +16,7 @@ export class UserDetail {
     photo_url!: string;
 
     // Bi-directional one-to-one
+    @Index()
     @OneToOne(type => User, user => user.userDetail, { onDelete: 'CASCADE' })
     @JoinColumn()
     user!: User;

@@ -122,9 +122,9 @@ export class TicketService {
     if (!ticket) {
       throw new NotFoundException(`Ticket with id ${id} could not be found`);
     }
-    if (!ticket.firestore_doc_id) {
-      throw new NotFoundException(`Ticket with id ${id} does not have an associated Firestore Document Id`);
-    }
-    return ticket.firestore_doc_id;
+    // if (!ticket.firestore_doc_id) {
+    //   throw new NotFoundException(`Ticket with id ${id} does not have an associated Firestore Document Id`);
+    // }
+    // return ticket.firestore_doc_id;
   }
 }
