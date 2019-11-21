@@ -15,13 +15,13 @@ export class TicketUserService {
     const ticketUserRepo = await getRepository(TicketUser);
     let ticketUser = await ticketUserRepo.findOne({ ticket: { id: ticketId }, user: { uid } }, { relations: ['user', 'user.userDetail'] });
 
+    // The user is not currently on the ticket, so add them and send a notification if necessary
     if (!ticketUser) {
       await ticketUserRepo.insert({ ticket: { id: ticketId }, user: { uid } });
       ticketUser = await ticketUserRepo.findOneOrFail({ ticket: { id: ticketId }, user: { uid } }, { relations: ['user', 'user.userDetail'] });
-    }
-
-    if (sendNotification) {
-      await this.ablyService.publish(TicketUpdates.TICKET_USER_ADDED, ticketUser, ticketId.toString());
+      if (sendNotification) {
+        await this.ablyService.publish(TicketUpdates.TICKET_USER_ADDED, ticketUser, ticketId.toString());
+      }
     }
 
     return ticketUser;
@@ -47,7 +47,11 @@ export class TicketUserService {
       .andWhere('ticketItem.ticket = :ticketId', { ticketId })
       .getRawOne();
 
-    const updatedTicketUser: TicketUser = await ticketUserRepo.save({ ...ticketUser, sub_total: priceSum, selectedItemsCount });
+    const updatedTicketUser: TicketUser = await ticketUserRepo.save({
+      ...ticketUser,
+      sub_total: Number(priceSum),
+      selectedItemsCount: Number(selectedItemsCount),
+    });
     return updatedTicketUser;
   }
 

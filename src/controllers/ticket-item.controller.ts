@@ -15,6 +15,8 @@ export class TicketItemController {
     @Param('ticketId') ticketId: number,
     @Param('itemId') itemId: number,
   ) {
+    ticketId = Number(ticketId);
+    itemId = Number(itemId);
     return await this.ticketItemService.addUserToTicketItem(uid, itemId, ticketId, true);
   }
 
@@ -25,6 +27,8 @@ export class TicketItemController {
     @Param('ticketId') ticketId: number,
     @Param('itemId') itemId: number,
   ) {
+    ticketId = Number(ticketId);
+    itemId = Number(itemId);
     return await this.ticketItemService.removeUserFromTicketItem(uid, itemId, ticketId, true);
   }
 }

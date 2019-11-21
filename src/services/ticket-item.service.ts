@@ -31,7 +31,11 @@ export class TicketItemService {
 
       // Save updated ticket item users
       const ticketItemUserRepo = await transactionalEntityManager.getRepository(TicketItemUser);
-      const updatedTicketItemUsers = await ticketItemUserRepo.save(ticketItemUsers);
+      let updatedTicketItemUsers = await ticketItemUserRepo.save(ticketItemUsers);
+      updatedTicketItemUsers = await ticketItemUserRepo.find({
+        where: updatedTicketItemUsers,
+        relations: ['user', 'user.userDetail'],
+      });
 
       // Update subtotals for each user on this item; get their items and get their TicketUser entity and update the price to be the sum of the items
       const updatedTicketUsers = [];
@@ -52,7 +56,12 @@ export class TicketItemService {
     } = result;
 
     if (sendNotification) {
-      await this.ablyService.publish(TicketUpdates.TICKET_ITEM_USERS_UPDATED, _updatedTicketItemUsers, ticketId.toString());
+      await this.ablyService.publish(
+        TicketUpdates.TICKET_ITEM_USERS_REPLACED,
+        { newTicketItemUsers: _updatedTicketItemUsers, itemId },
+        ticketId.toString(),
+      );
+      await this.ablyService.publish(TicketUpdates.TICKET_USERS_UPDATED, _updatedTicketUsers, ticketId.toString());
     }
     return result;
   }
@@ -73,7 +82,7 @@ export class TicketItemService {
 
       // Remove current user from array of ticket item users
       const userIndex = ticketItemUsers.findIndex(ticketItemUser => ticketItemUser.user.uid === uid);
-      const removedTicketItemUser = ticketItemUsers.splice(userIndex)[0];
+      const removedTicketItemUser = ticketItemUsers.splice(userIndex, 1)[0];
 
       // Evenly distribute the cost of the item amongst the ticket item users
       this.distributeItemPrice(ticketItem.price!, ticketItemUsers);
@@ -83,7 +92,15 @@ export class TicketItemService {
       await ticketItemUserRepo.remove(removedTicketItemUser);
 
       // Save updated ticket item users
-      const updatedTicketItemUsers: TicketItemUser[] = await ticketItemUserRepo.save(ticketItemUsers);
+      let updatedTicketItemUsers: TicketItemUser[] = await ticketItemUserRepo.save(ticketItemUsers);
+
+      // If there are still users on this item, retrieve and join them
+      if (updatedTicketItemUsers.length) {
+        updatedTicketItemUsers = await ticketItemUserRepo.find({
+          where: updatedTicketItemUsers,
+          relations: ['user', 'user.userDetail'],
+        });
+      }
 
       // Push the removed user so that it gets included in the subtotals update below
       const usersAffected: TicketItemUser[] = [...updatedTicketItemUsers, removedTicketItemUser];
@@ -107,7 +124,12 @@ export class TicketItemService {
     } = result;
 
     if (sendNotification) {
-      await this.ablyService.publish(TicketUpdates.TICKET_ITEM_USERS_UPDATED, _updatedTicketItemUsers, ticketId.toString());
+      await this.ablyService.publish(
+        TicketUpdates.TICKET_ITEM_USERS_REPLACED,
+        { newTicketItemUsers: _updatedTicketItemUsers, itemId },
+        ticketId.toString(),
+      );
+      await this.ablyService.publish(TicketUpdates.TICKET_USERS_UPDATED, _updatedTicketUsers, ticketId.toString());
     }
     return result;
   }
