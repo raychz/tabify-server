@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, ManyToOne, OneToOne, JoinColumn, Column, CreateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, ManyToOne, OneToOne, JoinColumn, Column, CreateDateColumn, OneToMany } from 'typeorm';
 import { Server, Ticket } from '@tabify/entities';
 
 @Entity()
@@ -9,8 +9,7 @@ export class ServerReward {
     @ManyToOne(type => Server, server => server.serverRewards)
     server!: Server;
 
-    @OneToOne(type => Ticket, ticket => ticket.serverReward)
-    @JoinColumn()
+    @ManyToOne(type => Ticket, ticket => ticket.serverReward)
     ticket!: Ticket;
 
     @Column({ nullable: false })

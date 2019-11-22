@@ -79,6 +79,6 @@ export class Ticket {
   })
   ticketPayments?: TicketPayment[];
 
-  @OneToOne(type => ServerReward, serverReward => serverReward.ticket)
+  @OneToMany(type => ServerReward, serverReward => serverReward.ticket)
   serverReward?: ServerReward;
 }
