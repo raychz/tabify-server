@@ -5,8 +5,11 @@ import {
     CreateDateColumn,
     UpdateDateColumn,
     ManyToOne,
+    OneToMany,
   } from 'typeorm';
 import { Location } from './location.entity';
+import { User } from './user.entity';
+import { UserToCoupons } from './user_coupons_coupon.entity';
 
 @Entity()
   export class Coupon {
@@ -18,6 +21,12 @@ import { Location } from './location.entity';
 
     @Column({ type: 'varchar', nullable: false })
     description!: string;
+
+    @Column({ type: 'int', nullable: false })
+    value!: number;
+
+    @Column({ type: 'int', nullable: false })
+    usage_limit!: number;
 
     @CreateDateColumn()
     date_created!: Date;
@@ -31,6 +40,13 @@ import { Location } from './location.entity';
     @Column({type: 'date', nullable: false})
     coupon_end_date!: Date;
 
-    @ManyToOne(type => Location, location => location.coupons)
+    @ManyToOne(type => Location, location => location.coupons, {
+      cascade: true,
+    })
     location!: Location;
+
+    @OneToMany(type => UserToCoupons, userCoupon => userCoupon.coupon, {
+      cascade: true,
+    })
+    userToCoupons!: UserToCoupons[];
   }

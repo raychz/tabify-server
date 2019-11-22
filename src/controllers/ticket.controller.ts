@@ -1,4 +1,5 @@
-import { Get, Controller, Query, Res, Post, Body, Put, Param, BadRequestException, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { Get, Controller, Query, Res, Post,
+  Body, Put, Param, BadRequestException, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { FirebaseService, FraudPreventionCodeService, TicketService, OmnivoreService, StoryService } from '@tabify/services';
 import { User } from '../decorators/user.decorator';
 
