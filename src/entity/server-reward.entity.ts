@@ -12,7 +12,7 @@ export class ServerReward {
     @ManyToOne(type => Ticket, ticket => ticket.serverReward)
     ticket!: Ticket;
 
-    @Column({ nullable: false })
+    @Column({type: 'float', nullable: false })
     payment_amount!: number;
 
     @CreateDateColumn()
