@@ -28,6 +28,7 @@
     "testEnvironment": "node"
   },
   "dependencies": {
+    "@lifeomic/attempt": "^3.0.0",
     "@nest-middlewares/morgan": "^5.1.1",
     "@nestjs/common": "^5.1.0",
     "@nestjs/core": "^5.1.0",
