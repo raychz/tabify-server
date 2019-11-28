@@ -16,7 +16,6 @@ export class AblyService {
   async publish(messageName: string, messageData: any, channel: string) {
     const ablyChannel = this.realtime.channels.get(channel);
     await ablyChannel.publish(messageName, messageData);
-    Logger.log({ messageName, messageData }, 'Published Ably Message');
   }
 
   private onFailure() {
