@@ -34,12 +34,12 @@ export class TicketUserService {
 
     const ticketUser = await ticketUserRepo.findOneOrFail({
       where: { ticket: ticketId, user: uid },
-      lock: { mode: 'pessimistic_write' },
+      // lock: { mode: 'pessimistic_write' }, // TODO: Change back to pess write?
     });
 
     const { priceSum, selectedItemsCount } = await ticketItemUserRepo
       .createQueryBuilder('ticketItemUser')
-      .setLock('pessimistic_read')
+      // .setLock('pessimistic_read') // TODO: Change back to pess read?
       .select('SUM(ticketItemUser.price)', 'priceSum')
       .addSelect('COUNT(*)', 'selectedItemsCount')
       .leftJoin('ticketItemUser.ticketItem', 'ticketItem')
@@ -47,8 +47,12 @@ export class TicketUserService {
       .andWhere('ticketItem.ticket = :ticketId', { ticketId })
       .getRawOne();
 
-    const updatedTicketUser: TicketUser = await ticketUserRepo.save({
+    const updatedTicketUser: TicketUser = {
       ...ticketUser,
+      sub_total: Number(priceSum),
+      selectedItemsCount: Number(selectedItemsCount),
+    };
+    await ticketUserRepo.update(updatedTicketUser.id, {
       sub_total: Number(priceSum),
       selectedItemsCount: Number(selectedItemsCount),
     });
@@ -60,7 +64,7 @@ export class TicketUserService {
     const ticketItemUserRepo = await manager.getRepository(TicketItemUser);
     const ticketItemUsers = await ticketItemUserRepo.find({
       where: { ticketItem: itemId },
-      relations: ['user'],
+      relations: ['user', 'user.userDetail'],
       lock: { mode: 'pessimistic_write' },
     });
     return ticketItemUsers;
