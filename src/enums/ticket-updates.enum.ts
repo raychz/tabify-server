@@ -1,4 +1,7 @@
 export enum TicketUpdates {
+    /** Used to bundle multiple messages together */
+    MULTIPLE_UPDATES = 'MULTIPLE_UPDATES',
+
     // TicketUser-related updates
     /** A new user should be pushed to the client's representation of ticket users. */
     TICKET_USER_ADDED = 'TICKET_USER_ADDED',

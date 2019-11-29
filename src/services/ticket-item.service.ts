@@ -64,13 +64,6 @@ export class TicketItemService {
           return ticketItemUsers;
         });
       }, this.retryOptions);
-    if (sendNotification) {
-      await this.ablyService.publish(
-        TicketUpdates.TICKET_ITEM_USERS_REPLACED,
-        { newTicketItemUsers: updatedTicketItemUsers, itemId },
-        ticketId.toString(),
-      );
-    }
 
     const updatedTicketUsers: TicketUser[] = await retry(
       async (context: AttemptContext, options) => {
@@ -100,7 +93,10 @@ export class TicketItemService {
       }, this.retryOptions);
 
     if (sendNotification) {
-      await this.ablyService.publish(TicketUpdates.TICKET_USERS_UPDATED, updatedTicketUsers, ticketId.toString());
+      await this.ablyService.publish(TicketUpdates.MULTIPLE_UPDATES, [
+        { name: TicketUpdates.TICKET_ITEM_USERS_REPLACED, data: { newTicketItemUsers: updatedTicketItemUsers, itemId } },
+        { name: TicketUpdates.TICKET_USERS_UPDATED, data: updatedTicketUsers },
+      ], ticketId.toString());
     }
     return { updatedTicketItemUsers, updatedTicketUsers };
   }
@@ -152,13 +148,6 @@ export class TicketItemService {
           return { updatedTicketItemUsers: ticketItemUsers, usersAffected };
         });
       });
-    if (sendNotification) {
-      await this.ablyService.publish(
-        TicketUpdates.TICKET_ITEM_USERS_REPLACED,
-        { newTicketItemUsers: result.updatedTicketItemUsers, itemId },
-        ticketId.toString(),
-      );
-    }
 
     const updatedTicketUsers: TicketUser[] = await retry(
       async (context: AttemptContext, options) => {
@@ -188,7 +177,10 @@ export class TicketItemService {
       }, this.retryOptions);
 
     if (sendNotification) {
-      await this.ablyService.publish(TicketUpdates.TICKET_USERS_UPDATED, updatedTicketUsers, ticketId.toString());
+      await this.ablyService.publish(TicketUpdates.MULTIPLE_UPDATES, [
+        { name: TicketUpdates.TICKET_ITEM_USERS_REPLACED, data: { newTicketItemUsers: result.updatedTicketItemUsers, itemId } },
+        { name: TicketUpdates.TICKET_USERS_UPDATED, data: updatedTicketUsers },
+      ], ticketId.toString());
     }
     return { updatedTicketItemUsers: result.updatedTicketItemUsers, updatedTicketUsers };
   }
