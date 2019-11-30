@@ -12,6 +12,7 @@ export class ServerReward {
     @ManyToOne(type => Ticket, ticket => ticket.serverReward)
     ticket!: Ticket;
 
+    // TODO: change to pennies. Use currency.js. Use number, not float
     @Column({type: 'float', nullable: false })
     payment_amount!: number;
 

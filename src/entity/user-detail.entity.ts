@@ -23,6 +23,7 @@ export class UserDetail {
     @ManyToOne(type => Server, server => server.users)
     server!: Server;
 
+    // stored as int in MySQL. 1 = True, 0 = False
     @Column({type: 'boolean', nullable: false, default: true})
     newUser!: boolean;
 }

@@ -26,6 +26,7 @@ export class ServerService {
         const numServers = servers.length;
 
         // calculate payment amount. 1/numServers
+        // use currency.js
         const payment_amount = 1 / numServers;
         const payment_amount_floored = Math.floor(payment_amount * 100) / 100;
 
@@ -44,7 +45,6 @@ export class ServerService {
             serverRewards.push(serverReward);
         });
 
-        console.log(serverRewards);
         // save server rewards in server rewards table
         const serverRewardsRepo = await getRepository(ServerRewardEntity);
         const saveServerRewards = await serverRewardsRepo.save(serverRewards);
