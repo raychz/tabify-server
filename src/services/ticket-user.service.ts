@@ -27,7 +27,7 @@ export class TicketUserService {
     return ticketUser;
   }
 
-  /** Update subtotal and selected items count for this user */
+  /** Update subtotal, total, and selected items count for this user */
   async updateTicketUserTotals(ticketId: number, uid: string, manager: EntityManager) {
     const ticketUserRepo = await manager.getRepository(TicketUser);
     const ticketItemUserRepo = await manager.getRepository(TicketItemUser);
@@ -50,10 +50,12 @@ export class TicketUserService {
     const updatedTicketUser: TicketUser = {
       ...ticketUser,
       sub_total: Number(priceSum),
+      total: Number(priceSum),
       selectedItemsCount: Number(selectedItemsCount),
     };
     await ticketUserRepo.update(updatedTicketUser.id, {
       sub_total: Number(priceSum),
+      total: Number(priceSum),
       selectedItemsCount: Number(selectedItemsCount),
     });
     return updatedTicketUser;
