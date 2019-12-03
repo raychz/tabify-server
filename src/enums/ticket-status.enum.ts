@@ -1,4 +1,4 @@
 export enum TicketStatus {
-  OPEN = 'open',
-  CLOSED = 'closed',
+  OPEN = 'OPEN',
+  CLOSED = 'CLOSED',
 }

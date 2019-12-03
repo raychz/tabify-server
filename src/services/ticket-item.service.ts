@@ -1,9 +1,9 @@
 import { Injectable, ConflictException, BadRequestException, Logger } from '@nestjs/common';
 import { getRepository, getConnection, EntityManager, In } from 'typeorm';
-import { TicketItemUser, TicketItem, User, TicketUser } from '@tabify/entities';
+import { TicketItemUser, TicketItem, User, TicketUser, Ticket } from '@tabify/entities';
 import { AblyService, TicketUserService, UserService } from '@tabify/services';
 import * as currency from 'currency.js';
-import { TicketUpdates } from '../enums';
+import { TicketUpdates, TicketUserStatus } from '../enums';
 import { retry, AttemptContext, PartialAttemptOptions } from '@lifeomic/attempt';
 
 @Injectable()
@@ -19,7 +19,12 @@ export class TicketItemService {
 
   constructor(private ticketUserService: TicketUserService, private readonly ablyService: AblyService, private userService: UserService) { }
 
-  async addUserToTicketItem(uid: string, itemId: number, ticketId: number, sendNotification: boolean) {
+  async addUserToTicketItem(uid: string, ticketUserId: number, itemId: number, ticketId: number, sendNotification: boolean) {
+    const ticketUser = await this.ticketUserService.getTicketUserByTicketUserId(ticketUserId);
+    if (ticketUser.status !== TicketUserStatus.SELECTING) {
+      throw new BadRequestException(`This user cannot modify their selections because their status is ${ticketUser.status}, not ${TicketUserStatus.SELECTING}. Please try again or refresh the app.`);
+    }
+
     const updatedTicketItemUsers: TicketItemUser[] = await retry(
       async (context: AttemptContext, options) => {
         if (context.attemptNum !== 0) {
@@ -101,7 +106,12 @@ export class TicketItemService {
     return { updatedTicketItemUsers, updatedTicketUsers };
   }
 
-  async removeUserFromTicketItem(uid: string, itemId: number, ticketId: number, sendNotification: boolean) {
+  async removeUserFromTicketItem(uid: string, ticketUserId: number, itemId: number, ticketId: number, sendNotification: boolean) {
+    const ticketUser = await this.ticketUserService.getTicketUserByTicketUserId(ticketUserId);
+    if (ticketUser.status !== TicketUserStatus.SELECTING) {
+      throw new BadRequestException(`This user cannot modify their selections because their status is ${ticketUser.status}, not ${TicketUserStatus.SELECTING}. Please try again or refresh the app.`);
+    }
+
     const result: { updatedTicketItemUsers: TicketItemUser[], usersAffected: TicketItemUser[] } = await retry(
       async (context: AttemptContext, options) => {
         if (context.attemptNum !== 0) {
@@ -192,6 +202,11 @@ export class TicketItemService {
       where: { id: itemId },
       // lock: { mode: 'pessimistic_read' }, // TODO: Revert back to pess read?
     });
+  }
+
+  async getTicketItems(ticketId: number, manager: EntityManager) {
+    const ticketItemRepo = manager.getRepository(TicketItem);
+    return ticketItemRepo.find({ where: { ticket: ticketId }, relations: ['users'] });
   }
 
   /** Distributes the cost of an item evenly amongst ticket item users */

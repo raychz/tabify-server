@@ -1,5 +1,6 @@
 import { Entity, Column, ManyToOne, PrimaryGeneratedColumn, Unique, Index } from 'typeorm';
 import { Ticket, User } from '@tabify/entities';
+import { TicketUserStatus } from '../enums/';
 
 @Entity()
 @Unique(['ticket', 'user'])
@@ -13,7 +14,7 @@ export class TicketUser {
 
   @Index()
   @ManyToOne(type => User, user => user.tickets, { nullable: false })
-  user!: User;
+  user?: User;
 
   /** The subtotal in cents before tax (items + other_charges - discounts) */
   @Column({ type: 'int', nullable: false, default: 0 })
@@ -34,4 +35,12 @@ export class TicketUser {
   /** Selected items count */
   @Column({ type: 'int', nullable: false, default: 0 })
   selectedItemsCount!: number;
+
+  /** Ticket user status */
+  @Column({
+    type: 'enum',
+    enum: TicketUserStatus,
+    nullable: false,
+  })
+  status?: TicketUserStatus;
 }

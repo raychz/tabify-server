@@ -55,7 +55,7 @@ export class TicketPaymentService {
         ticket_payment_status: TicketPaymentStatus.SUCCEEDED,
         message: transaction.message,
         transaction_token: transaction.token,
-        omnivore_response: response,
+        omnivore_response: JSON.stringify(response),
         amount: response.body.amount,
         tip: response.body.tip,
         omnivore_id: response.body.id,
@@ -68,7 +68,7 @@ export class TicketPaymentService {
         ticket_payment_status: TicketPaymentStatus.FAILED,
         message: transaction.message,
         transaction_token: transaction.token,
-        omnivore_response: response,
+        omnivore_response: JSON.stringify(response),
       });
       throw new BadRequestException('This payment could not be processed.', JSON.stringify(spreedlyResponse));
     }

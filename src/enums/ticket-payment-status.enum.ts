@@ -1,5 +1,5 @@
 export enum TicketPaymentStatus {
-    PENDING = 'pending',
-    SUCCEEDED = 'succeeded',
-    FAILED = 'failed',
+    PENDING = 'PENDING',
+    SUCCEEDED = 'SUCCEEDED',
+    FAILED = 'FAILED',
 }
