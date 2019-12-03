@@ -28,10 +28,12 @@
     "testEnvironment": "node"
   },
   "dependencies": {
+    "@lifeomic/attempt": "^3.0.0",
     "@nest-middlewares/morgan": "^5.1.1",
     "@nestjs/common": "^5.1.0",
     "@nestjs/core": "^5.1.0",
     "@types/node-fetch": "^2.1.2",
+    "ably": "^1.1.22",
     "cross-env": "^5.2.0",
     "currency.js": "^1.2.2",
     "dotenv-safe": "^8.1.0",

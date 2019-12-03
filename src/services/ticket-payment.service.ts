@@ -1,9 +1,10 @@
 import { Injectable, BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { getRepository } from 'typeorm';
-import { TicketPayment, TicketPaymentStatus, Ticket, User } from '@tabify/entities';
+import { TicketPayment, Ticket, User } from '@tabify/entities';
 import { SpreedlyService, TicketService } from '@tabify/services';
 import { TicketPaymentInterface } from '../interfaces';
 import { TicketTotalService } from './ticket-total.service';
+import { TicketPaymentStatus } from '../enums';
 
 @Injectable()
 export class TicketPaymentService {
@@ -54,7 +55,7 @@ export class TicketPaymentService {
         ticket_payment_status: TicketPaymentStatus.SUCCEEDED,
         message: transaction.message,
         transaction_token: transaction.token,
-        omnivore_response: response,
+        omnivore_response: JSON.stringify(response),
         amount: response.body.amount,
         tip: response.body.tip,
         omnivore_id: response.body.id,
@@ -67,7 +68,7 @@ export class TicketPaymentService {
         ticket_payment_status: TicketPaymentStatus.FAILED,
         message: transaction.message,
         transaction_token: transaction.token,
-        omnivore_response: response,
+        omnivore_response: JSON.stringify(response),
       });
       throw new BadRequestException('This payment could not be processed.', JSON.stringify(spreedlyResponse));
     }

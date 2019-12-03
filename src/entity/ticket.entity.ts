@@ -1,3 +1,4 @@
+// Keep up to date with tabify/src/interfaces/ticket.interface.ts
 import {
   CreateDateColumn,
   Entity,
@@ -12,12 +13,8 @@ import {
   Index,
   UpdateDateColumn,
 } from 'typeorm';
-import { FraudPreventionCode, Location, Story, TicketItem, TicketTotal, TicketPayment, User } from '@tabify/entities';
-
-export enum TicketStatus {
-  OPEN = 'open',
-  CLOSED = 'closed',
-}
+import { FraudPreventionCode, Location, Story, TicketItem, TicketTotal, TicketPayment, User, TicketUser } from '@tabify/entities';
+import { TicketStatus } from '../enums/ticket-status.enum';
 
 @Entity()
 @Unique(['tab_id', 'location'])
@@ -26,11 +23,10 @@ export class Ticket {
   id?: number;
 
   @Column({ type: 'varchar', nullable: false })
-  firestore_doc_id?: string;
-
-  @Column({ type: 'varchar', nullable: false })
   tab_id?: string;
 
+  // TODO: Should this have an index?
+  @Index()
   @Column({ type: 'int', nullable: false })
   ticket_number?: number;
 
@@ -56,12 +52,8 @@ export class Ticket {
   @OneToOne(type => Story, story => story.ticket)
   story?: Story;
 
-  @ManyToMany(type => User, user => user.tickets,
-    {
-      cascade: true,
-    })
-  @JoinTable()
-  users?: User[];
+  @OneToMany(type => TicketUser, ticketUser => ticketUser.ticket)
+  users?: TicketUser[];
 
   @Index()
   @Column({

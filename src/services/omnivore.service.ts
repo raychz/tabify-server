@@ -1,7 +1,7 @@
 import { Injectable, HttpStatus, NotFoundException, BadGatewayException, InternalServerErrorException, UnprocessableEntityException } from '@nestjs/common';
 import { getManager, EntityManager } from 'typeorm';
 import fetch from 'node-fetch';
-import { ITicketItem, Location as LocationEntity, Ticket } from '@tabify/entities';
+import { Location as LocationEntity, Ticket, TicketItem } from '@tabify/entities';
 import { LocationService } from '@tabify/services';
 import { sleep } from '../utilities/general.utilities';
 
@@ -127,7 +127,7 @@ export class OmnivoreService {
       tab_id: customerTicket.id,
       location,
       ticket_number: customerTicket.ticket_number,
-      items: customerTicket._embedded.items.map((item: ITicketItem) => ({
+      items: customerTicket._embedded.items.map((item: TicketItem | any) => ({
         ticket_item_id: item.id,
         name: item.name,
         comment: item.comment,
