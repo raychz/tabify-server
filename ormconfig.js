@@ -13,7 +13,7 @@ module.exports = {
   username: process.env.MYSQL_USER,
   password: process.env.MYSQL_PASSWORD,
   database: process.env.MYSQL_DATABASE,
-  synchronize: isDevelopment,
+  synchronize: isDevelopment || process.env.FORCE_SYNCHRONIZATION,
   logging: isDevelopment,
   entities: [
     isDevelopment ? `src/**/*.entity.ts` : `dist/**/*.entity.js`,
