@@ -213,6 +213,46 @@ export class OmnivoreService {
           menu_item: '209',
           quantity: 1,
         },
+        {
+          menu_item: '101',
+          quantity: 3,
+        },
+        {
+          menu_item: '102',
+          quantity: 5,
+        },
+        {
+          menu_item: '201',
+          quantity: 3,
+        },
+        {
+          menu_item: '202',
+          quantity: 1,
+        },
+        {
+          menu_item: '203',
+          quantity: 1,
+        },
+        {
+          menu_item: '204',
+          quantity: 1,
+        },
+        {
+          menu_item: '206',
+          quantity: 1,
+        },
+        {
+          menu_item: '207',
+          quantity: 1,
+        },
+        {
+          menu_item: '208',
+          quantity: 1,
+        },
+        {
+          menu_item: '209',
+          quantity: 1,
+        },
       ],
     };
 
