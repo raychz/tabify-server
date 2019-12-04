@@ -135,7 +135,6 @@ export class TicketUserService {
         if (ticketUsers.every(user => user.status === TicketUserStatus.CONFIRMED)) {
           // Everyone has confirmed! Before setting everyone's status to PAYING,
           // first check if all items are claimed by at least one person
-          console.log("IN HERE!");
           const ticketItemRepo = transactionalEntityManager.getRepository(TicketItem);
           const ticketItems = await ticketItemRepo.find({ where: { ticket: ticketId }, relations: ['users', 'users.user'] });
           if (ticketItems.some(item => item.users!.length === 0)) {
@@ -208,7 +207,7 @@ export class TicketUserService {
           // Save all ticket users
           const payingTicketUsers = await ticketUserRepo.save(ticketUsers);
 
-          // Remove unnecessary user so that TicketUser override in the frontend is unaffected
+          // Remove unnecessary nested User so that TicketUser override in the frontend is unaffected
           payingTicketUsers.forEach(u => u.user = undefined);
           return payingTicketUsers;
         }
@@ -217,12 +216,16 @@ export class TicketUserService {
           return [updatedTicketUser];
         }
       });
+
       if (sendNotification) {
         await this.ablyService.publish(
           TicketUpdates.MULTIPLE_UPDATES,
           [{ name: TicketUpdates.TICKET_USERS_UPDATED, data: updatedTicketUsers }],
           ticketId.toString());
       }
+
+      // Return the TicketUser who initiated this request
+      return updatedTicketUsers.find(_updatedTicketUser => _updatedTicketUser.id === ticketUserId);
     } else {
       if (sendNotification) {
         await this.ablyService.publish(TicketUpdates.MULTIPLE_UPDATES, [

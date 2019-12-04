@@ -30,6 +30,6 @@ export class TicketUserController {
     if (!Object.values(TicketUserStatus).includes(newUserStatus)) {
       throw new BadRequestException('Invalid ticket user status.');
     }
-    return this.ticketUserService.updateTicketUserStatus(ticketId, ticketUserId, newUserStatus, true);
+    return await this.ticketUserService.updateTicketUserStatus(ticketId, ticketUserId, newUserStatus, true);
   }
 }
