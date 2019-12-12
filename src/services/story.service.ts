@@ -15,46 +15,50 @@ export class StoryService {
     /**
      * get all !!! Tickets !!! associated with the logged-in user
      * !!!!! each ticket has a story object, location, and user/user details. !!!!!
-     * @param userId: string
+     * @param uid: string
      */
     async readStories(uid: string) {
 
-        // TODO: Hassan, please make the below work with the new table structure
-        // // starting from user Id table
-        // const userRepo = await getRepository(UserEntity);
+        // starting from user Id table
+        const userRepo = await getRepository(UserEntity);
 
-        // // get all tickets, and sort them by story.date_created in DESC
-        // const stories = await userRepo.createQueryBuilder('user')
-        //     .leftJoinAndSelect('user.tickets', 'ticket', 'user.uid = :userId', { userId })
-        //     .leftJoinAndSelect('ticket.story', 'story')
-        //     .leftJoinAndSelect('ticket.location', 'location')
-        //     .leftJoinAndSelect('ticket.users', 'ticketUsers')
-        //     .leftJoinAndSelect('ticketUsers.userDetail', 'userDetail')
-        //     .leftJoinAndSelect('story.likes', 'likes')
-        //     .leftJoinAndSelect('likes.user', 'userLikes')
-        //     .orderBy({
-        //         'story.date_created': 'DESC',
-        //     })
-        //     .getOne();
+        // get all tickets, and sort them by story.date_created in DESC
+        const stories = await userRepo.createQueryBuilder('userEntity')
+            .leftJoinAndSelect('userEntity.tickets', 'ticketUser', 'userEntity.uid = :uid', { uid })
+            .leftJoinAndSelect('ticketUser.ticket', 'ticket')
+            .leftJoinAndSelect('ticket.story', 'story')
+            .leftJoinAndSelect('ticket.location', 'location')
+            .leftJoinAndSelect('ticket.users', 'ticketUsers')
+            .leftJoinAndSelect('ticketUsers.user', 'user')
+            .leftJoinAndSelect('user.userDetail', 'userDetail')
+            .leftJoinAndSelect('story.likes', 'likes')
+            .leftJoinAndSelect('likes.user', 'userLikes')
+            .orderBy({
+                'story.date_created': 'DESC',
+            })
+            .getOne();
 
-        // return stories;
+        // we are getting a list of ticketUsers, and in it is ticket.
+        // refining the response to get rid of TicketUser object
+        const refinedTickets = [];
 
-        // TODO: Hassan, please verify this rough implementation
-        // Ordering is likely still going to be an issue, so we may need to revert to query builder
-        const ticketRepo = await getRepository(TicketUser);
-        return ticketRepo.find({
-            where: { user: { uid } },
-            relations: [
-                'ticket',
-                'ticket.story',
-                'ticket.story.likes',
-                'ticket.story.likes.user',
-                'ticket.location',
-                'ticket.users',
-                'ticket.users.user',
-                'ticket.users.user.userDetail',
-            ],
-        });
+        if (stories !== undefined) {
+
+            for (let i = 0; i < 1; i++) {
+                const ticket = stories.tickets[i].ticket;
+
+                const users = ticket.users;
+
+                refinedTickets[i] = ticket;
+                console.log(users);
+            }
+
+            console.log(refinedTickets[0]);
+
+            return refinedTickets;
+        }
+
+        return [];
     }
 
     async readStory(storyId: number, manager?: EntityManager) {
