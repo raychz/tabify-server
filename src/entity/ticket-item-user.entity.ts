@@ -8,7 +8,7 @@ export class TicketItemUser {
   id?: number;
 
   @Index()
-  @ManyToOne(type => TicketItem, ticketItem => ticketItem.users, { nullable: false })
+  @ManyToOne(type => TicketItem, ticketItem => ticketItem.users, { nullable: false, onDelete: 'CASCADE' })
   ticketItem!: TicketItem;
 
   @Index()
