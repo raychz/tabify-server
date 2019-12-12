@@ -1,14 +1,18 @@
 import { Injectable, Logger, BadRequestException, NotFoundException, InternalServerErrorException, ForbiddenException } from '@nestjs/common';
-import { getRepository, getConnection, FindOneOptions, FindConditions, EntityManager } from 'typeorm';
+import { getRepository, getConnection, FindOneOptions, FindConditions, EntityManager, In } from 'typeorm';
 import { TicketUser, Ticket, User, TicketItemUser, TicketItem } from '@tabify/entities';
-import { AblyService } from '@tabify/services';
+import { AblyService, OmnivoreService, TicketTotalService } from '@tabify/services';
 import { TicketUpdates, TicketUserStatus, TicketUserStatusOrder } from '../enums';
-import { TicketTotalService } from './ticket-total.service';
 import * as currency from 'currency.js';
+import { OmnivoreTicketItem, OmnivoreTicketDiscount } from '@tabify/interfaces';
 
 @Injectable()
 export class TicketUserService {
-  constructor(private readonly ablyService: AblyService, private readonly ticketTotalService: TicketTotalService) { }
+  constructor(
+    private readonly ablyService: AblyService,
+    private readonly ticketTotalService: TicketTotalService,
+    private readonly omnivoreService: OmnivoreService,
+  ) { }
 
   async getTicketUserByTicketUserId(ticketUserId: number) {
     const ticketUserRepo = await getRepository(TicketUser);
@@ -91,7 +95,6 @@ export class TicketUserService {
     const updatedTicketUser = await getConnection().transaction(async transactionalEntityManager => {
       const ticketUserRepo = await transactionalEntityManager.getRepository(TicketUser);
       const ticketUsers = await ticketUserRepo.find({ where: { ticket: ticketId } });
-      // TODO: Check that ticketUsers is correct and that the find condition isn't returning all TicketUsers
       const currentTicketUser = ticketUsers.find(u => u.id === ticketUserId);
 
       if (!currentTicketUser) {
@@ -133,7 +136,78 @@ export class TicketUserService {
 
         // If all have confirmed, set everyone's status to PAYING
         if (ticketUsers.every(user => user.status === TicketUserStatus.CONFIRMED)) {
-          // Everyone has confirmed! Before setting everyone's status to PAYING,
+          // Everyone has confirmed!
+          const ticketRepo = transactionalEntityManager.getRepository(Ticket);
+          const ticket = await ticketRepo.findOneOrFail(ticketId, { relations: ['location', 'ticketTotal'] });
+
+          // Apply Tabify new user discount if this ticket contains one or more new users
+          let containsNewUser = false;
+          for (const ticketUser of ticketUsers) {
+            const numberOfTicketsForUser = await ticketUserRepo.count({ where: { user: ticketUser.user!.uid } });
+
+            // This should never happen since all users should be on at least 1 ticket at this point
+            if (!numberOfTicketsForUser || numberOfTicketsForUser === 0) {
+              throw new InternalServerErrorException(`An error occurred while counting the number of tickets that the users have been
+              associated with.`);
+            }
+
+            // Check if this is the user's first ticket. If so, set containsNewUser to true and break.
+            if (numberOfTicketsForUser === 1) {
+              containsNewUser = true;
+              break;
+            }
+          }
+
+          let discountAmount = 0;
+          let distributedDiscount: currency[] = currency(discountAmount / 100).distribute(ticketUsers.length);
+          // Apply discount on this ticket if containsNewUser
+          if (containsNewUser) {
+            Logger.log('New user found, checking Tabify discount compatibility.');
+
+            // TODO: Finalize and environmentalize this value
+            discountAmount = 500;
+            distributedDiscount = currency(discountAmount / 100).distribute(ticketUsers.length);
+
+            // Verify that every user's subtotal remains > $0.25 by applying the discount
+            const compatibleDiscount = ticketUsers.every((ticketUser: TicketUser, index: number) =>
+              (ticketUser.sub_total + distributedDiscount[index].intValue) > 25);
+            // Only apply to Piccola's
+            const isPiccolas = ticket.location!.omnivore_id === 'cx9pap8i';
+
+            if (compatibleDiscount && isPiccolas) {
+              Logger.log('This discount is compatible. Apply it!');
+              const discounts: OmnivoreTicketDiscount[] = [{ discount: '1847-53-17', value: discountAmount }];
+              // const discountMenuItem: OmnivoreTicketItem = { menu_item: '1847-53-17', quantity: 1, price_per_unit: discountAmount };
+              try {
+                const response = await this.omnivoreService.applyDiscountsToTicket(ticket.location!, ticket.tab_id!, discounts);
+                const { totals } = response;
+
+                await this.ticketTotalService.updateTicketTotals({
+                  id: ticket.ticketTotal!.id,
+                  discounts: totals.discounts,
+                  due: totals.due,
+                  items: totals.items,
+                  other_charges: totals.other_charges,
+                  paid: totals.paid,
+                  service_charges: totals.service_charges,
+                  sub_total: totals.sub_total,
+                  tax: totals.tax,
+                  tips: totals.tips,
+                  total: totals.total,
+                });
+                Logger.log(response, 'The updated ticket with discount');
+              } catch (e) {
+                Logger.error(e, undefined, 'An error occurred while adding the discount ticket item');
+                throw new InternalServerErrorException(e, 'An error occurred while adding the discount ticket item');
+              }
+            } else {
+              Logger.error('This discount is NOT compatible.');
+            }
+          } else {
+            Logger.log('No new users found, don\'t apply Tabify discount.');
+          }
+
+          // Before setting everyone's status to PAYING,
           // first check if all items are claimed by at least one person
           const ticketItemRepo = transactionalEntityManager.getRepository(TicketItem);
           const ticketItems = await ticketItemRepo.find({ where: { ticket: ticketId }, relations: ['users', 'users.user'] });
@@ -151,6 +225,10 @@ export class TicketUserService {
           let allUsersTax = 0;
           let allUsersTotal = 0;
           ticketUsers.forEach((ticketUser: TicketUser, index: number) => {
+            // Subtract discount from each ticket user if applicable
+            ticketUser.discounts = distributedDiscount[index].intValue;
+            ticketUser.sub_total = ticketUser.sub_total - ticketUser.discounts;
+
             // Find sum of the selected items for this user
             let subtotal = 0;
             ticketItems.forEach((ticketItem) => {
@@ -166,7 +244,7 @@ export class TicketUserService {
               }
             });
             // Error checking
-            if (subtotal !== ticketUser.sub_total) {
+            if ((subtotal - ticketUser.discounts) !== ticketUser.sub_total) {
               // TODO: Consider resynchronizing each user's subtotal at this point
               console.error('subtotal', subtotal);
               console.error('ticketUser.sub_total', ticketUser.sub_total);
@@ -190,12 +268,11 @@ export class TicketUserService {
           });
 
           // Account for Omnivore Virtual POS bug that adds a $5 service charge to every ticket
-          const ticketRepo = transactionalEntityManager.getRepository(Ticket);
-          const ticket = await ticketRepo.findOneOrFail(ticketId, { relations: ['location'] });
           if (ticket.location!.omnivore_id === 'i8yBgkjT') {
             allUsersTotal += 500;
           }
 
+          // TODO: Add check for allUsersItems
           if (
             allUsersSubtotal !== ticketTotal.sub_total ||
             allUsersTax !== ticketTotal.tax ||

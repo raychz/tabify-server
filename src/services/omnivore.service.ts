@@ -1,9 +1,10 @@
-import { Injectable, HttpStatus, NotFoundException, BadGatewayException, InternalServerErrorException, UnprocessableEntityException } from '@nestjs/common';
+import { Injectable, HttpStatus, NotFoundException, BadGatewayException, InternalServerErrorException, UnprocessableEntityException, BadRequestException } from '@nestjs/common';
 import { getManager, EntityManager } from 'typeorm';
 import fetch from 'node-fetch';
 import { Location as LocationEntity, Ticket, TicketItem } from '@tabify/entities';
 import { LocationService } from '@tabify/services';
 import { sleep } from '../utilities/general.utilities';
+import { OmnivoreTicketItem, OmnivoreTicketDiscount } from '@tabify/interfaces';
 
 @Injectable()
 export class OmnivoreService {
@@ -75,7 +76,7 @@ export class OmnivoreService {
    * @param omnivoreLocationId
    * @param ticket_number
    */
-  async getTicket(locationId: number, ticketNumber: number): Promise<Ticket> {
+  async getTicketByTicketNumber(locationId: number, ticketNumber: number): Promise<Ticket> {
     const location = await this.locationService.getLocation({
       where: {
         id: locationId,
@@ -83,7 +84,7 @@ export class OmnivoreService {
     });
 
     if (!location) {
-      throw Error('Location not found');
+      throw new NotFoundException('Location not found');
     }
 
     const apiKey = location.omnivore_id === 'i8yBgkjT' ? process.env.OMNIVORE_API_KEY_DEV : process.env.OMNIVORE_API_KEY_PROD;
@@ -151,6 +152,50 @@ export class OmnivoreService {
       },
     };
     return ticket;
+  }
+
+  async addItemsToTicket(location: LocationEntity, omnivoreTicketId: string, menuItems: OmnivoreTicketItem[]) {
+    if (!location || !location.omnivore_id) {
+      throw new NotFoundException('Location not found');
+    }
+
+    const apiKey = location.omnivore_id === 'i8yBgkjT' ? process.env.OMNIVORE_API_KEY_DEV : process.env.OMNIVORE_API_KEY_PROD;
+    const headers = {
+      'Content-Type': 'application/json',
+      'Api-Key': apiKey!,
+    };
+
+    if (!menuItems.length) {
+      throw new BadRequestException('Missing menu items');
+    }
+    const body = { items: menuItems };
+    const url = `${OmnivoreService.API_URL}/locations/${location.omnivore_id}/tickets/${omnivoreTicketId}/items/`;
+    const res = await fetch(url, { headers, method: 'POST', body: JSON.stringify(body) });
+    const json = await res.json();
+
+    return json;
+  }
+
+  async applyDiscountsToTicket(location: LocationEntity, omnivoreTicketId: string, discounts: OmnivoreTicketDiscount[]) {
+    if (!location || !location.omnivore_id) {
+      throw new NotFoundException('Location not found');
+    }
+
+    const apiKey = location.omnivore_id === 'i8yBgkjT' ? process.env.OMNIVORE_API_KEY_DEV : process.env.OMNIVORE_API_KEY_PROD;
+    const headers = {
+      'Content-Type': 'application/json',
+      'Api-Key': apiKey!,
+    };
+
+    if (!discounts.length) {
+      throw new BadRequestException('Missing discounts');
+    }
+    const body = discounts;
+    const url = `${OmnivoreService.API_URL}/locations/${location.omnivore_id}/tickets/${omnivoreTicketId}/discounts/`;
+    const res = await fetch(url, { headers, method: 'POST', body: JSON.stringify(body) });
+    const json = await res.json();
+
+    return json;
   }
 
   async openDemoTickets(numberOfTicketsRequested: number = 25): Promise<number[]> {

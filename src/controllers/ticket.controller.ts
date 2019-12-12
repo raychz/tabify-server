@@ -60,7 +60,7 @@ export class TicketController {
     const { ticket_number, location } = body;
 
     // Get ticket data from Omnivore
-    const omnivoreTicket = await this.omnivoreService.getTicket(
+    const omnivoreTicket = await this.omnivoreService.getTicketByTicketNumber(
       location,
       ticket_number,
     );

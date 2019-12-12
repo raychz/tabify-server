@@ -14,5 +14,21 @@ export interface TicketPaymentRequest {
   type: 'card_not_present';
 }
 
+export interface OmnivoreTicketItem {
+  comment?: string;
+  discounts?: any[];
+  menu_item: string;
+  modifiers?: any[];
+  price_level?: string;
+  price_per_unit?: number;
+  quantity?: number;
+}
+
+export interface OmnivoreTicketDiscount {
+  comment?: string;
+  discount: string;
+  value: number;
+}
+
 export type PaymentComplete = any;
 export type Error = any;

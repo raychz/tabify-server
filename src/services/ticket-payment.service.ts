@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, BadRequestException, InternalServerErrorException, Logger } from '@nestjs/common';
 import { getRepository } from 'typeorm';
 import { TicketPayment, Ticket, User } from '@tabify/entities';
 import { SpreedlyService, TicketService } from '@tabify/services';
@@ -36,7 +36,7 @@ export class TicketPaymentService {
         `TABIFY${ticketPaymentId}`,
       );
     } catch (error) {
-      console.error(error);
+      Logger.error(error);
       // Something went wrong, so update the payment's status to failed
       await this.saveTicketPayment({
         id: ticketPaymentId,
@@ -61,7 +61,7 @@ export class TicketPaymentService {
         omnivore_id: response.body.id,
       });
     } else {
-      console.error('Error occurred while parsing the Spreedly response', spreedlyResponse);
+      Logger.error(spreedlyResponse, 'Error occurred while parsing the Spreedly response');
       // Something went wrong, so update the payment's status to failed
       await this.saveTicketPayment({
         id: ticketPaymentId,
@@ -90,7 +90,7 @@ export class TicketPaymentService {
         total: responseTicket.totals.total,
       });
     } else {
-      console.error('Error occurred while parsing the Omnivore response', response);
+      Logger.error(response, 'Error occurred while parsing the Omnivore response');
       throw new BadRequestException('This payment could not be processed.', response);
     }
 
