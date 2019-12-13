@@ -40,21 +40,23 @@ export class StoryService {
 
         // we are getting a list of ticketUsers, and in it is ticket.
         // refining the response to get rid of TicketUser object
-        const refinedTickets = [];
+        const refinedTickets: any[] = [];
 
         if (stories !== undefined) {
 
-            for (let i = 0; i < 1; i++) {
-                const ticket = stories.tickets[i].ticket;
+            for (let ticketUserIndex = 0; ticketUserIndex < stories.tickets.length; ticketUserIndex++) {
+                const ticket = stories.tickets[ticketUserIndex].ticket;
 
-                const users = ticket.users;
+                const refinedUsers = [];
 
-                refinedTickets[i] = ticket;
-                console.log(users);
+                refinedTickets[ticketUserIndex] = ticket;
+
+                for (let userIndex = 0; userIndex < refinedTickets[ticketUserIndex].users.length; userIndex++) {
+                    refinedUsers.push(refinedTickets[ticketUserIndex].users[userIndex].user);
+                }
+                refinedTickets[ticketUserIndex].users = refinedUsers;
             }
-
-            console.log(refinedTickets[0]);
-
+            console.log(refinedTickets[0].users);
             return refinedTickets;
         }
 
