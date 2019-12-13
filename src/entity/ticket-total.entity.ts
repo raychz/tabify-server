@@ -6,10 +6,12 @@ import {
     OneToOne,
     UpdateDateColumn,
     JoinColumn,
+    Unique,
 } from 'typeorm';
 import { Ticket } from '@tabify/entities';
 
 @Entity()
+@Unique(['ticket'])
 export class TicketTotal {
     @PrimaryGeneratedColumn()
     id?: number;

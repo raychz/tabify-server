@@ -170,7 +170,7 @@ export class TicketUserService {
 
             // Verify that every user's subtotal remains > $0.25 by applying the discount
             const compatibleDiscount = ticketUsers.every((ticketUser: TicketUser, index: number) =>
-              (ticketUser.sub_total + distributedDiscount[index].intValue) > 25);
+              (ticketUser.sub_total - distributedDiscount[index].intValue) > 25);
             // Only apply to Piccola's
             const isPiccolas = ticket.location!.omnivore_id === 'cx9pap8i';
 
