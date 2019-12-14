@@ -16,7 +16,11 @@ export class TicketUser {
   @ManyToOne(type => User, user => user.tickets, { nullable: false })
   user?: User;
 
-  /** The sum total value in cents of all ticket-level discounts */
+  /** The total cost in cents of items on the ticket selected by this user */
+  @Column({ type: 'int', nullable: false, default: 0 })
+  items!: number;
+
+  /** The sum total value in cents of all discounts for this user */
   @Column({ type: 'int', nullable: false, default: 0 })
   discounts!: number;
 
@@ -24,15 +28,15 @@ export class TicketUser {
   @Column({ type: 'int', nullable: false, default: 0 })
   sub_total!: number;
 
-  /** The total tax in cents on the ticket */
+  /** The total tax due in cents for this user */
   @Column({ type: 'int', nullable: false, default: 0 })
   tax!: number;
 
-  /** The total value in cents of applied tips */
+  /** The total value in cents of applied tips for this user */
   @Column({ type: 'int', nullable: false, default: 0 })
   tips!: number;
 
-  /** The final amount in cents to be paid (subtotal + service_charges + tax), not including tip */
+  /** The final amount in cents to be paid (subtotal + service_charges + tax), not including tip, by this user */
   @Column({ type: 'int', nullable: false, default: 0 })
   total!: number;
 

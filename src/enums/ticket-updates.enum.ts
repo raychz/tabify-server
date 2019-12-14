@@ -13,5 +13,9 @@ export enum TicketUpdates {
     // TicketItemUser-related updates
     /** All ticket item users should be replaced in the client's representation of ticket item users. */
     TICKET_ITEM_USERS_REPLACED = 'TICKET_ITEM_USERS_REPLACED',
+
+    // TicketTotal-related updates
+    TICKET_TOTALS_UPDATED = 'TICKET_TOTALS_UPDATED',
+
     TICKET_PAYMENTS_UPDATED = 'TICKET_PAYMENTS_UPDATED',
 }

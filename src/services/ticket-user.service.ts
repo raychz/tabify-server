@@ -68,11 +68,13 @@ export class TicketUserService {
 
     const updatedTicketUser: TicketUser = {
       ...ticketUser,
+      items: Number(priceSum),
       sub_total: Number(priceSum),
       total: Number(priceSum),
       selectedItemsCount: Number(selectedItemsCount),
     };
     await ticketUserRepo.update(updatedTicketUser.id, {
+      items: Number(priceSum),
       sub_total: Number(priceSum),
       total: Number(priceSum),
       selectedItemsCount: Number(selectedItemsCount),
@@ -130,7 +132,7 @@ export class TicketUserService {
 
     // If we successfully set the user status to CONFIRMED, let's check to see if everyone else has also confirmed
     if (updatedTicketUser.status === TicketUserStatus.CONFIRMED) {
-      const updatedTicketUsers = await getConnection().transaction(async transactionalEntityManager => {
+      const { payingTicketUsers: updatedTicketUsers, ticketTotal } = await getConnection().transaction(async transactionalEntityManager => {
         const ticketUserRepo = await transactionalEntityManager.getRepository(TicketUser);
         const ticketUsers = await ticketUserRepo.find({ where: { ticket: ticketId }, relations: ['user'] });
 
@@ -219,6 +221,8 @@ export class TicketUserService {
           if (!ticketTotal) throw new InternalServerErrorException('Cannot load the ticket totals.');
 
           const distributedTax = currency(ticketTotal.tax / 100).distribute(ticketUsers.length);
+          let allUsersItems = 0;
+          let allUsersDiscounts = 0;
           let allUsersSubtotal = 0;
           let allUsersTax = 0;
           let allUsersTotal = 0;
@@ -228,11 +232,11 @@ export class TicketUserService {
             ticketUser.sub_total = ticketUser.sub_total - ticketUser.discounts;
 
             // Find sum of the selected items for this user
-            let subtotal = 0;
+            let items = 0;
             ticketItems.forEach((ticketItem) => {
               const userOnItem = ticketItem.users!.find(u => u.user.uid === ticketUser.user!.uid);
               if (userOnItem) {
-                subtotal += userOnItem.price;
+                items += userOnItem.price;
               }
 
               let ticketItemUsersSum = 0;
@@ -242,14 +246,22 @@ export class TicketUserService {
               }
             });
             // Error checking
-            if ((subtotal - ticketUser.discounts) !== ticketUser.sub_total) {
+            if (items !== ticketUser.items) {
+              console.error('items', items);
+              console.error('ticketUser.items', ticketUser.items);
+              throw new InternalServerErrorException('The sum of the user\'s selected items does not match the user\'s items total.');
+            }
+            // Error checking
+            if ((items - ticketUser.discounts) !== ticketUser.sub_total) {
               // TODO: Consider resynchronizing each user's subtotal at this point
-              console.error('subtotal', subtotal);
+              console.error('items', items);
               console.error('ticketUser.sub_total', ticketUser.sub_total);
 
-              throw new InternalServerErrorException('The sum of the user\'s selected items does not match the user\'s subtotal.');
+              throw new InternalServerErrorException('The sum of the user\'s selected items minus discounts does not match the user\'s subtotal.');
             }
 
+            allUsersItems += ticketUser.items;
+            allUsersDiscounts += ticketUser.discounts;
             allUsersSubtotal += ticketUser.sub_total;
 
             // Distribute the tax evenly
@@ -270,12 +282,16 @@ export class TicketUserService {
             allUsersTotal += 500;
           }
 
-          // TODO: Add check for allUsersItems
+          // More error checking to make sure that the totals all match up
           if (
+            allUsersItems !== ticketTotal.items ||
+            allUsersDiscounts !== ticketTotal.discounts ||
             allUsersSubtotal !== ticketTotal.sub_total ||
             allUsersTax !== ticketTotal.tax ||
             allUsersTotal !== ticketTotal.total
           ) {
+            console.error(allUsersItems, allUsersDiscounts, allUsersSubtotal, allUsersTax, allUsersTotal);
+            console.error(ticketTotal.items, ticketTotal.discounts, ticketTotal.sub_total, ticketTotal.tax, ticketTotal.total);
             throw new InternalServerErrorException('The users\' subtotal, tax, or total is not equal to the ticket totals!');
           }
 
@@ -284,18 +300,24 @@ export class TicketUserService {
 
           // Remove unnecessary nested User so that TicketUser override in the frontend is unaffected
           payingTicketUsers.forEach(u => u.user = undefined);
-          return payingTicketUsers;
+          return { payingTicketUsers, ticketTotal };
         }
         // Not everyone has confirmed yet, so just return the single updatedTicketUser
         else {
-          return [updatedTicketUser];
+          return { payingTicketUsers: [updatedTicketUser] };
         }
       });
 
       if (sendNotification) {
+        const messages: { name: string, data: any }[] = [
+          { name: TicketUpdates.TICKET_USERS_UPDATED, data: updatedTicketUsers }
+        ];
+        if (ticketTotal) {
+          messages.push({ name: TicketUpdates.TICKET_TOTALS_UPDATED, data: ticketTotal });
+        }
         await this.ablyService.publish(
           TicketUpdates.MULTIPLE_UPDATES,
-          [{ name: TicketUpdates.TICKET_USERS_UPDATED, data: updatedTicketUsers }],
+          messages,
           ticketId.toString());
       }
 

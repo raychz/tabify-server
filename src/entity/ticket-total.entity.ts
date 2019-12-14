@@ -30,11 +30,11 @@ export class TicketTotal {
     @Column({ type: 'int', nullable: false })
     due!: number;
 
-    /** The sum total cost in cents of all items on the ticket */
+    /** The total cost in cents of all items on the ticket */
     @Column({ type: 'int', nullable: false })
     items!: number;
 
-    /** The sum total cost in cents of all other charges on the ticket. Other charges are taxed */
+    /** The total cost in cents of all other charges on the ticket. Other charges are taxed */
     @Column({ type: 'int', nullable: false })
     other_charges!: number;
 
