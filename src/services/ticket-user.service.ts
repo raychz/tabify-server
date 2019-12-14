@@ -158,53 +158,51 @@ export class TicketUserService {
             }
           }
 
-          let discountAmount = 0;
-          let distributedDiscount: currency[] = currency(discountAmount / 100).distribute(ticketUsers.length);
-          // Apply discount on this ticket if containsNewUser
-          if (containsNewUser) {
-            Logger.log('New user found, checking Tabify discount compatibility.');
+          // TODO: Finalize and environmentalize this value
+          let discountAmount = 500;
+          let distributedDiscount = currency(discountAmount / 100).distribute(ticketUsers.length);
 
-            // TODO: Finalize and environmentalize this value
-            discountAmount = 500;
-            distributedDiscount = currency(discountAmount / 100).distribute(ticketUsers.length);
+          // Verify that every user's subtotal remains > $0.25 by applying the discount
+          const compatibleDiscount = ticketUsers.every((ticketUser: TicketUser, index: number) =>
+            (ticketUser.sub_total - distributedDiscount[index].intValue) > 25);
 
-            // Verify that every user's subtotal remains > $0.25 by applying the discount
-            const compatibleDiscount = ticketUsers.every((ticketUser: TicketUser, index: number) =>
-              (ticketUser.sub_total - distributedDiscount[index].intValue) > 25);
-            // Only apply to Piccola's
-            const isPiccolas = ticket.location!.omnivore_id === 'cx9pap8i';
+          // Only apply to Piccola's
+          const isPiccolas = ticket.location!.omnivore_id === 'cx9pap8i';
 
-            if (compatibleDiscount && isPiccolas) {
-              Logger.log('This discount is compatible. Apply it!');
-              const discounts: OmnivoreTicketDiscount[] = [{ discount: '1847-53-17', value: discountAmount }];
-              // const discountMenuItem: OmnivoreTicketItem = { menu_item: '1847-53-17', quantity: 1, price_per_unit: discountAmount };
-              try {
-                const response = await this.omnivoreService.applyDiscountsToTicket(ticket.location!, ticket.tab_id!, discounts);
-                const { totals } = response;
+          // Apply discount on this ticket if containsNewUser and compatibleDiscount and isPiccolas
+          if (containsNewUser && compatibleDiscount && isPiccolas) {
+            Logger.log('This discount is compatible. Apply it!');
+            // TODO: Move discount id to database
+            const discounts: OmnivoreTicketDiscount[] = [{ discount: '1847-53-17', value: discountAmount }];
+            // const discountMenuItem: OmnivoreTicketItem = { menu_item: '1847-53-17', quantity: 1, price_per_unit: discountAmount };
+            try {
+              const response = await this.omnivoreService.applyDiscountsToTicket(ticket.location!, ticket.tab_id!, discounts);
+              const { totals } = response;
 
-                await this.ticketTotalService.updateTicketTotals({
-                  id: ticket.ticketTotal!.id,
-                  discounts: totals.discounts,
-                  due: totals.due,
-                  items: totals.items,
-                  other_charges: totals.other_charges,
-                  paid: totals.paid,
-                  service_charges: totals.service_charges,
-                  sub_total: totals.sub_total,
-                  tax: totals.tax,
-                  tips: totals.tips,
-                  total: totals.total,
-                });
-                Logger.log(response, 'The updated ticket with discount');
-              } catch (e) {
-                Logger.error(e, undefined, 'An error occurred while adding the discount ticket item');
-                throw new InternalServerErrorException(e, 'An error occurred while adding the discount ticket item');
-              }
-            } else {
-              Logger.error('This discount is NOT compatible.');
+              await this.ticketTotalService.updateTicketTotals({
+                id: ticket.ticketTotal!.id,
+                discounts: totals.discounts,
+                due: totals.due,
+                items: totals.items,
+                other_charges: totals.other_charges,
+                paid: totals.paid,
+                service_charges: totals.service_charges,
+                sub_total: totals.sub_total,
+                tax: totals.tax,
+                tips: totals.tips,
+                total: totals.total,
+              });
+              Logger.log(response, 'The updated ticket with discount');
+            } catch (e) {
+              Logger.error(e, undefined, 'An error occurred while adding the discount ticket item');
+              throw new InternalServerErrorException(e, 'An error occurred while adding the discount ticket item');
             }
-          } else {
-            Logger.log('No new users found, don\'t apply Tabify discount.');
+          }
+          // If not compatible, reset discount to 0
+          else {
+            Logger.log('No new users found or the discount is NOT compatible; don\'t apply Tabify discount.');
+            discountAmount = 0;
+            distributedDiscount = currency(discountAmount / 100).distribute(ticketUsers.length);
           }
 
           // Before setting everyone's status to PAYING,
