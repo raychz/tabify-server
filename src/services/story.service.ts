@@ -56,7 +56,6 @@ export class StoryService {
                 }
                 refinedTickets[ticketUserIndex].users = refinedUsers;
             }
-            console.log(refinedTickets[0].users);
             return refinedTickets;
         }
 
@@ -80,11 +79,21 @@ export class StoryService {
 
     async readDetailedStory(storyId: number) {
         const storyRepo = await getRepository(StoryEntity);
-        const detailedStory = await storyRepo.findOneOrFail({
+        const detailedStory: any = await storyRepo.findOneOrFail({
             where: { id: storyId },
-            relations: ['ticket', 'ticket.users', 'ticket.users.userDetail',
+            relations: ['ticket', 'ticket.users', 'ticket.users.user', 'ticket.users.user.userDetail',
                 'ticket.location', 'likes', 'likes.user'],
         });
+
+        const refinedUsers = [];
+
+        if (detailedStory.ticket.users !== undefined) {
+            for (let userIndex = 0; userIndex < detailedStory.ticket.users.length; userIndex++) {
+                refinedUsers.push(detailedStory.ticket.users[userIndex].user);
+            }
+        }
+
+        detailedStory.ticket.users = refinedUsers;
 
         return detailedStory;
     }
