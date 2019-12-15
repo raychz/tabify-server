@@ -56,18 +56,31 @@ export class ServerService {
     }
 
     async postServer(serverDetails: any) {
-        serverDetails.referralCode = this.generateReferralCode();
+        serverDetails.referralCode = await this.generateReferralCode();
         const serverRepo = await getRepository(ServerEntity);
         const server = await serverRepo.save(serverDetails);
         return server;
     }
 
-    generateReferralCode() {
+    async generateReferralCode() {
         let result;
         result = '';
         const length = this.referralCodeLength;
         const chars = this.allowedCodeLetterOptions;
-        for (let i = length; i > 0; --i) result += chars[Math.round(Math.random() * (chars.length - 1))];
+        const serverRepo = await getRepository(ServerEntity);
+
+        // check if ref code is already being used
+        while (true) {
+            for (let i = length; i > 0; --i) result += chars[Math.round(Math.random() * (chars.length - 1))];
+
+            const refCodeUsed = await serverRepo.findOne({ where: { referralCode: result } });
+
+            if (refCodeUsed === undefined) {
+                break;
+            } else {
+                result = '';
+            }
+        }
         return result;
     }
 
