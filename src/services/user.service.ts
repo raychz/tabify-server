@@ -29,7 +29,7 @@ export class UserService {
             if (referralCode && referralCode.length !== 0) {
                 const serverRepo = await getRepository(ServerEntity);
 
-                referralCode = referralCode.toUpperCase();
+                referralCode = referralCode.trim().toUpperCase();
                 const referringServer = await serverRepo.findOne({ where: { referralCode } });
 
                 if (referringServer) {
