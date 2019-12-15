@@ -29,7 +29,7 @@ export class UserController {
   async saveUser(
     @User('uid') uid: string,
     @Headers('authorization') authorization: string,
-    @Body() referralCode: string,
+    @Body('referralCode') referralCode: string,
   ) {
     const user = await this.firService
       .getUserInfo(uid);
