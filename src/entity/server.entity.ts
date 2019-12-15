@@ -7,13 +7,22 @@ export class Server {
     id!: number;
 
     @Column({type: 'varchar', nullable: false})
-    displayName!: string;
+    firstName!: string;
 
-    @Column({type: 'varchar', nullable: false})
+    @Column({type: 'varchar', nullable: true})
+    lastName!: string;
+
+    @Column({type: 'varchar', nullable: true, unique: true})
     email!: string;
+
+    @Column({type: 'varchar', length: 25, nullable: true})
+    phone!: string;
 
     @Column({type: 'varchar', nullable: false})
     password!: string;
+
+    @Column({type: 'varchar', length: 5, nullable: false})
+    employeeId!: string;
 
     @Index({ unique: true })
     @Column({type: 'varchar', length: 5, nullable: false})
