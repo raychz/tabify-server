@@ -21,7 +21,7 @@ export class Server {
     @Column({type: 'varchar', nullable: false})
     password!: string;
 
-    @Column({type: 'varchar', length: 5, nullable: false})
+    @Column({type: 'varchar', length: 5, nullable: true})
     employeeId!: string;
 
     @Index({ unique: true })
