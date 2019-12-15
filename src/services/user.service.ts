@@ -8,7 +8,7 @@ import {
 @Injectable()
 export class UserService {
 
-    async createUserDetails(userDetails: any, referralCode: any) {
+    async createUserDetails(userDetails: any, referralCode: string) {
 
         // check if userDetails exist in DB. If not, enter user details in DB
         const userDetailsRepo = await getRepository(UserDetailEntity);
@@ -26,16 +26,18 @@ export class UserService {
             refinedUserDetails.email = userDetails.email;
             refinedUserDetails.displayName = userDetails.displayName;
 
-            if (referralCode.referralCode && referralCode.referralCode.length !== 0) {
+            if (referralCode && referralCode.length !== 0) {
                 const serverRepo = await getRepository(ServerEntity);
-                const referringServer = await serverRepo.findOne({ where: { referralCode: referralCode.referralCode } });
 
-                if (referringServer !== undefined) {
+                referralCode = referralCode.toUpperCase();
+                const referringServer = await serverRepo.findOne({ where: { referralCode } });
+
+                if (referringServer) {
                     refinedUserDetails.server = referringServer;
                 }
             }
 
-            if (userDetails.photo_url !== undefined) {
+            if (userDetails.photo_url) {
                 refinedUserDetails.photo_url = userDetails.photo_url;
             } else {
                 // tslint:disable-next-line: max-line-length
