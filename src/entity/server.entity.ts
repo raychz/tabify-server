@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, ManyToOne, Column, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, ManyToOne, Column, OneToMany, Index } from 'typeorm';
 import { Location, UserDetail } from '@tabify/entities';
 
 @Entity()
@@ -15,7 +15,8 @@ export class Server {
     @Column({type: 'varchar', nullable: false})
     password!: string;
 
-    @Column({type: 'varchar', length: 5, nullable: false, unique: true})
+    @Index({ unique: true })
+    @Column({type: 'varchar', length: 5, nullable: false})
     referralCode!: string;
 
     @ManyToOne(type => Location, location => location.servers)
