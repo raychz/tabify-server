@@ -12,7 +12,7 @@ export class Server {
     @Column({type: 'varchar', nullable: true})
     lastName!: string;
 
-    @Column({type: 'varchar', nullable: false})
+    @Column({type: 'varchar', nullable: false, unique: true})
     email!: string;
 
     @Column({type: 'varchar', nullable: false})

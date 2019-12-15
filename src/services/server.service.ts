@@ -6,6 +6,9 @@ import { Server as ServerEntity, ServerReward as ServerRewardEntity, Ticket as T
 @Injectable()
 export class ServerService {
 
+    private referralCodeLength: number = 5;
+    private allowedCodeLetterOptions = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+
     async getServerByRefCode(refCode: string) {
         const serverRepo = await getRepository(ServerEntity);
         const server = await serverRepo.find({ where: { referralCode: refCode }, relations: ['location'] });
@@ -50,6 +53,22 @@ export class ServerService {
         const saveServerRewards = await serverRewardsRepo.save(serverRewards);
 
         return servers;
+    }
+
+    async postServer(serverDetails: any) {
+        serverDetails.referralCode = this.generateReferralCode();
+        const serverRepo = await getRepository(ServerEntity);
+        const server = await serverRepo.save(serverDetails);
+        return server;
+    }
+
+    generateReferralCode() {
+        let result;
+        result = '';
+        const length = this.referralCodeLength;
+        const chars = this.allowedCodeLetterOptions;
+        for (let i = length; i > 0; --i) result += chars[Math.round(Math.random() * (chars.length - 1))];
+        return result;
     }
 
 }
