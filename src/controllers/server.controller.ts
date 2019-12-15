@@ -1,4 +1,4 @@
-import { Get, Controller, Res, Param } from '@nestjs/common';
+import { Get, Controller, Res, Param, Post, Body } from '@nestjs/common';
 import { ServerService } from '@tabify/services';
 import { User } from '../decorators/user.decorator';
 
@@ -14,6 +14,14 @@ export class ServerController {
         @Param('refCode') refCode: string,
     ) {
         const server = await this.serverService.getServerByRefCode(refCode);
+        return server;
+    }
+
+    @Post('/postServer')
+    async postServer(
+        @Body() serverDetails: any,
+    ) {
+        const server = await this.serverService.postServer(serverDetails);
         return server;
     }
 }
