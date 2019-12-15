@@ -6,7 +6,7 @@ import {
     UpdateDateColumn,
     ManyToOne,
 } from 'typeorm';
-import { Ticket, User } from '@tabify/entities';
+import { Ticket, User, Coupon } from '@tabify/entities';
 
 export enum TicketPaymentStatus {
     PENDING = 'pending',
@@ -63,4 +63,7 @@ export class TicketPayment {
 
     @ManyToOne(type => User, user => user.ticketPayments, { nullable: false })
     user?: User;
+
+    @ManyToOne(type => Coupon, coupon => coupon.ticketPayments, { nullable: true })
+    coupon?: Coupon;
 }

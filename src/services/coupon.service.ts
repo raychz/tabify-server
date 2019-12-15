@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { getConnection, getRepository, getManager, EntityManager } from 'typeorm';
 import { UserToCoupons, Coupon, User, Location  } from '@tabify/entities';
 
@@ -16,25 +16,38 @@ export class CouponService {
         .where('userCoupon.userUid = :uid', { uid })
         .getMany();
 
-        return userCoupons.map( userCoupon => userCoupon.coupon);
+        const validCoupons: any[] = [];
+        const expiredCoupons: any[] = [];
+        const upcomingCoupons: any[] = [];
+        userCoupons.forEach( userCoupon => {
+          if (userCoupon.usage_count >= userCoupon.coupon.usage_limit || userCoupon.coupon.coupon_end_date >= new Date()) {
+            expiredCoupons.push({ ...userCoupon.coupon, usage_count: userCoupon.usage_count });
+          } else if (userCoupon.coupon.coupon_start_date >= new Date()) {
+            upcomingCoupons.push({ ...userCoupon.coupon, usage_count: userCoupon.usage_count });
+          } else {
+            validCoupons.push({ ...userCoupon.coupon, usage_count: userCoupon.usage_count });
+          }
+        });
+        return {validCoupons, upcomingCoupons, expiredCoupons};
     }
 
-    async saveNewCoupon(coupon: Coupon, locationId: number) {
+    async saveNewCoupon(coupon: Coupon, locationId: number): Promise<Coupon> {
 
-        await getManager().transaction(async (transactionalEntityManager: EntityManager) => {
-            const location = new Location();
-            location.id = locationId;
-            coupon.location = location;
-            const dbCoupon = await transactionalEntityManager.save(Coupon, coupon);
+        return await getManager().transaction(async (transactionalEntityManager: EntityManager) => {
+          try {
+              const location = await transactionalEntityManager.findOneOrFail(Location, locationId);
+              coupon.location = location;
+              const dbCoupon = await transactionalEntityManager.save(Coupon, coupon);
 
-            const users = await transactionalEntityManager.find(User);
-            users.forEach(user => {
+              const users = await transactionalEntityManager.find(User);
+              users.forEach(user => {
                 transactionalEntityManager.insert(UserToCoupons, {usage_count: 0, user, coupon: dbCoupon});
-            });
-            try {
+              });
               transactionalEntityManager.queryRunner!.commitTransaction();
+              return dbCoupon;
             } catch (error) {
               transactionalEntityManager.queryRunner!.rollbackTransaction();
+              throw new InternalServerErrorException();
             }
           });
     }

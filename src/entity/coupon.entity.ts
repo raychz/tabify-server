@@ -10,6 +10,17 @@ import {
 import { Location } from './location.entity';
 import { User } from './user.entity';
 import { UserToCoupons } from './user_coupons_coupon.entity';
+import { TicketPayment } from './ticket-payment.entity';
+
+export enum CouponType {
+  PERCENT = 'percent',
+  DOLLAR_VALUE = 'dollar_value',
+}
+
+export enum CouponOffOf {
+  TICKET = 'ticket',
+  ITEM = 'item',
+}
 
 @Entity()
   export class Coupon {
@@ -40,13 +51,29 @@ import { UserToCoupons } from './user_coupons_coupon.entity';
     @Column({type: 'date', nullable: false})
     coupon_end_date!: Date;
 
+    @Column({
+      type: 'enum',
+      enum: CouponType,
+    })
+    coupon_type!: CouponType;
+
+    @Column({
+      type: 'enum',
+      enum: CouponOffOf,
+    })
+    coupon_off_of!: CouponOffOf;
+
+    @Column({ type: 'int', nullable: true })
+    menu_item?: number;
+
     @ManyToOne(type => Location, location => location.coupons, {
       cascade: true,
     })
     location!: Location;
 
-    @OneToMany(type => UserToCoupons, userCoupon => userCoupon.coupon, {
-      cascade: true,
-    })
+    @OneToMany(type => UserToCoupons, userCoupon => userCoupon.coupon)
     userToCoupons!: UserToCoupons[];
+
+    @OneToMany(type => TicketPayment, ticketPayment => ticketPayment.coupon)
+    ticketPayments!: TicketPayment[];
   }

@@ -1,4 +1,5 @@
-import { Injectable, HttpStatus, NotFoundException, BadGatewayException, InternalServerErrorException, UnprocessableEntityException } from '@nestjs/common';
+import { Injectable, HttpStatus, NotFoundException, BadGatewayException,
+  InternalServerErrorException, UnprocessableEntityException } from '@nestjs/common';
 import { getManager, EntityManager } from 'typeorm';
 import fetch from 'node-fetch';
 import { ITicketItem, Location as LocationEntity, Ticket } from '@tabify/entities';

@@ -68,8 +68,6 @@ export class Location {
   @OneToMany(type => Server, server => server.location)
   servers!: Server[];
 
-  @OneToMany(type => Coupon, coupon => coupon.id, {
-    cascade: true,
-  })
+  @OneToMany(type => Coupon, coupon => coupon.id)
   coupons?: Coupon[];
 }

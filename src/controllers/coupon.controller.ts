@@ -17,12 +17,11 @@ export class CouponController {
     return coupons;
   }
 
-  @Post()
+  @Post('location/:locationId')
   async saveNewCoupon(
     @Param('locationId') locationId: number,
     @Body('newCoupon') newCoupon: Coupon,
   ) {
-    await this.couponService.saveNewCoupon(newCoupon, locationId);
-    return 'success';
+    return await this.couponService.saveNewCoupon(newCoupon, locationId);
   }
 }

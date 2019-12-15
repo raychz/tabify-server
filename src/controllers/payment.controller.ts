@@ -1,7 +1,7 @@
 import { Get, Controller, Body, Param, Post, Delete, Res } from '@nestjs/common';
 import { PaymentMethodService, SpreedlyService, TicketService, TicketPaymentService } from '@tabify/services';
 import { User } from '../decorators/user.decorator';
-import { Ticket } from '@tabify/entities';
+import { Ticket, Coupon } from '@tabify/entities';
 
 @Controller('tickets/:ticketId/payments')
 export class PaymentController {
@@ -22,6 +22,7 @@ export class PaymentController {
     @Body('paymentMethodId') paymentMethodId: number,
     @Body('amount') amount: number,
     @Body('tip') tip: number,
+    @Body('coupon') coupon?: Coupon,
   ) {
     const paymentMethod = await this.paymentMethodService.readPaymentMethod(uid, paymentMethodId);
     const { token: paymentMethodToken } = paymentMethod!;
@@ -32,6 +33,7 @@ export class PaymentController {
       paymentMethodToken,
       amount,
       tip,
+      coupon,
     });
 
     return updatedTotal;

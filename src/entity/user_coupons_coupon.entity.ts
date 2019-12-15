@@ -16,8 +16,6 @@ export class UserToCoupons {
   @ManyToOne(type => User, user => user.userToCoupons)
   user!: User;
 
-  @ManyToOne(type => Coupon, coupon => coupon.userToCoupons, {
-    cascade: true,
-  })
+  @ManyToOne(type => Coupon, coupon => coupon.userToCoupons)
   coupon!: Coupon;
 }
