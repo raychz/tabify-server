@@ -66,7 +66,8 @@ export class UserService {
 
         // get all users associated with the ticket
         const users = await userRepo.createQueryBuilder('user')
-            .innerJoin('user.tickets', 'ticket')
+            .innerJoin('user.tickets', 'ticketUser')
+            .innerJoin('ticketUser.ticket', 'ticket')
             .where('ticket.id = :ticketId', { ticketId })
             .getMany();
 
