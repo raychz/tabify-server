@@ -6,9 +6,9 @@ import { Server as ServerEntity } from '@tabify/entities';
 @Injectable()
 export class ServerService {
 
-    async getServerByRefCode(refCode: string) {
+    async getServerByRefCode(referralCode: string) {
         const serverRepo = await getRepository(ServerEntity);
-        const server = await serverRepo.find({where: {referralCode: refCode}, relations: ['location']});
+        const server = await serverRepo.find({ where: { referralCode }, relations: ['location'] });
         return server;
     }
 }
