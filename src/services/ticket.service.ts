@@ -1,7 +1,7 @@
 import { Injectable, Logger, BadRequestException, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { getRepository, getConnection, FindOneOptions, FindConditions, InsertResult } from 'typeorm';
 import { auth } from 'firebase-admin';
-import { FirebaseService, OmnivoreService, StoryService } from '@tabify/services';
+import { FirebaseService, OmnivoreService, StoryService, SMSService } from '@tabify/services';
 import {
   Ticket as TicketEntity,
   TicketItem as TicketItemEntity,
@@ -13,6 +13,10 @@ import { TicketStatus } from '../enums';
 
 @Injectable()
 export class TicketService {
+
+  constructor(
+    private messageService: SMSService,
+  ) { }
 
   /**
    * Attemps to load a ticket from local database if it exists
@@ -112,6 +116,9 @@ export class TicketService {
       .set({ ticket_status: TicketStatus.CLOSED })
       .where('id = :id', { id: ticketId })
       .execute();
+
+    // await this.messageService
+    //   .sendSMS('TO_NUM', 'hey');
 
     return res;
   }

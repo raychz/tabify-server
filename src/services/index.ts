@@ -18,6 +18,7 @@ export * from './omnivore.service';
 export * from './payment-method.service';
 export * from './server.service';
 export * from './spreedly.service';
+export * from './sms.service';
 export * from './ticket.service';
 export * from './ticket-payment.service';
 export * from './ticket-total.service';
