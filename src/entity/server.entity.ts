@@ -18,7 +18,7 @@ export class Server {
     @Column({type: 'varchar', length: 25, nullable: true})
     phone!: string;
 
-    @Column({type: 'varchar', nullable: false})
+    @Column({type: 'varchar', nullable: true})
     password!: string;
 
     @Column({type: 'varchar', length: 5, nullable: true})
