@@ -11,4 +11,10 @@ export class ServerService {
         const server = await serverRepo.find({ where: { referralCode }, relations: ['location'] });
         return server;
     }
+
+    async getServerByEmployeeId(employeeId: string) {
+        const serverRepo = await getRepository(ServerEntity);
+        const server = await serverRepo.findOne({ where: { employeeId }});
+        return server;
+    }
 }
