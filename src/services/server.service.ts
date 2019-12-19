@@ -32,7 +32,7 @@ export class ServerService {
         const ticketNum = ticket.ticket_number;
         const ticketTotalObj = ticket.ticketTotal;
 
-        if (ticketTotalObj && server) {
+        if (ticketTotalObj && server && server.phone) {
             const ticketTotal = ticketTotalObj.total / 100;
             const ticketTip = ticketTotalObj.tips / 100;
 
