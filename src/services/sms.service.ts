@@ -17,6 +17,6 @@ export class SMSService {
     };
 
     const sms = await client.messages.create(textContent);
-    console.log(sms);
+    return sms;
   }
 }

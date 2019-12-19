@@ -10,12 +10,14 @@ import {
   TicketTotal,
 } from '@tabify/entities';
 import { TicketStatus } from '../enums';
+import { ServerService } from './server.service';
 
 @Injectable()
 export class TicketService {
 
   constructor(
     private messageService: SMSService,
+    private serverService: ServerService,
   ) { }
 
   /**
@@ -117,8 +119,7 @@ export class TicketService {
       .where('id = :id', { id: ticketId })
       .execute();
 
-    // await this.messageService
-    //   .sendSMS('TO_NUM', 'hey');
+    await this.serverService.sendTicketCloseSMSToServer(ticketId);
 
     return res;
   }
