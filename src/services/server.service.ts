@@ -31,6 +31,7 @@ export class ServerService {
 
         const server = ticket.server;
         const ticketNum = ticket.ticket_number;
+        const ticketTableName = ticket.table_name;
         const ticketTotalObj = ticket.ticketTotal;
 
         if (ticketTotalObj && server && server.phone) {
@@ -40,8 +41,8 @@ export class ServerService {
             const serverCellNum = server.phone;
             const serverName = server.firstName;
 
-            const message = `Hi ${serverName}, for closing ticket# ${ticketNum}, ` +
-                `the total was $${ticketTotal}, and the tip was $${ticketTip}. Thanks, Tabify.`;
+            const message = `Hi ${serverName}, for closing ticket# ${ticketNum} (Table ${ticketTableName}),` +
+                ` the total was $${ticketTotal}, and the tip was $${ticketTip}. Thanks, Tabify.`;
 
             await this.messageService.sendSMS(serverCellNum, message);
         }
