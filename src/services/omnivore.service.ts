@@ -128,8 +128,9 @@ export class OmnivoreService {
       throw new UnprocessableEntityException('Tickets with service/other charges are not currently supported.');
     }
 
+    // use the employee.id to find server in our DB
     const serverToAssociate = await this.serverService
-      .getServerByEmployeeId(customerTicket._embedded.employee);
+      .getServerByEmployeeId(customerTicket._embedded.employee.id);
 
     const ticket: Ticket = {
       tab_id: customerTicket.id,
