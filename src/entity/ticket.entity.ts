@@ -76,4 +76,7 @@ export class Ticket {
     nullable: true,
   })
   server?: Server;
+
+  @Column({ type: 'varchar', nullable: true })
+  table_name?: string;
 }
