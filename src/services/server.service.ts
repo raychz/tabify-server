@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { getRepository } from 'typeorm';
 import { Server as ServerEntity, Ticket as TicketEntity, Ticket } from '@tabify/entities';
 import { SMSService } from './sms.service';
+import * as currency from 'currency.js';
 
 // This service handles operations for the Server entity
 @Injectable()
@@ -33,8 +34,8 @@ export class ServerService {
         const ticketTotalObj = ticket.ticketTotal;
 
         if (ticketTotalObj && server && server.phone) {
-            const ticketTotal = ticketTotalObj.total / 100;
-            const ticketTip = ticketTotalObj.tips / 100;
+            const ticketTotal = currency(ticketTotalObj.total / 100);
+            const ticketTip = currency(ticketTotalObj.tips / 100);
 
             const serverCellNum = server.phone;
             const serverName = server.firstName;
