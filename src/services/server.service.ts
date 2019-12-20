@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { getRepository } from 'typeorm';
-import { Server as ServerEntity, Ticket as TicketEntity, Ticket } from '@tabify/entities';
+import { Server as ServerEntity, Ticket as TicketEntity, ServerReward as ServerRewardEntity } from '@tabify/entities';
 import { SMSService } from './sms.service';
 import * as currency from 'currency.js';
 
@@ -12,10 +12,45 @@ export class ServerService {
         private messageService: SMSService,
     ) { }
 
-    async getServerByRefCode(referralCode: string) {
+    private referralCodeLength: number = 4;
+    private allowedCodeLetterOptions = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+
+    async getServerByRefCode(refCode: string) {
         const serverRepo = await getRepository(ServerEntity);
-        const server = await serverRepo.find({ where: { referralCode }, relations: ['location'] });
+        const server = await serverRepo.find({ where: { referralCode: refCode }, relations: ['location'] });
         return server;
+    }
+
+
+
+    // save server in DB. generate ref code
+    async postServer(serverDetails: any) {
+        serverDetails.referralCode = await this.generateReferralCode();
+        const serverRepo = await getRepository(ServerEntity);
+        const server = await serverRepo.save(serverDetails);
+        return server;
+    }
+
+    async generateReferralCode() {
+        let result = '';
+        const length = this.referralCodeLength;
+        const chars = this.allowedCodeLetterOptions;
+        const serverRepo = await getRepository(ServerEntity);
+
+        // check if ref code is already being used
+        while (true) {
+            for (let i = length; i > 0; --i) result += chars[Math.round(Math.random() * (chars.length - 1))];
+
+            const refCodeUsed = await serverRepo.findOne({ where: { referralCode: result } });
+
+            // if refcodeUsed is undefined or null, break
+            if (!refCodeUsed) {
+                break;
+            } else {
+                result = '';
+            }
+        }
+        return result;
     }
 
     async getServerByEmployeeId(employeeId: string) {
