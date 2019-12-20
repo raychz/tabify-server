@@ -1,7 +1,7 @@
 import { Injectable, Logger, BadRequestException, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { getRepository, getConnection, FindOneOptions, FindConditions, InsertResult } from 'typeorm';
 import { auth } from 'firebase-admin';
-import { FirebaseService, OmnivoreService, StoryService, SMSService } from '@tabify/services';
+import { FirebaseService, OmnivoreService, UserService, SMSService, ServerService } from '@tabify/services';
 import {
   Ticket as TicketEntity,
   TicketItem as TicketItemEntity,
@@ -10,14 +10,14 @@ import {
   TicketTotal,
 } from '@tabify/entities';
 import { TicketStatus } from '../enums';
-import { ServerService } from './server.service';
 
 @Injectable()
 export class TicketService {
 
   constructor(
-    private messageService: SMSService,
-    private serverService: ServerService,
+    private readonly messageService: SMSService,
+    private readonly serverService: ServerService,
+    private readonly userService: UserService,
   ) { }
 
   /**
@@ -118,6 +118,9 @@ export class TicketService {
       .set({ ticket_status: TicketStatus.CLOSED })
       .where('id = :id', { id: ticketId })
       .execute();
+
+    // set newUser status to false on users completing their first ticket
+    await this.userService.setNewUsersFalse(ticketId);
 
     await this.serverService.sendTicketCloseSMSToServer(ticketId);
 
