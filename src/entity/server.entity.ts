@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, ManyToOne, Column, OneToMany, Index } from 'typeorm';
-import { Location, UserDetail, Ticket } from '@tabify/entities';
+import { Location, UserDetail, Ticket, ServerReward } from '@tabify/entities';
 
 @Entity()
 export class Server {
@@ -37,4 +37,7 @@ export class Server {
 
     @OneToMany(type => Ticket, ticket => ticket.server)
     ticket!: Ticket[];
+
+    @OneToMany(type => ServerReward, serverReward => serverReward.server)
+    serverRewards!: ServerReward[];
 }
