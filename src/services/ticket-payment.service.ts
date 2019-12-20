@@ -1,10 +1,11 @@
 import { Injectable, BadRequestException, InternalServerErrorException, Logger } from '@nestjs/common';
 import { getRepository } from 'typeorm';
-import { TicketPayment, Ticket, User } from '@tabify/entities';
+import { TicketPayment, Ticket, User, Server } from '@tabify/entities';
 import { SpreedlyService, TicketService } from '@tabify/services';
 import { TicketPaymentInterface } from '../interfaces';
 import { TicketTotalService } from './ticket-total.service';
 import { TicketPaymentStatus } from '../enums';
+import { SMSService } from './sms.service';
 
 @Injectable()
 export class TicketPaymentService {
@@ -12,6 +13,7 @@ export class TicketPaymentService {
     private spreedlyService: SpreedlyService,
     private ticketService: TicketService,
     private ticketTotalService: TicketTotalService,
+    private messageService: SMSService,
   ) { }
 
   async sendTicketPayment(uid: string, details: TicketPaymentInterface) {
@@ -38,6 +40,16 @@ export class TicketPaymentService {
     } catch (error) {
       Logger.error(error);
       // Something went wrong, so update the payment's status to failed
+
+      // send error sms to server
+      if (details.ticket.server) {
+        const server = details.ticket.server;
+        const tableName = details.ticket.table_name;
+        const textMsg = `Hi ${server.firstName}, a patron at table ${tableName} had a payment issue.`;
+
+        this.messageService.sendSMS(server.phone, textMsg);
+      }
+
       await this.saveTicketPayment({
         id: ticketPaymentId,
         ticket_payment_status: TicketPaymentStatus.FAILED,
@@ -62,6 +74,16 @@ export class TicketPaymentService {
       });
     } else {
       Logger.error(spreedlyResponse, 'Error occurred while parsing the Spreedly response');
+
+      // send error sms to server
+      if (details.ticket.server) {
+        const server = details.ticket.server;
+        const tableName = details.ticket.table_name;
+        const textMsg = `Hi ${server.firstName}, a patron at table ${tableName} had a payment issue.`;
+
+        this.messageService.sendSMS(server.phone, textMsg);
+      }
+
       // Something went wrong, so update the payment's status to failed
       await this.saveTicketPayment({
         id: ticketPaymentId,
