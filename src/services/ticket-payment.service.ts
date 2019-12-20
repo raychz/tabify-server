@@ -42,10 +42,11 @@ export class TicketPaymentService {
       // Something went wrong, so update the payment's status to failed
 
       // send error sms to server
-      if (details.ticket.server) {
+      if (details.ticket.server && details.ticket.server.phone) {
         const server = details.ticket.server;
         const tableName = details.ticket.table_name;
-        const textMsg = `Hi ${server.firstName}, a patron at table ${tableName} had a payment issue.`;
+        const textMsg = `Hi ${server.firstName}, a patron at table ${tableName} for ` +
+          `ticket# ${details.ticket.ticket_number} had a payment issue.`;
 
         this.messageService.sendSMS(server.phone, textMsg);
       }
@@ -76,10 +77,11 @@ export class TicketPaymentService {
       Logger.error(spreedlyResponse, 'Error occurred while parsing the Spreedly response');
 
       // send error sms to server
-      if (details.ticket.server) {
+      if (details.ticket.server && details.ticket.server.phone) {
         const server = details.ticket.server;
         const tableName = details.ticket.table_name;
-        const textMsg = `Hi ${server.firstName}, a patron at table ${tableName} had a payment issue.`;
+        const textMsg = `Hi ${server.firstName}, a patron at table ${tableName} for ` +
+          `ticket# ${details.ticket.ticket_number} had a payment issue.`;
 
         this.messageService.sendSMS(server.phone, textMsg);
       }
