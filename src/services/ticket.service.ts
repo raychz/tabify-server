@@ -102,6 +102,17 @@ export class TicketService {
         Logger.log('Retrieving the created ticket');
         existingTicket = await ticketRepo.findOneOrFail(ticketFindOptions as FindOneOptions<TicketEntity>);
         Logger.log(existingTicket, 'Retrieved the created ticket');
+
+        // upon creation of ticket, send an SMS to the server that users will be using Tabify for this ticket
+        if (existingTicket.server && existingTicket.server.phone) {
+          const server = existingTicket.server;
+          const tableName = existingTicket.table_name;
+          const textMsg = `Hi ${server.firstName}, patrons at table ${tableName} for ` +
+            `ticket# ${existingTicket.ticket_number} will be using Tabify for payment.`;
+
+          this.messageService.sendSMS(server.phone, textMsg);
+        }
+
         return { created: true, ticket: existingTicket };
       }
     });
