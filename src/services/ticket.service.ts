@@ -123,6 +123,10 @@ export class TicketService {
    * @param ticketId
    */
   async closeTicket(ticketId: number) {
+
+    // add server rewards for new users referrals
+    await this.serverService.addServerReward(ticketId);
+
     const res = await getConnection()
       .createQueryBuilder()
       .update(TicketEntity)
