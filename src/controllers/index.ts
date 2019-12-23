@@ -10,3 +10,5 @@ export * from './ticket.controller';
 export * from './user.controller';
 export * from './payment-method.controller';
 export * from './coupon.controller';
+export * from './ticket-user.controller';
+export * from './ticket-item.controller';

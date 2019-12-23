@@ -1,9 +1,10 @@
-import { Injectable, BadRequestException, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, BadRequestException, InternalServerErrorException, Logger } from '@nestjs/common';
 import { getRepository } from 'typeorm';
-import { TicketPayment, TicketPaymentStatus, Ticket, User } from '@tabify/entities';
+import { TicketPayment, Ticket, User } from '@tabify/entities';
 import { SpreedlyService, TicketService } from '@tabify/services';
 import { TicketPaymentInterface } from '../interfaces';
 import { TicketTotalService } from './ticket-total.service';
+import { TicketPaymentStatus } from '../enums';
 
 @Injectable()
 export class TicketPaymentService {
@@ -36,7 +37,7 @@ export class TicketPaymentService {
         `TABIFY${ticketPaymentId}`,
       );
     } catch (error) {
-      console.error(error);
+      Logger.error(error);
       // Something went wrong, so update the payment's status to failed
       await this.saveTicketPayment({
         id: ticketPaymentId,
@@ -55,20 +56,20 @@ export class TicketPaymentService {
         ticket_payment_status: TicketPaymentStatus.SUCCEEDED,
         message: transaction.message,
         transaction_token: transaction.token,
-        omnivore_response: response,
+        omnivore_response: JSON.stringify(response),
         amount: response.body.amount,
         tip: response.body.tip,
         omnivore_id: response.body.id,
       });
     } else {
-      console.error('Error occurred while parsing the Spreedly response', spreedlyResponse);
+      Logger.error(spreedlyResponse, 'Error occurred while parsing the Spreedly response');
       // Something went wrong, so update the payment's status to failed
       await this.saveTicketPayment({
         id: ticketPaymentId,
         ticket_payment_status: TicketPaymentStatus.FAILED,
         message: transaction.message,
         transaction_token: transaction.token,
-        omnivore_response: response,
+        omnivore_response: JSON.stringify(response),
       });
       throw new BadRequestException('This payment could not be processed.', JSON.stringify(spreedlyResponse));
     }
@@ -90,7 +91,7 @@ export class TicketPaymentService {
         total: responseTicket.totals.total,
       });
     } else {
-      console.error('Error occurred while parsing the Omnivore response', response);
+      Logger.error(response, 'Error occurred while parsing the Omnivore response');
       throw new BadRequestException('This payment could not be processed.', response);
     }
 

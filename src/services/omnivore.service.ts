@@ -1,10 +1,10 @@
-import { Injectable, HttpStatus, NotFoundException, BadGatewayException,
-  InternalServerErrorException, UnprocessableEntityException } from '@nestjs/common';
+import { Injectable, HttpStatus, NotFoundException, BadGatewayException, InternalServerErrorException, UnprocessableEntityException, BadRequestException } from '@nestjs/common';
 import { getManager, EntityManager } from 'typeorm';
 import fetch from 'node-fetch';
-import { ITicketItem, Location as LocationEntity, Ticket } from '@tabify/entities';
+import { Location as LocationEntity, Ticket, TicketItem } from '@tabify/entities';
 import { LocationService } from '@tabify/services';
 import { sleep } from '../utilities/general.utilities';
+import { OmnivoreTicketItem, OmnivoreTicketDiscount } from '@tabify/interfaces';
 
 @Injectable()
 export class OmnivoreService {
@@ -76,7 +76,7 @@ export class OmnivoreService {
    * @param omnivoreLocationId
    * @param ticket_number
    */
-  async getTicket(locationId: number, ticketNumber: number): Promise<Ticket> {
+  async getTicketByTicketNumber(locationId: number, ticketNumber: number): Promise<Ticket> {
     const location = await this.locationService.getLocation({
       where: {
         id: locationId,
@@ -84,7 +84,7 @@ export class OmnivoreService {
     });
 
     if (!location) {
-      throw Error('Location not found');
+      throw new NotFoundException('Location not found');
     }
 
     const apiKey = location.omnivore_id === 'i8yBgkjT' ? process.env.OMNIVORE_API_KEY_DEV : process.env.OMNIVORE_API_KEY_PROD;
@@ -128,7 +128,7 @@ export class OmnivoreService {
       tab_id: customerTicket.id,
       location,
       ticket_number: customerTicket.ticket_number,
-      items: customerTicket._embedded.items.map((item: ITicketItem) => ({
+      items: customerTicket._embedded.items.map((item: TicketItem | any) => ({
         ticket_item_id: item.id,
         name: item.name,
         comment: item.comment,
@@ -154,6 +154,50 @@ export class OmnivoreService {
     return ticket;
   }
 
+  async addItemsToTicket(location: LocationEntity, omnivoreTicketId: string, menuItems: OmnivoreTicketItem[]) {
+    if (!location || !location.omnivore_id) {
+      throw new NotFoundException('Location not found');
+    }
+
+    const apiKey = location.omnivore_id === 'i8yBgkjT' ? process.env.OMNIVORE_API_KEY_DEV : process.env.OMNIVORE_API_KEY_PROD;
+    const headers = {
+      'Content-Type': 'application/json',
+      'Api-Key': apiKey!,
+    };
+
+    if (!menuItems.length) {
+      throw new BadRequestException('Missing menu items');
+    }
+    const body = { items: menuItems };
+    const url = `${OmnivoreService.API_URL}/locations/${location.omnivore_id}/tickets/${omnivoreTicketId}/items/`;
+    const res = await fetch(url, { headers, method: 'POST', body: JSON.stringify(body) });
+    const json = await res.json();
+
+    return json;
+  }
+
+  async applyDiscountsToTicket(location: LocationEntity, omnivoreTicketId: string, discounts: OmnivoreTicketDiscount[]) {
+    if (!location || !location.omnivore_id) {
+      throw new NotFoundException('Location not found');
+    }
+
+    const apiKey = location.omnivore_id === 'i8yBgkjT' ? process.env.OMNIVORE_API_KEY_DEV : process.env.OMNIVORE_API_KEY_PROD;
+    const headers = {
+      'Content-Type': 'application/json',
+      'Api-Key': apiKey!,
+    };
+
+    if (!discounts.length) {
+      throw new BadRequestException('Missing discounts');
+    }
+    const body = discounts;
+    const url = `${OmnivoreService.API_URL}/locations/${location.omnivore_id}/tickets/${omnivoreTicketId}/discounts/`;
+    const res = await fetch(url, { headers, method: 'POST', body: JSON.stringify(body) });
+    const json = await res.json();
+
+    return json;
+  }
+
   async openDemoTickets(numberOfTicketsRequested: number = 25): Promise<number[]> {
     // Only allow up to 25 virtual POS tickets to be created at a time
     const numberOfTicketsToCreate = Math.min(numberOfTicketsRequested, 25);
@@ -174,6 +218,46 @@ export class OmnivoreService {
       order_type: '1',
       revenue_center: '1',
       items: [
+        {
+          menu_item: '101',
+          quantity: 3,
+        },
+        {
+          menu_item: '102',
+          quantity: 5,
+        },
+        {
+          menu_item: '201',
+          quantity: 3,
+        },
+        {
+          menu_item: '202',
+          quantity: 1,
+        },
+        {
+          menu_item: '203',
+          quantity: 1,
+        },
+        {
+          menu_item: '204',
+          quantity: 1,
+        },
+        {
+          menu_item: '206',
+          quantity: 1,
+        },
+        {
+          menu_item: '207',
+          quantity: 1,
+        },
+        {
+          menu_item: '208',
+          quantity: 1,
+        },
+        {
+          menu_item: '209',
+          quantity: 1,
+        },
         {
           menu_item: '101',
           quantity: 3,

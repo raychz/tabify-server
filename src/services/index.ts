@@ -6,6 +6,7 @@
  * Example: The comment.service.ts class imports story.service.ts and user.service.ts.
  * story and user must be exported BEFORE comment.
  */
+export * from './ably.service';
 export * from './story.service';
 export * from './user.service';
 export * from './comment.service';
@@ -21,3 +22,6 @@ export * from './ticket.service';
 export * from './ticket-payment.service';
 export * from './ticket-total.service';
 export * from './coupon.service';
+export * from './ticket-user.service';
+export * from './ticket-item.service';
+export * from './ticket-item-user.service';

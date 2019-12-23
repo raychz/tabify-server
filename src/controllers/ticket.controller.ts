@@ -1,7 +1,7 @@
-import { Get, Controller, Query, Res, Post,
-  Body, Put, Param, BadRequestException, InternalServerErrorException, NotFoundException } from '@nestjs/common';
-import { FirebaseService, FraudPreventionCodeService, TicketService, OmnivoreService, StoryService } from '@tabify/services';
+import { Get, Controller, Query, Res, Post, Body, Put, Param, BadRequestException, NotFoundException, NotImplementedException, HttpStatus } from '@nestjs/common';
+import { FirebaseService, FraudPreventionCodeService, TicketService, OmnivoreService, StoryService, TicketUserService } from '@tabify/services';
 import { User } from '../decorators/user.decorator';
+import { Response } from 'express';
 
 @Controller('tickets')
 export class TicketController {
@@ -12,6 +12,26 @@ export class TicketController {
     private readonly fraudPreventionCodeService: FraudPreventionCodeService,
     private omnivoreService: OmnivoreService,
   ) { }
+
+  @Get(':id')
+  async getTicketById(
+    @User('uid') uid: string,
+    @Param('id') id: any,
+  ) {
+    if (!id) {
+      throw new BadRequestException('Missing ticket id');
+    }
+
+    const ticket = await this.ticketService.getTicket({ id },
+      ['items', 'items.users', 'location', 'users', 'users.user', 'users.user.userDetail', 'ticketTotal'],
+    );
+
+    if (!ticket) {
+      throw new NotFoundException('The requested ticket could not be found.');
+    }
+
+    return ticket;
+  }
 
   @Get()
   async getTicket(
@@ -24,7 +44,9 @@ export class TicketController {
       throw new BadRequestException('Missing ticket number and/or location');
     }
 
-    const ticket = await this.ticketService.getTicket(params, ['items', 'location', 'users', 'ticketTotal']);
+    const ticket = await this.ticketService.getTicket(params,
+      ['items', 'items.users', 'items.users.user', 'items.users.user.userDetail', 'location', 'users', 'users.user', 'users.user.userDetail', 'ticketTotal'],
+    );
 
     if (!ticket) {
       throw new NotFoundException('The requested ticket could not be found.');
@@ -34,36 +56,33 @@ export class TicketController {
   }
 
   @Post()
-  async createTicket(@Body() body: any) {
+  async createTicket(@Body() body: any, @Res() res: Response) {
     const { ticket_number, location } = body;
 
     // Get ticket data from Omnivore
-    const omnivoreTicket = await this.omnivoreService.getTicket(
+    const omnivoreTicket = await this.omnivoreService.getTicketByTicketNumber(
       location,
       ticket_number,
     );
 
-    // Save ticket in our database
-    const newTicket = await this.ticketService.saveTicket(omnivoreTicket);
+    // Create ticket in our database
+    const { created, ticket: newTicket } = await this.ticketService.createTicket(omnivoreTicket,
+      ['items', 'items.users', 'items.users.user', 'items.users.user.userDetail', 'location', 'users', 'users.user', 'users.user.userDetail', 'ticketTotal'],
+    );
 
-    // Save new story
-    await this.storyService.saveStory(newTicket);
+    if (created) {
+      // Save new story
+      await this.storyService.saveStory(newTicket);
 
-    // Add ticket to Firestore
-    const ticketId = await this.firebaseService.addTicketToFirestore(newTicket);
-    newTicket.firestore_doc_id = ticketId;
-    await this.ticketService.saveTicket(newTicket);
+      // Add ticket to Firestore
+      // const ticketId = await this.firebaseService.addTicketToFirestore(newTicket);
+      // newTicket.firestore_doc_id = ticketId;
+      // await this.ticketService.updateTicket(newTicket);
 
-    return newTicket;
-  }
-
-  /** Adds user to Tabify database ticket */
-  @Post(':id/addDatabaseUser')
-  async addUserToDatabaseTicket(
-    @User('uid') uid: string,
-    @Param('id') ticketId: number,
-  ) {
-    await this.ticketService.addUserToDatabaseTicket(ticketId, uid);
+      res.status(HttpStatus.CREATED).send(newTicket);
+    } else {
+      res.status(HttpStatus.OK).send(newTicket);
+    }
   }
 
   /** Adds user to Firestore ticket */
@@ -73,8 +92,8 @@ export class TicketController {
     @Param('id') ticketId: number,
   ) {
     const user = await this.firebaseService.getUserInfo(uid);
-    const firestoreDocumentId = await this.ticketService.getTicketFirestoreId(ticketId);
-    await this.firebaseService.addUserToFirestoreTicket(firestoreDocumentId, user);
+    // const firestoreDocumentId = await this.ticketService.getTicketFirestoreId(ticketId);
+    // await this.firebaseService.addUserToFirestoreTicket(firestoreDocumentId, user);
   }
 
   /** Finalize totals for each user on Firestore */
@@ -83,8 +102,8 @@ export class TicketController {
     @User('uid') uid: string,
     @Param('id') ticketId: number,
   ) {
-    const firestoreDocumentId = await this.ticketService.getTicketFirestoreId(ticketId);
-    return await this.firebaseService.finalizeUserTotals(firestoreDocumentId);
+    // const firestoreDocumentId = await this.ticketService.getTicketFirestoreId(ticketId);
+    // return await this.firebaseService.finalizeUserTotals(firestoreDocumentId);
   }
 
   /** Add ticket number to fraud code */
@@ -104,20 +123,21 @@ export class TicketController {
     @User('uid') uid: string,
     @Query() params: any,
   ) {
-    const { ticket_number, location } = params;
+    throw new NotImplementedException('This endpoint should not be called. See the ticket-item.controller.ts class.');
+    // const { ticket_number, location } = params;
 
-    if (!ticket_number || !location) {
-      throw new BadRequestException('Missing ticket and/or location');
-    }
+    // if (!ticket_number || !location) {
+    //   throw new BadRequestException('Missing ticket and/or location');
+    // }
 
-    const ticketObj = await this.ticketService.getTicket(
-      { ticket_number, location }, ['items'],
-    );
+    // const ticketObj = await this.ticketService.getTicket(
+    //   { ticket_number, location }, ['items'],
+    // );
 
-    if (!ticketObj) {
-      throw new InternalServerErrorException('There was an error while getting your ticket items');
-    }
-    return ticketObj.items;
+    // if (!ticketObj) {
+    //   throw new InternalServerErrorException('There was an error while getting your ticket items');
+    // }
+    // return ticketObj.items;
   }
 
   async addTicketItem(
@@ -132,17 +152,4 @@ export class TicketController {
   async openDemoTickets(@Param('numberOfTickets') numberOfTickets: number) {
     return await this.omnivoreService.openDemoTickets(numberOfTickets);
   }
-
-  @Put(':id/closeTicket')
-  async closeTicket(
-    @User('uid') uid: string,
-    @Param('id') ticketId: number,
-  ) {
-    const response = await this.ticketService.closeTicket(ticketId);
-    return response;
-  }
-
-  // async removeTicketItem() {
-
-  // }
 }
