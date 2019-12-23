@@ -29,15 +29,15 @@ export class ServerService {
         const servers = await serverRepo.createQueryBuilder('server')
             .innerJoin('server.users', 'userDetails', 'userDetails.newUser = true', { newUserStatus: true })
             .innerJoin('userDetails.user', 'user')
-            .innerJoin('user.tickets', 'ticket', 'ticket.id = :ticketId', { ticketId })
+            .innerJoin('user.tickets', 'ticketUser')
+            .innerJoin('ticketUser.ticket', 'ticket', 'ticket.id = :ticketId', { ticketId })
             .getMany();
 
         const numServers = servers.length;
 
         // calculate payment amount. 1/numServers
         // use currency.js
-        const payment_amount = 1 / numServers;
-        const payment_amount_floored = Math.floor(payment_amount * 100) / 100;
+        const payment_amount = currency(1 / 3).cents();
 
         const ticketRepo = await getRepository(TicketEntity);
         const ticketToAssign = await ticketRepo.find({ where: { id: ticketId } });
@@ -48,7 +48,7 @@ export class ServerService {
         // add server-ticket to server reward table
         servers.forEach(eachServer => {
             const serverReward = new ServerRewardEntity();
-            serverReward.payment_amount = payment_amount_floored;
+            serverReward.payment_amount = Number(payment_amount);
             serverReward.server = eachServer;
             serverReward.ticket = ticketToAssign[0];
             serverRewards.push(serverReward);
