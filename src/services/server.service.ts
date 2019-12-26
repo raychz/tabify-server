@@ -35,9 +35,6 @@ export class ServerService {
 
         const numServers = servers.length;
 
-        // calculate payment amount. 1/numServers. use currency.js
-        const payment_amount = currency(1 / numServers).intValue;
-
         const ticketRepo = await getRepository(TicketEntity);
         const ticketToAssign = await ticketRepo.find({ where: { id: ticketId } });
 
@@ -47,10 +44,16 @@ export class ServerService {
         // add server-ticket to server reward table
         servers.forEach(eachServer => {
             const serverReward = new ServerRewardEntity();
-            serverReward.payment_amount = Number(payment_amount);
             serverReward.server = eachServer;
             serverReward.ticket = ticketToAssign[0];
             serverRewards.push(serverReward);
+        });
+
+        // distribute reward ($1) among servers
+        currency(1)
+        .distribute(serverRewards.length)
+        .forEach((pmnt_amount, index) => {
+          serverRewards[index].payment_amount = pmnt_amount.intValue;
         });
 
         // save server rewards in server rewards table
