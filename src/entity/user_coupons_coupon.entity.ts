@@ -13,8 +13,8 @@ export class UserToCoupons {
   usage_count!: number;
 
 //   @ManyToOne(type => User, user => user.userToCoupons)
-//   user!: User;
+//   user?: User;
 
 //   @ManyToOne(type => Coupon, coupon => coupon.userToCoupons)
-//   coupon!: Coupon;
+//   coupon?: Coupon;
 }

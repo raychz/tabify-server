@@ -6,6 +6,8 @@ import {
   UpdateDateColumn,
   ManyToOne,
   OneToMany,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 import { Location, User, TicketPayment, UserToCoupons } from '@tabify/entities';
 
@@ -69,7 +71,11 @@ export class Coupon {
   location!: Location;
 
   // @OneToMany(type => UserToCoupons, userCoupon => userCoupon.coupon)
-  // userToCoupons!: UserToCoupons[];
+  // userToCoupons?: UserToCoupons[];
+
+  @ManyToMany(type => User, user => user.coupons)
+  @JoinTable()
+  users!: User[];
 
   @OneToMany(type => TicketPayment, ticketPayment => ticketPayment.coupon)
   ticketPayments!: TicketPayment[];
