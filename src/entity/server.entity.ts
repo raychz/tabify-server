@@ -1,7 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, ManyToOne, Column, OneToMany, Index } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, ManyToOne, Column, OneToMany, Index, Unique } from 'typeorm';
 import { Location, UserDetail, Ticket, ServerReward } from '@tabify/entities';
 
 @Entity()
+@Unique(['employeeId', 'location'])
 export class Server {
     @PrimaryGeneratedColumn()
     id!: number;
