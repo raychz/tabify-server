@@ -73,9 +73,9 @@ export class Coupon {
   // @OneToMany(type => UserToCoupons, userCoupon => userCoupon.coupon)
   // userToCoupons?: UserToCoupons[];
 
-  @ManyToMany(type => User, user => user.coupons)
-  @JoinTable()
-  users!: User[];
+  // @ManyToMany(type => User, user => user.coupons)
+  // @JoinTable()
+  // users!: User[];
 
   @OneToMany(type => TicketPayment, ticketPayment => ticketPayment.coupon)
   ticketPayments!: TicketPayment[];

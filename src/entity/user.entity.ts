@@ -34,6 +34,6 @@ export class User {
   // @OneToMany(type => UserToCoupons, userCoupon => userCoupon.user)
   // userToCoupons?: UserToCoupons[];
 
-  @ManyToMany(type => Coupon, coupon => coupon.users)
-  coupons!: Coupon[];
+  // @ManyToMany(type => Coupon, coupon => coupon.users)
+  // coupons!: Coupon[];
 }
