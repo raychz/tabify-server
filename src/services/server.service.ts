@@ -35,9 +35,8 @@ export class ServerService {
 
         const numServers = servers.length;
 
-        // calculate payment amount. 1/numServers
-        // use currency.js
-        const payment_amount = currency(1 / 3).cents();
+        // calculate payment amount. 1/numServers. use currency.js
+        const payment_amount = currency(1 / numServers).intValue;
 
         const ticketRepo = await getRepository(TicketEntity);
         const ticketToAssign = await ticketRepo.find({ where: { id: ticketId } });
