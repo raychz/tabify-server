@@ -28,13 +28,13 @@ export enum CouponOffOf {
     id?: number;
 
     @Column({ type: 'varchar', nullable: false })
-    header!: string;
-
-    @Column({ type: 'varchar', nullable: false })
     description!: string;
 
     @Column({ type: 'int', nullable: false })
     value!: number;
+
+    @Column({ type: 'int', nullable: false })
+    estimated_dollar_value!: number;
 
     @Column({ type: 'int', nullable: false })
     usage_limit!: number;

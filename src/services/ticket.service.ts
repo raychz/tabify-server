@@ -84,9 +84,11 @@ export class TicketService {
 
         if (isNaN(insertedTicketId)) throw new InternalServerErrorException('An error occurred while inserting the ticket.');
 
-        // Add items to ticket
+         // Add items to ticket
         const ticketItemsRepo = await transactionalEntityManager.getRepository(TicketItem);
-        await ticketItemsRepo.insert(ticket.items!.map(item => ({ ...item, ticket: insertedTicketId as TicketEntity })));
+        if (ticket.items) {
+           await ticketItemsRepo.insert(ticket.items.map(item => ({ ...item, ticket: insertedTicketId as TicketEntity })));
+         }
 
         // Add totals to ticket
         const ticketTotalRepo = await transactionalEntityManager.getRepository(TicketTotal);
