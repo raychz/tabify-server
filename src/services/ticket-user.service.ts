@@ -170,12 +170,14 @@ export class TicketUserService {
 
           // Only apply to Piccola's
           const isPiccolas = ticket.location!.omnivore_id === 'cx9pap8i';
+          const openDiscountId = ticket.location!.open_discount_id;
 
           // Apply discount on this ticket if containsNewUser and compatibleDiscount and isPiccolas
-          if (containsNewUser && compatibleDiscount && isPiccolas) {
+          if (containsNewUser && compatibleDiscount && isPiccolas && openDiscountId) {
             Logger.log('This discount is compatible. Apply it!');
             // TODO: Move discount id to database
-            const discounts: OmnivoreTicketDiscount[] = [{ discount: '1847-53-17', value: discountAmount }];
+            const discounts: OmnivoreTicketDiscount[] = [{ discount: openDiscountId, value: discountAmount }];
+            // const discounts: OmnivoreTicketDiscount[] = [{ discount: '1847-53-17', value: discountAmount }];
             // const discountMenuItem: OmnivoreTicketItem = { menu_item: '1847-53-17', quantity: 1, price_per_unit: discountAmount };
             try {
               const response = await this.omnivoreService.applyDiscountsToTicket(ticket.location!, ticket.tab_id!, discounts);
@@ -202,7 +204,7 @@ export class TicketUserService {
           }
           // If not compatible, reset discount to 0
           else {
-            Logger.log('No new users found or the discount is NOT compatible; don\'t apply Tabify discount.');
+            Logger.log('No new users found or the discount is NOT compatible; don\'t apply Tabify discount or no open value discount is provided');
             discountAmount = 0;
             distributedDiscount = currency(discountAmount / 100).distribute(ticketUsers.length);
           }

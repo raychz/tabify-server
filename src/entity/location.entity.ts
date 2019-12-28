@@ -70,4 +70,7 @@ export class Location {
 
   @OneToMany(type => Coupon, coupon => coupon.id)
   coupons?: Coupon[];
+
+  @Column({ type: 'varchar', nullable: true })
+  open_discount_id?: string;
 }
