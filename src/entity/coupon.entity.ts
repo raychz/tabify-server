@@ -64,7 +64,7 @@ export enum CouponOffOf {
     coupon_off_of!: CouponOffOf;
 
     @Column({ type: 'int', nullable: true })
-    menu_item?: number;
+    menu_item_id?: number;
 
     @ManyToOne(type => Location, location => location.coupons, {
       cascade: true,

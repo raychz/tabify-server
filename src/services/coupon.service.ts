@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException, InternalServerErrorException } from '@nestjs/common';
-import { getConnection, getRepository, getManager, EntityManager } from 'typeorm';
-import { UserToCoupons, Coupon, User, Location  } from '@tabify/entities';
+import { getConnection, getRepository, getManager, EntityManager, In } from 'typeorm';
+import { UserToCoupons, Coupon, User, Location, Ticket  } from '@tabify/entities';
 
 @Injectable()
 export class CouponService {
@@ -31,15 +31,23 @@ export class CouponService {
         return {validCoupons, upcomingCoupons, expiredCoupons};
     }
 
-    async saveNewCoupon(coupon: Coupon, locationId: number): Promise<Coupon> {
+    async applyDiscount(couponId: number, ticket: Ticket): Promise<Coupon> {
+      return new Coupon();
+    }
+
+    async saveNewCoupon(coupon: Coupon, locationId: number, userUids?: string[]): Promise<Coupon> {
 
         return await getManager().transaction(async (transactionalEntityManager: EntityManager) => {
           try {
               const location = await transactionalEntityManager.findOneOrFail(Location, locationId);
               coupon.location = location;
               const dbCoupon = await transactionalEntityManager.save(Coupon, coupon);
-
-              const users = await transactionalEntityManager.find(User);
+              let users: User[];
+              if (userUids) {
+                users = await transactionalEntityManager.find(User, {where: { uid: In(userUids) }});
+              } else {
+                users = await transactionalEntityManager.find(User);
+              }
               users.forEach(user => {
                 transactionalEntityManager.insert(UserToCoupons, {usage_count: 0, user, coupon: dbCoupon});
               });

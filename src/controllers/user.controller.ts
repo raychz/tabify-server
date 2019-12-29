@@ -1,7 +1,7 @@
 import { Get, Controller, Res, Post, Headers, Body, InternalServerErrorException } from '@nestjs/common';
 import { getRepository } from 'typeorm';
 import { User as UserEntity } from '@tabify/entities';
-import { FirebaseService, UserService } from '@tabify/services';
+import { FirebaseService, UserService, CouponService } from '@tabify/services';
 import { User } from '../decorators/user.decorator';
 
 @Controller('user')
@@ -9,6 +9,7 @@ export class UserController {
   constructor(
     private readonly firService: FirebaseService,
     private readonly userService: UserService,
+    private readonly couponService: CouponService,
   ) { }
 
   /**
@@ -43,6 +44,11 @@ export class UserController {
 
     // save user details
     const savedUserDetails = await this.userService.createUserDetails(user, referralCode);
+
+    // assign new user coupon ($5 off at Piccola's)
+    this.couponService.saveNewCoupon(
+      
+    );
 
     return savedUserDetails;
   }
