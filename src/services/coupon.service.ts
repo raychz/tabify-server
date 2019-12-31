@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException, InternalServerErrorException, Logger } from '@nestjs/common';
 import { getConnection, getRepository, getManager, EntityManager, In, MoreThanOrEqual } from 'typeorm';
-import { UserToCoupons, Coupon, User, Location, Ticket, CouponOffOf, CouponType, TicketUser  } from '@tabify/entities';
+import { UserToCoupons, Coupon, User, Location, Ticket, CouponOffOf, CouponType  } from '@tabify/entities';
 import { OmnivoreService, TicketTotalService } from '@tabify/services';
 import { OmnivoreTicketDiscount } from '@tabify/interfaces';
 
@@ -45,10 +45,7 @@ export class CouponService {
           const couponsRepo = await getRepository(Coupon);
           const coupon = await couponsRepo.findOneOrFail(couponId);
 
-          let ticketUser: TicketUser | undefined;
-          if (ticket.users) {
-            ticketUser = ticket.users!.find( user => user.user!.uid === uid );
-          }
+          const ticketUser = ticket.users!.find( user => user.user!.uid === uid );
 
           let couponValue = -1;
           let itemPrice = ticketUser!.sub_total;
