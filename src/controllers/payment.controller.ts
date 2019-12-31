@@ -31,7 +31,7 @@ export class PaymentController {
 
     let coupon: Coupon | undefined;
     if (couponId) {
-      coupon = await this.couponService.applyDiscount(couponId, ticket);
+      coupon = await this.couponService.applyDiscount(couponId, ticket, uid);
     }
 
     const updatedTotal = await this.ticketPaymentService.sendTicketPayment(uid, {

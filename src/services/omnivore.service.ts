@@ -15,7 +15,7 @@ export class OmnivoreService {
   async getLocations(): Promise<LocationEntity[]> {
     const headers = {
       'Content-Type': 'application/json',
-      'Api-Key': process.env.OMNIVORE_API_KEY_DEV || '',
+      'Api-Key': process.env.OMNIVORE_API_KEY_PROD || '',
     };
 
     const url = `${OmnivoreService.API_URL}/locations`;

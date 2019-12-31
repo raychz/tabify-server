@@ -19,9 +19,9 @@ export class CouponController {
 
   @Post('location/:locationId')
   async saveNewCoupon(
-    @Param('locationId') locationId: number,
+    @Param('locationOmnivoreId') locationOmnivoreId: string,
     @Body('newCoupon') newCoupon: Coupon,
   ) {
-    return await this.couponService.saveNewCoupon(newCoupon, locationId);
+    return await this.couponService.saveNewCoupon(newCoupon, locationOmnivoreId);
   }
 }

@@ -40,10 +40,10 @@ export enum CouponOffOf {
     usage_limit!: number;
 
     @CreateDateColumn()
-    date_created!: Date;
+    date_created?: Date;
 
     @UpdateDateColumn()
-    date_updated!: Date;
+    date_updated?: Date;
 
     @Column({type: 'date', nullable: false})
     coupon_start_date!: Date;
@@ -66,14 +66,17 @@ export enum CouponOffOf {
     @Column({ type: 'int', nullable: true })
     menu_item_id?: number;
 
+    @Column({ type: 'bool', nullable: false})
+    applies_to_everyone!: boolean;
+
     @ManyToOne(type => Location, location => location.coupons, {
       cascade: true,
     })
-    location!: Location;
+    location?: Location;
 
     @OneToMany(type => UserToCoupons, userCoupon => userCoupon.coupon)
-    userToCoupons!: UserToCoupons[];
+    userToCoupons?: UserToCoupons[];
 
     @OneToMany(type => TicketPayment, ticketPayment => ticketPayment.coupon)
-    ticketPayments!: TicketPayment[];
+    ticketPayments?: TicketPayment[];
   }

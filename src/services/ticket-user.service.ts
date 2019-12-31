@@ -142,72 +142,72 @@ export class TicketUserService {
           const ticketRepo = transactionalEntityManager.getRepository(Ticket);
           const ticket = await ticketRepo.findOneOrFail(ticketId, { relations: ['location', 'ticketTotal'] });
 
-          // Apply Tabify new user discount if this ticket contains one or more new users
-          let containsNewUser = false;
-          for (const ticketUser of ticketUsers) {
-            const numberOfTicketsForUser = await ticketUserRepo.count({ where: { user: ticketUser.user!.uid } });
+          // // Apply Tabify new user discount if this ticket contains one or more new users
+          // let containsNewUser = false;
+          // for (const ticketUser of ticketUsers) {
+          //   const numberOfTicketsForUser = await ticketUserRepo.count({ where: { user: ticketUser.user!.uid } });
 
-            // This should never happen since all users should be on at least 1 ticket at this point
-            if (!numberOfTicketsForUser || numberOfTicketsForUser === 0) {
-              throw new InternalServerErrorException(`An error occurred while counting the number of tickets that the users have been
-              associated with.`);
-            }
+          //   // This should never happen since all users should be on at least 1 ticket at this point
+          //   if (!numberOfTicketsForUser || numberOfTicketsForUser === 0) {
+          //     throw new InternalServerErrorException(`An error occurred while counting the number of tickets that the users have been
+          //     associated with.`);
+          //   }
 
-            // Check if this is the user's first ticket. If so, set containsNewUser to true and break.
-            if (numberOfTicketsForUser === 1) {
-              containsNewUser = true;
-              break;
-            }
-          }
+          //   // Check if this is the user's first ticket. If so, set containsNewUser to true and break.
+          //   if (numberOfTicketsForUser === 1) {
+          //     containsNewUser = true;
+          //     break;
+          //   }
+          // }
 
-          // TODO: Finalize and environmentalize this value
-          let discountAmount = 500;
-          let distributedDiscount = currency(discountAmount / 100).distribute(ticketUsers.length);
+          // // TODO: Finalize and environmentalize this value
+          // let discountAmount = 500;
+          // let distributedDiscount = currency(discountAmount / 100).distribute(ticketUsers.length);
 
-          // Verify that every user's subtotal remains > $0.25 by applying the discount
-          const compatibleDiscount = ticketUsers.every((ticketUser: TicketUser, index: number) =>
-            (ticketUser.sub_total - distributedDiscount[index].intValue) > 25);
+          // // Verify that every user's subtotal remains > $0.25 by applying the discount
+          // const compatibleDiscount = ticketUsers.every((ticketUser: TicketUser, index: number) =>
+          //   (ticketUser.sub_total - distributedDiscount[index].intValue) > 25);
 
-          // Only apply to Piccola's
-          const isPiccolas = ticket.location!.omnivore_id === 'cx9pap8i';
-          const openDiscountId = ticket.location!.open_discount_id;
+          // // Only apply to Piccola's
+          // const isPiccolas = ticket.location!.omnivore_id === 'cx9pap8i';
+          // const openDiscountId = ticket.location!.open_discount_id;
 
-          // Apply discount on this ticket if containsNewUser and compatibleDiscount and isPiccolas
-          if (containsNewUser && compatibleDiscount && isPiccolas && openDiscountId) {
-            Logger.log('This discount is compatible. Apply it!');
-            // TODO: Move discount id to database
-            const discounts: OmnivoreTicketDiscount[] = [{ discount: openDiscountId, value: discountAmount }];
-            // const discounts: OmnivoreTicketDiscount[] = [{ discount: '1847-53-17', value: discountAmount }];
-            // const discountMenuItem: OmnivoreTicketItem = { menu_item: '1847-53-17', quantity: 1, price_per_unit: discountAmount };
-            try {
-              const response = await this.omnivoreService.applyDiscountsToTicket(ticket.location!, ticket.tab_id!, discounts);
-              const { totals } = response;
+          // // Apply discount on this ticket if containsNewUser and compatibleDiscount and isPiccolas
+          // if (containsNewUser && compatibleDiscount && isPiccolas && openDiscountId) {
+          //   Logger.log('This discount is compatible. Apply it!');
+          //   // TODO: Move discount id to database
+          //   // const discounts: OmnivoreTicketDiscount[] = [{ discount: openDiscountId, value: discountAmount }];
+          //   const discounts: OmnivoreTicketDiscount[] = [{ discount: '1847-53-17', value: discountAmount }];
+          //   // const discountMenuItem: OmnivoreTicketItem = { menu_item: '1847-53-17', quantity: 1, price_per_unit: discountAmount };
+          //   try {
+          //     const response = await this.omnivoreService.applyDiscountsToTicket(ticket.location!, ticket.tab_id!, discounts);
+          //     const { totals } = response;
 
-              await this.ticketTotalService.updateTicketTotals({
-                id: ticket.ticketTotal!.id,
-                discounts: totals.discounts,
-                due: totals.due,
-                items: totals.items,
-                other_charges: totals.other_charges,
-                paid: totals.paid,
-                service_charges: totals.service_charges,
-                sub_total: totals.sub_total,
-                tax: totals.tax,
-                tips: totals.tips,
-                total: totals.total,
-              });
-              Logger.log(response, 'The updated ticket with discount');
-            } catch (e) {
-              Logger.error(e, undefined, 'An error occurred while adding the discount ticket item');
-              throw new InternalServerErrorException(e, 'An error occurred while adding the discount ticket item');
-            }
-          }
-          // If not compatible, reset discount to 0
-          else {
-            Logger.log('No new users found or the discount is NOT compatible; don\'t apply Tabify discount or no open value discount is provided');
-            discountAmount = 0;
-            distributedDiscount = currency(discountAmount / 100).distribute(ticketUsers.length);
-          }
+          //     await this.ticketTotalService.updateTicketTotals({
+          //       id: ticket.ticketTotal!.id,
+          //       discounts: totals.discounts,
+          //       due: totals.due,
+          //       items: totals.items,
+          //       other_charges: totals.other_charges,
+          //       paid: totals.paid,
+          //       service_charges: totals.service_charges,
+          //       sub_total: totals.sub_total,
+          //       tax: totals.tax,
+          //       tips: totals.tips,
+          //       total: totals.total,
+          //     });
+          //     Logger.log(response, 'The updated ticket with discount');
+          //   } catch (e) {
+          //     Logger.error(e, undefined, 'An error occurred while adding the discount ticket item');
+          //     throw new InternalServerErrorException(e, 'An error occurred while adding the discount ticket item');
+          //   }
+          // }
+          // // If not compatible, reset discount to 0
+          // else {
+          //   Logger.log('No new users found or the discount is NOT compatible; don\'t apply Tabify discount or no open value discount is provided');
+          //   discountAmount = 0;
+          //   distributedDiscount = currency(discountAmount / 100).distribute(ticketUsers.length);
+          // }
 
           // Before setting everyone's status to PAYING,
           // first check if all items are claimed by at least one person
@@ -230,8 +230,8 @@ export class TicketUserService {
           let allUsersTotal = 0;
           ticketUsers.forEach((ticketUser: TicketUser, index: number) => {
             // Subtract discount from each ticket user if applicable
-            ticketUser.discounts = distributedDiscount[index].intValue;
-            ticketUser.sub_total = ticketUser.sub_total - ticketUser.discounts;
+            // ticketUser.discounts = distributedDiscount[index].intValue;
+            // ticketUser.sub_total = ticketUser.sub_total - ticketUser.discounts;
 
             // Find sum of the selected items for this user
             let items = 0;
