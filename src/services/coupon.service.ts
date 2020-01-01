@@ -29,11 +29,11 @@ export class CouponService {
           if (userCoupon.usage_count > 0) {
             usedCoupons.push({ ...userCoupon.coupon, usage_count: userCoupon.usage_count });
           }
-          if (userCoupon.coupon.coupon_start_date > new Date()) {
+
+          if (new Date(userCoupon.coupon.coupon_start_date).getTime() > new Date().getTime()) {
             upcomingCoupons.push({ ...userCoupon.coupon, usage_count: userCoupon.usage_count });
-            // toDo: figure out date comparison as this isn't actually working
-          // } else if (userCoupon.coupon.coupon_end_date >= new Date() && userCoupon.usage_count < userCoupon.coupon.usage_limit) {
-          } else {
+          } else if (new Date(userCoupon.coupon.coupon_end_date).getTime() >= new Date().getTime()
+          && userCoupon.usage_count < userCoupon.coupon.usage_limit) {
             validCoupons.push({ ...userCoupon.coupon, usage_count: userCoupon.usage_count });
           }
         });
