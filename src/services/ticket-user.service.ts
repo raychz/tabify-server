@@ -142,26 +142,10 @@ export class TicketUserService {
           const ticketRepo = transactionalEntityManager.getRepository(Ticket);
           const ticket = await ticketRepo.findOneOrFail(ticketId, { relations: ['location', 'ticketTotal'] });
 
-          // Apply Tabify new user discount if this ticket contains one or more new users
-          let containsNewUser = false;
-          for (const ticketUser of ticketUsers) {
-            const numberOfTicketsForUser = await ticketUserRepo.count({ where: { user: ticketUser.user!.uid } });
+          let ticketTotal = await this.ticketTotalService.getTicketTotals(ticketId);
+          if (!ticketTotal) throw new InternalServerErrorException('Cannot load the ticket totals.');
 
-            // This should never happen since all users should be on at least 1 ticket at this point
-            if (!numberOfTicketsForUser || numberOfTicketsForUser === 0) {
-              throw new InternalServerErrorException(`An error occurred while counting the number of tickets that the users have been
-              associated with.`);
-            }
-
-            // Check if this is the user's first ticket. If so, set containsNewUser to true and break.
-            if (numberOfTicketsForUser === 1) {
-              containsNewUser = true;
-              break;
-            }
-          }
-
-          // TODO: Finalize and environmentalize this value
-          let discountAmount = 500;
+          let discountAmount = currency(ticketTotal.sub_total / 100).multiply(0.2).intValue;
           let distributedDiscount = currency(discountAmount / 100).distribute(ticketUsers.length);
 
           // Verify that every user's subtotal remains > $0.25 by applying the discount
@@ -172,16 +156,15 @@ export class TicketUserService {
           const isPiccolas = ticket.location!.omnivore_id === 'cx9pap8i';
 
           // Apply discount on this ticket if containsNewUser and compatibleDiscount and isPiccolas
-          if (containsNewUser && compatibleDiscount && isPiccolas) {
+          if (compatibleDiscount && isPiccolas) {
             Logger.log('This discount is compatible. Apply it!');
             // TODO: Move discount id to database
             const discounts: OmnivoreTicketDiscount[] = [{ discount: '1847-53-17', value: discountAmount }];
-            // const discountMenuItem: OmnivoreTicketItem = { menu_item: '1847-53-17', quantity: 1, price_per_unit: discountAmount };
             try {
               const response = await this.omnivoreService.applyDiscountsToTicket(ticket.location!, ticket.tab_id!, discounts);
               const { totals } = response;
 
-              await this.ticketTotalService.updateTicketTotals({
+              ticketTotal = await this.ticketTotalService.updateTicketTotals({
                 id: ticket.ticketTotal!.id,
                 discounts: totals.discounts,
                 due: totals.due,
@@ -217,9 +200,6 @@ export class TicketUserService {
           }
 
           // Set everyone's status to PAYING and also verify and finalize the totals.
-          const ticketTotal = await this.ticketTotalService.getTicketTotals(ticketId);
-          if (!ticketTotal) throw new InternalServerErrorException('Cannot load the ticket totals.');
-
           const distributedTax = currency(ticketTotal.tax / 100).distribute(ticketUsers.length);
           let allUsersItems = 0;
           let allUsersDiscounts = 0;
