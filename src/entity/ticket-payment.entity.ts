@@ -5,9 +5,11 @@ import {
     Column,
     UpdateDateColumn,
     ManyToOne,
+    OneToOne,
 } from 'typeorm';
 import { Ticket, User, Coupon } from '@tabify/entities';
 import { TicketPaymentStatus } from '../enums/ticket-payment-status.enum';
+import { ApplicableCoupon } from './ticket-user-applicable-coupon';
 
 /** Saves the ticket payment metadata that we get back from Omnivore */
 @Entity()
@@ -60,6 +62,6 @@ export class TicketPayment {
     @ManyToOne(type => User, user => user.ticketPayments, { nullable: false })
     user?: User;
 
-    @ManyToOne(type => Coupon, coupon => coupon.ticketPayments, { nullable: true })
-    coupon?: Coupon;
+    @OneToOne(type => ApplicableCoupon, applicable_coupon => applicable_coupon.ticketPayment, { nullable: true })
+    applicable_coupon?: ApplicableCoupon;
 }

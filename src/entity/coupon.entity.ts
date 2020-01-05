@@ -11,6 +11,8 @@ import { Location } from './location.entity';
 import { User } from './user.entity';
 import { UserToCoupons } from './user_coupons_coupon.entity';
 import { TicketPayment } from './ticket-payment.entity';
+import { TicketUser } from './ticket-user.entity';
+import { ApplicableCoupon } from './ticket-user-applicable-coupon';
 
 export enum CouponType {
   PERCENT = 'percent',
@@ -77,6 +79,6 @@ export enum CouponOffOf {
     @OneToMany(type => UserToCoupons, userCoupon => userCoupon.coupon)
     userToCoupons?: UserToCoupons[];
 
-    @OneToMany(type => TicketPayment, ticketPayment => ticketPayment.coupon)
-    ticketPayments?: TicketPayment[];
+    @OneToMany(type => ApplicableCoupon, applicableCoupon => applicableCoupon.coupon)
+    applicableCoupons?: ApplicableCoupon[];
   }

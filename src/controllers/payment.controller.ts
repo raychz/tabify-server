@@ -1,7 +1,7 @@
-import { Get, Controller, Body, Param, Post, Delete, Res } from '@nestjs/common';
+import { Get, Controller, Body, Param, Post, Delete, Res, Logger } from '@nestjs/common';
 import { PaymentMethodService, SpreedlyService, TicketService, TicketPaymentService, CouponService } from '@tabify/services';
 import { User } from '../decorators/user.decorator';
-import { Ticket, Coupon } from '@tabify/entities';
+import { Ticket, Coupon, ApplicableCoupon } from '@tabify/entities';
 
 @Controller('tickets/:ticketId/payments')
 export class PaymentController {
@@ -23,15 +23,18 @@ export class PaymentController {
     @Body('paymentMethodId') paymentMethodId: number,
     @Body('amount') amount: number,
     @Body('tip') tip: number,
-    @Body('couponId') couponId?: number,
+    @Body('applicableCouponId') applicableCouponId?: number,
   ) {
     const paymentMethod = await this.paymentMethodService.readPaymentMethod(uid, paymentMethodId);
     const { token: paymentMethodToken } = paymentMethod!;
     const ticket = await this.ticketService.getTicket({ id: ticketId }, ['location', 'ticketTotal']) as Ticket;
 
-    let coupon: Coupon | undefined;
-    if (couponId) {
-      coupon = await this.couponService.applyDiscount(couponId, ticket, uid);
+    let applicableCoupon: ApplicableCoupon | undefined;
+    if (applicableCouponId) {
+      applicableCoupon = await this.couponService.applyDiscount(applicableCouponId, ticket, uid);
+      Logger.log(`original amount to pay: ${amount}`);
+      amount -= applicableCoupon.estimated_tax_difference;
+      Logger.log(`amount to pay after coupon: ${amount}`);
     }
 
     const updatedTotal = await this.ticketPaymentService.sendTicketPayment(uid, {
@@ -39,7 +42,7 @@ export class PaymentController {
       paymentMethodToken,
       amount,
       tip,
-      coupon,
+      applicableCoupon,
     });
 
     return updatedTotal;

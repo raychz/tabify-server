@@ -1,6 +1,6 @@
 import { Injectable, Logger, BadRequestException, NotFoundException, InternalServerErrorException, ForbiddenException } from '@nestjs/common';
 import { getRepository, getConnection, FindOneOptions, FindConditions, EntityManager, In } from 'typeorm';
-import { TicketUser, Ticket, User, TicketItemUser, TicketItem } from '@tabify/entities';
+import { TicketUser, Ticket, User, TicketItemUser, TicketItem, TicketTotal } from '@tabify/entities';
 import { AblyService, OmnivoreService, TicketTotalService } from '@tabify/services';
 import { TicketUpdates, TicketUserStatus, TicketUserStatusOrder } from '../enums';
 import * as currency from 'currency.js';
@@ -18,6 +18,17 @@ export class TicketUserService {
     const ticketUserRepo = await getRepository(TicketUser);
     const ticketUser = await ticketUserRepo.findOneOrFail(ticketUserId);
     return ticketUser;
+  }
+
+  async getTicketUser(ticketId: number, uid: string) {
+    const ticketUserRepo = getRepository(TicketItem);
+    return await ticketUserRepo.createQueryBuilder('ticketItem')
+    .leftJoinAndSelect('ticketItem.user', 'user')
+    .leftJoinAndSelect('ticketItem.ticket', 'ticket')
+    .leftJoinAndSelect('ticket.location', 'location')
+    .where('user.uid = :uid', { uid })
+    .andWhere('ticket.id = :ticketId', { ticketId })
+    .getOne();
   }
 
   /**
@@ -91,6 +102,41 @@ export class TicketUserService {
       lock: { mode: 'pessimistic_write' },
     });
     return ticketItemUsers;
+  }
+
+  private calculateUserTax(users: TicketUser[], totals: TicketTotal, taxRate: number) {
+    let distributedTaxTotal = 0;
+    const distributedTax: currency[] = [];
+    users.forEach( user => {
+      const subtotalPercentage = user.sub_total / totals.sub_total;
+      Logger.log(subtotalPercentage);
+      const userTax = currency(subtotalPercentage * (totals.tax / 100));
+
+      // not sure which approach is better between top and bottom - leaning towards top
+
+      // const userTax = currency(taxRate * (user.sub_total / 100));
+      distributedTax.push(userTax);
+      distributedTaxTotal += userTax.intValue;
+    });
+
+    let index = 0;
+    while (distributedTaxTotal !== totals.tax) {
+      if (distributedTaxTotal < totals.tax) {
+        distributedTax[index].add(1);
+        distributedTaxTotal += 1;
+      } else if (distributedTaxTotal > totals.tax) {
+        distributedTax[index].subtract(1);
+        distributedTaxTotal -= 1;
+      }
+
+      index++;
+
+      if (index >= distributedTax.length) {
+        index = 0;
+      }
+    }
+
+    return distributedTax;
   }
 
   async updateTicketUserStatus(ticketId: number, ticketUserId: number, newUserStatus: TicketUserStatus, sendNotification: boolean) {
@@ -222,7 +268,8 @@ export class TicketUserService {
           const ticketTotal = await this.ticketTotalService.getTicketTotals(ticketId);
           if (!ticketTotal) throw new InternalServerErrorException('Cannot load the ticket totals.');
 
-          const distributedTax = currency(ticketTotal.tax / 100).distribute(ticketUsers.length);
+          // const distributedTax = currency(ticketTotal.tax / 100).distribute(ticketUsers.length);
+          const distributedTax = this.calculateUserTax(ticketUsers, ticketTotal, ticket.location!.tax_rate!)
           let allUsersItems = 0;
           let allUsersDiscounts = 0;
           let allUsersSubtotal = 0;
@@ -266,9 +313,10 @@ export class TicketUserService {
             allUsersDiscounts += ticketUser.discounts;
             allUsersSubtotal += ticketUser.sub_total;
 
-            // Distribute the tax evenly
-            // TODO: Distribute the tax proportionally
+            // Distribute the tax proportionally
             ticketUser.tax = distributedTax[index].intValue;
+             // calculate user tax
+            // ticketUser.tax = currency( (ticketUser.sub_total / 100) * ticket.location!.tax_rate!).intValue;
             allUsersTax += ticketUser.tax;
 
             // Set the user total
@@ -312,7 +360,7 @@ export class TicketUserService {
 
       if (sendNotification) {
         const messages: { name: string, data: any }[] = [
-          { name: TicketUpdates.TICKET_USERS_UPDATED, data: updatedTicketUsers }
+          { name: TicketUpdates.TICKET_USERS_UPDATED, data: updatedTicketUsers },
         ];
         if (ticketTotal) {
           messages.push({ name: TicketUpdates.TICKET_TOTALS_UPDATED, data: ticketTotal });

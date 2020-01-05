@@ -15,3 +15,4 @@ export * from './coupon.entity';
 export * from './user_coupons_coupon.entity';
 export * from './ticket-item-user.entity';
 export * from './ticket-user.entity';
+export * from './ticket-user-applicable-coupon';

@@ -204,9 +204,15 @@ export class TicketItemService {
     });
   }
 
-  async getTicketItems(ticketId: number, manager: EntityManager) {
-    const ticketItemRepo = manager.getRepository(TicketItem);
-    return ticketItemRepo.find({ where: { ticket: ticketId }, relations: ['users'] });
+  async getTicketItems(ticketId: number, uid: string) {
+    const ticketItemRepo = getRepository(TicketItem);
+    return await ticketItemRepo.createQueryBuilder('ticketItem')
+    .leftJoinAndSelect('ticketItem.users', 'ticketItemUser')
+    .leftJoinAndSelect('ticketItemUser.user', 'user')
+    .leftJoinAndSelect('ticketItem.ticket', 'ticket')
+    .where('user.uid = :uid', { uid })
+    .andWhere('ticket.id = :ticketId', { ticketId })
+    .getMany();
   }
 
   /** Distributes the cost of an item evenly amongst ticket item users */
