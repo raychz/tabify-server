@@ -7,12 +7,7 @@ import {
     ManyToOne,
     OneToMany,
   } from 'typeorm';
-import { Location } from './location.entity';
-import { User } from './user.entity';
-import { UserToCoupons } from './user_coupons_coupon.entity';
-import { TicketPayment } from './ticket-payment.entity';
-import { TicketUser } from './ticket-user.entity';
-import { ApplicableCoupon } from './ticket-user-applicable-coupon';
+import { Location, UserToCoupons, ApplicableCoupon } from '@tabify/entities';
 
 export enum CouponType {
   PERCENT = 'percent',

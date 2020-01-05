@@ -7,9 +7,8 @@ import {
     ManyToOne,
     OneToOne,
 } from 'typeorm';
-import { Ticket, User, Coupon } from '@tabify/entities';
+import { Ticket, User, Coupon, ApplicableCoupon } from '@tabify/entities';
 import { TicketPaymentStatus } from '../enums/ticket-payment-status.enum';
-import { ApplicableCoupon } from './ticket-user-applicable-coupon';
 
 /** Saves the ticket payment metadata that we get back from Omnivore */
 @Entity()

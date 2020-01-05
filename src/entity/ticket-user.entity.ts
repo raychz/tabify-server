@@ -1,7 +1,6 @@
 import { Entity, Column, ManyToOne, PrimaryGeneratedColumn, Unique, Index, OneToOne, OneToMany } from 'typeorm';
-import { Ticket, User, Coupon } from '@tabify/entities';
+import { Ticket, User, Coupon, ApplicableCoupon } from '@tabify/entities';
 import { TicketUserStatus } from '../enums/';
-import { ApplicableCoupon } from './ticket-user-applicable-coupon';
 
 @Entity()
 @Unique(['ticket', 'user'])

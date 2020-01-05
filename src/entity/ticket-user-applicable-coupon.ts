@@ -8,12 +8,7 @@ import {
     OneToMany,
     OneToOne,
   } from 'typeorm';
-import { Location } from './location.entity';
-import { User } from './user.entity';
-import { UserToCoupons } from './user_coupons_coupon.entity';
-import { TicketPayment } from './ticket-payment.entity';
-import { TicketUser } from './ticket-user.entity';
-import { Coupon } from './coupon.entity';
+import { TicketPayment, Coupon, TicketUser } from '@tabify/entities';
 
 @Entity()
   export class ApplicableCoupon {

@@ -1,7 +1,6 @@
 import { Entity, Column, ManyToMany, OneToMany, OneToOne } from 'typeorm';
-import { UserToCoupons } from './user_coupons_coupon.entity';
 import { Comment, FraudPreventionCode, Like, Ticket, TicketItem, TicketPayment, UserDetail,
-   PaymentMethod, TicketItemUser, TicketUser } from '@tabify/entities';
+   PaymentMethod, TicketItemUser, TicketUser, UserToCoupons } from '@tabify/entities';
 
 @Entity()
 export class User {

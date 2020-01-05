@@ -5,8 +5,7 @@ import {
   Unique,
   OneToMany,
 } from 'typeorm';
-import { Server, Ticket } from '@tabify/entities';
-import { Coupon } from './coupon.entity';
+import { Server, Ticket, Coupon } from '@tabify/entities';
 
 @Entity()
 @Unique(['omnivore_id'])

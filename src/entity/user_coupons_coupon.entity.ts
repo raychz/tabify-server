@@ -1,6 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne } from 'typeorm';
-import { User } from './user.entity';
-import { Coupon } from './coupon.entity';
+import { User, Coupon } from '@tabify/entities';
 
 @Entity()
 export class UserToCoupons {
