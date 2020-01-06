@@ -132,12 +132,12 @@ export class TicketPaymentService {
     return await ticketPaymentRepo.save(ticketPayment);
   }
 
-  async getTicketPaymentsByUsers(ticketId: number, userIds: number[]) {
+  async getTicketPaymentsByUsers(ticketId: number, userId: number) {
     const ticketPaymentRepo = await getRepository(TicketPayment);
 
     const payments = await ticketPaymentRepo.find(
       {
-        where: { ticketId, userId: In(userIds) },
+        where: { ticketId, userId },
       });
   }
 }
