@@ -132,7 +132,7 @@ export class TicketPaymentService {
     return await ticketPaymentRepo.save(ticketPayment);
   }
 
-  async getTicketPaymentsByUsers(ticketId: number, userId: number) {
+  async getTicketPaymentsByUser(ticketId: number, userId: string) {
     const ticketPaymentRepo = await getRepository(TicketPayment);
 
     const payments = await ticketPaymentRepo.find(
