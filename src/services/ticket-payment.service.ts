@@ -137,7 +137,9 @@ export class TicketPaymentService {
 
     const payments = await ticketPaymentRepo.find(
       {
-        where: { ticketId, userId },
+        where: { ticket: ticketId, user: userId },
       });
+
+    return payments;
   }
 }
