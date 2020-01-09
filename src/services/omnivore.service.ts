@@ -1,4 +1,4 @@
-import { Injectable, HttpStatus, NotFoundException, BadGatewayException, InternalServerErrorException, UnprocessableEntityException, BadRequestException } from '@nestjs/common';
+import { Injectable, HttpStatus, NotFoundException, BadGatewayException, InternalServerErrorException, UnprocessableEntityException, BadRequestException, Logger } from '@nestjs/common';
 import { getManager, EntityManager } from 'typeorm';
 import fetch from 'node-fetch';
 import { Location as LocationEntity, Ticket, TicketItem } from '@tabify/entities';
@@ -107,6 +107,8 @@ export class OmnivoreService {
       throw new BadGatewayException('Failed fetching ticket from source');
     }
 
+    // Logger.log(json);
+
     const { _embedded: { tickets } } = json;
 
     if (tickets.length > 1) {
@@ -118,20 +120,42 @@ export class OmnivoreService {
     }
 
     const [customerTicket] = tickets;
+    Logger.log(customerTicket);
+    const ticketItemsUrl = customerTicket._links.items.href;
+
+    const res2 = await fetch(ticketItemsUrl, { headers });
+    const json2 = await res2.json();
+
+    if (res2.status === HttpStatus.NOT_FOUND) {
+      throw new NotFoundException('The ticket items could not be found in Omnivore.');
+    }
+
+    if (this.hasError(json2) || res2.status !== HttpStatus.OK) {
+      throw new BadGatewayException('Failed fetching ticket items from source');
+    }
+
+    Logger.log(json2);
+    const { _embedded: { items } } = json2;
+
+    Logger.log(items);
 
     // TODO: Support tickets with service/other charges
     if (location.omnivore_id !== 'i8yBgkjT' && customerTicket.totals.service_charges > 0 || customerTicket.totals.other_charges > 0) {
       throw new UnprocessableEntityException('Tickets with service/other charges are not currently supported.');
     }
 
+    // Logger.log('first item is:');
+    // Logger.log(customerTicket);
+
     const ticket: Ticket = {
       tab_id: customerTicket.id,
       location,
       ticket_number: customerTicket.ticket_number,
-      items: customerTicket._embedded.items.map((item: TicketItem | any) => ({
+      items: items.map((item: TicketItem | any) => ({
         ticket_item_id: item.id,
         name: item.name,
         comment: item.comment,
+        menu_item_id: item._embedded.menu_item.id,
         price: item.price,
         quantity: item.quantity,
         sent: item.sent,

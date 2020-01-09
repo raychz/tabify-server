@@ -63,8 +63,11 @@ export enum CouponOffOf {
     })
     coupon_off_of!: CouponOffOf;
 
-    @Column({ type: 'int', nullable: true })
-    menu_item_id?: number;
+    @Column({ type: 'varchar', nullable: true })
+    menu_item_id?: string;
+
+    @Column({ type: 'varchar', nullable: true })
+    image_url?: string;
 
     @Column({ type: 'bool', nullable: false})
     applies_to_everyone!: boolean;
@@ -81,4 +84,6 @@ export enum CouponOffOf {
     selectedTicketUsers?: TicketUser[];
 
     @OneToMany(type => TicketPayment, ticketPayment => ticketPayment.coupon, { nullable: true })
-    ticketPayments?: TicketPayment[];  }
+    ticketPayments?: TicketPayment[];  
+  
+  }

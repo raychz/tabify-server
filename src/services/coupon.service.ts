@@ -149,7 +149,7 @@ export class CouponService {
       if (coupon.coupon_off_of === CouponOffOf.ITEM) {
         const couponTicketItem = ticket.items!.find( ticketItem => {
           Logger.log(ticketItem.ticket_item_id);
-          return ticketItem.ticket_item_id === coupon.menu_item_id;
+          return ticketItem.menu_item_id === coupon.menu_item_id;
         });
         if (!couponTicketItem) {
           valid = false;
@@ -184,16 +184,24 @@ export class CouponService {
       return {valid, message: ticketItemName, dollar_value, taxDifference};
     }
 
-    async getApplicableTicketUserCoupons(validCoupons: any[], ticket: Ticket, userUid: string) {
-      Logger.log(validCoupons);
-      validCoupons.filter(async coupon => {
+    async getApplicableTicketUserCoupons(coupons: any[], ticket: Ticket, userUid: string) {
+      Logger.log(coupons);
+      const validCoupons: any[] = [];
+      // originally had this as a filter function however invalid objects were still making it 
+      // through even when valid was false
+      coupons.forEach(async coupon => {
         const response = this.calculateCouponWorth(coupon, ticket, userUid);
 
         coupon.dollar_value = response.dollar_value;
         coupon.menu_item_name = response.message;
         coupon.estimated_tax_difference = response.taxDifference;
-
-        return response.valid;
+        Logger.log(response.valid);
+        if (response.valid) {
+          Logger.log('response is valid');
+          validCoupons.push(coupon);
+        } else {
+          Logger.log('response is invalid');
+        }
 
       });
 

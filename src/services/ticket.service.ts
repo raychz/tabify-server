@@ -87,6 +87,8 @@ export class TicketService {
          // Add items to ticket
         const ticketItemsRepo = await transactionalEntityManager.getRepository(TicketItem);
         if (ticket.items) {
+           Logger.log(`ticketItem:`);
+           Logger.log(ticket.items);
            await ticketItemsRepo.insert(ticket.items.map(item => ({ ...item, ticket: insertedTicketId as TicketEntity })));
          }
 
