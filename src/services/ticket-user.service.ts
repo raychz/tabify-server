@@ -21,11 +21,12 @@ export class TicketUserService {
   }
 
   async getTicketUser(ticketId: number, uid: string) {
-    const ticketUserRepo = getRepository(TicketItem);
-    return await ticketUserRepo.createQueryBuilder('ticketItem')
-    .leftJoinAndSelect('ticketItem.user', 'user')
-    .leftJoinAndSelect('ticketItem.ticket', 'ticket')
+    const ticketUserRepo = getRepository(TicketUser);
+    return await ticketUserRepo.createQueryBuilder('ticketUser')
+    .leftJoinAndSelect('ticketUser.user', 'user')
+    .leftJoinAndSelect('ticketUser.ticket', 'ticket')
     .leftJoinAndSelect('ticket.location', 'location')
+    .leftJoinAndSelect('ticketUser.applicable_coupons', 'applicable_coupons')
     .where('user.uid = :uid', { uid })
     .andWhere('ticket.id = :ticketId', { ticketId })
     .getOne();

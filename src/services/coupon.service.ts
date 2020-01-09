@@ -1,9 +1,10 @@
 import { Injectable, BadRequestException, InternalServerErrorException, Logger } from '@nestjs/common';
-import { getRepository, getManager, EntityManager, In, MoreThanOrEqual } from 'typeorm';
+import { getRepository, getManager, EntityManager, In, MoreThanOrEqual, LessThanOrEqual, MoreThan } from 'typeorm';
 import { UserToCoupons, Coupon, User, Location, Ticket, CouponOffOf,
-  CouponType, TicketUser, TicketItem, ApplicableCoupon, TicketTotal  } from '@tabify/entities';
+  CouponType, TicketUser, TicketItem, TicketTotal  } from '@tabify/entities';
 import { OmnivoreService, TicketTotalService } from '@tabify/services';
 import { OmnivoreTicketDiscount } from '@tabify/interfaces';
+import * as currency from 'currency.js';
 
 @Injectable()
 export class CouponService {
@@ -14,7 +15,7 @@ export class CouponService {
     ) { }
 
     // get user's coupons from db
-    async getUserCoupons(uid: string, locationId?: number) {
+    async getCoupons(uid: string, locationId?: number) {
         const userCouponsRepo = await getRepository(UserToCoupons);
         const query = userCouponsRepo.createQueryBuilder('userCoupon')
         .leftJoinAndSelect('userCoupon.coupon', 'coupon')
@@ -22,6 +23,7 @@ export class CouponService {
         .leftJoinAndSelect('coupon.location', 'location')
         .where('user.uid = :uid', { uid })
         .andWhere('location.open_discount_id IS NOT NULL')
+        .andWhere('coupon.coupon_end_date')
         .orderBy('coupon.estimated_dollar_value', 'DESC');
 
         if (locationId) {
@@ -29,7 +31,8 @@ export class CouponService {
         }
 
         const userCoupons = await query.getMany();
-        return userCoupons;
+
+        return this.groupCoupons(userCoupons);
     }
 
     groupCoupons(userCoupons: UserToCoupons[]) {
@@ -42,9 +45,12 @@ export class CouponService {
           usedCoupons.push({ ...userCoupon.coupon, usage_count: userCoupon.usage_count });
         }
 
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+
         if (new Date(userCoupon.coupon.coupon_start_date).getTime() > new Date().getTime()) {
           upcomingCoupons.push({ ...userCoupon.coupon, usage_count: userCoupon.usage_count });
-        } else if (new Date(userCoupon.coupon.coupon_end_date).getTime() >= new Date().getTime()
+        } else if (new Date(userCoupon.coupon.coupon_end_date).getTime() > yesterday.getTime()
         && userCoupon.usage_count < userCoupon.coupon.usage_limit) {
           validCoupons.push({ ...userCoupon.coupon, usage_count: userCoupon.usage_count });
         }
@@ -52,42 +58,19 @@ export class CouponService {
       return {validCoupons, upcomingCoupons, usedCoupons};
     }
 
-    async applyDiscount(applicableCouponId: number, ticket: Ticket, uid: string): Promise<ApplicableCoupon> {
+    async applyDiscount(couponId: number, ticket: Ticket, uid: string): Promise<{coupon: Coupon, res: any}> {
 
-          const applicableCouponsRepo = await getRepository(ApplicableCoupon);
-          let applicableCoupon = await applicableCouponsRepo.findOneOrFail(applicableCouponId);
+          const couponsRepo = await getRepository(Coupon);
+          const coupon = await couponsRepo.findOneOrFail({where: {id: couponId}, relations: ['location']});
+          Logger.log(coupon);
 
-          const ticketUser = ticket.users!.find( user => user.user!.uid === uid );
-
-          if (applicableCoupon.coupon.coupon_off_of === CouponOffOf.ITEM) {
-            const couponTicketItem = ticket.items!.find( ticketItem => {
-              return ticketItem.ticket_item_id === applicableCoupon.coupon.menu_item_id;
-            });
-            if (couponTicketItem) {
-              const itemUser = couponTicketItem.users!.find(user => user.user.uid === uid);
-              if (!itemUser) {
-                throw new BadRequestException('Coupon applies to an item that the user is not paying for and can not be applied.');
-              }
-            } else {
-              throw new BadRequestException('Coupon applies to an item not on the ticket and can not be applied.');
-            }
-          }
-
-          // Verify that the user's subtotal remains > $0.25 by applying the discount
-          let compatibleDiscount = false;
-          if (ticketUser) {
-            compatibleDiscount = (ticketUser.sub_total - applicableCoupon.dollar_value) > 25;
-          } else {
-            throw new BadRequestException('User is not on ticket');
-          }
-
-          // Verify that the discount location has an openDiscount
-          const openDiscountId = ticket.location!.open_discount_id;
+          const res = this.calculateCouponWorth(coupon, ticket, uid);
 
           // Apply discount on this ticket if it is compatbile - location has open discount and user's price > $0.25
-          if (compatibleDiscount && openDiscountId) {
+          if (res.valid) {
+            const openDiscountId = ticket.location!.open_discount_id!;
             Logger.log('This discount is compatible. Apply it!');
-            const discounts: OmnivoreTicketDiscount[] = [{ discount: openDiscountId, value: applicableCoupon.dollar_value }];
+            const discounts: OmnivoreTicketDiscount[] = [{ discount: openDiscountId, value: res.dollar_value }];
             // Piccolas open discount id = '1847-53-17'
             // const discounts: OmnivoreTicketDiscount[] = [{ discount: '1847-53-17', value: discountAmount }];
             // const discountMenuItem: OmnivoreTicketItem = { menu_item: '1847-53-17', quantity: 1, price_per_unit: discountAmount };
@@ -100,15 +83,15 @@ export class CouponService {
               const newTax: number = totals.tax;
               const actualTaxDifference = currency((currentTotalTax / 100) - (newTax / 100)).intValue;
 
-              if (applicableCoupon.estimated_tax_difference !== actualTaxDifference) {
-                Logger.log(`tax estimate was off by ${currency((applicableCoupon.estimated_tax_difference / 100) - (actualTaxDifference / 100))}`);
+              if (res.taxDifference !== actualTaxDifference) {
+                Logger.log(`tax estimate was off by ${currency((res.taxDifference / 100) - (actualTaxDifference / 100))}`);
+                res.taxDifference = actualTaxDifference;
               }
 
-              applicableCoupon.estimated_tax_difference = actualTaxDifference;
-              applicableCoupon = await applicableCouponsRepo.save(applicableCoupon);
+              const ticketUser = ticket.users!.find( user => user.user!.uid === uid)!;
 
               ticketUser.tax -= actualTaxDifference;
-              ticketUser.selected_coupon = applicableCoupon;
+              ticketUser.selected_coupon = coupon;
               const ticketUserRepo = await getRepository(TicketUser);
               await ticketUserRepo.save(ticketUser);
 
@@ -129,91 +112,104 @@ export class CouponService {
 
               // increment the coupon usage in the database
               const userCouponsRepo = await getRepository(UserToCoupons);
-              const userCoupon = await userCouponsRepo.findOne({where: {user: ticketUser!.user!.uid, coupon: applicableCoupon.coupon.id}});
+              const userCoupon = await userCouponsRepo.findOne({where: {user: ticketUser!.user!.uid, coupon: coupon.id}});
               userCoupon!.usage_count += 1;
               userCouponsRepo.save(userCoupon!);
 
             } catch (e) {
-              Logger.error(e, undefined, 'An error occurred while adding the discount ticket item');
-              throw new InternalServerErrorException(e, 'An error occurred while adding the discount ticket item');
+              Logger.error(e, undefined, 'An error occurred while applying the coupon');
+              throw new InternalServerErrorException(e, 'An error occurred while applying the coupon');
             }
+          } else {
+            throw new BadRequestException(res.message);
           }
-          // If not compatible, reset discount to 0
-          else {
-            Logger.log(`The discount is NOT compatible: either the users total would fall below the 25¢ minimum
-            or the location does not have an open disocunt provided`);
-            throw new InternalServerErrorException('Coupon is not compatible, please try again or select another one.');
-          }
-          return applicableCoupon;
+          return {coupon, res};
     }
 
-    async assignTicketUserApplicableCoupons(ticketUser: TicketUser, userCoupons: UserToCoupons[],
-                                            ticketItems: TicketItem[], ticketTotal: TicketTotal) {
-      const validCoupons: any[] = [];
+    private calculateCouponWorth(coupon: Coupon, ticket: Ticket, userUid: string):
+    {valid: boolean, message: string | undefined, dollar_value: number, taxDifference: number} {
+      let dollar_value = 0;
+      let taxDifference = 0;
+      let valid = true;
+      let message;
+      if (!ticket.location!.open_discount_id) {
+        valid = false;
+        message = 'Location does not have an open discount id - coupon is invalid';
+        return {valid, message, dollar_value, taxDifference};
+      }
 
-      await getManager().transaction(async (transactionalEntityManager: EntityManager) => {
-        try {
-            userCoupons.forEach(async userCoupon => {
-              let couponValue = currency(0);
-              const coupon = userCoupon.coupon;
-              let itemPrice = currency(ticketUser.sub_total / 100);
-              let ticketItemName;
-              if (coupon.coupon_off_of === CouponOffOf.ITEM) {
-                const couponTicketItem = ticketItems.find( ticketItem => {
-                  return ticketItem.ticket_item_id === coupon.menu_item_id;
-                });
-                if (!couponTicketItem) {
-                  return;
-                }
-                ticketItemName = couponTicketItem.name;
-                const itemUser = couponTicketItem.users!.find(user => user.user.uid === ticketUser.user!.uid);
-                if (!itemUser) {
-                  return;
-                }
-                itemPrice = currency(itemUser.price / 100);
-              }
-              couponValue = currency(coupon.value / 100);
-              if (coupon.coupon_type === CouponType.PERCENT) {
-                couponValue = itemPrice.multiply(coupon.value / 100);
-              }
+      const ticketUser = ticket.users!.find( user => user.user!.uid === userUid);
+      if (!ticketUser) {
+        valid = false;
+        message = 'User is not on ticket';
+        return {valid, message, dollar_value, taxDifference};
+      }
+      let itemPrice = ticketUser.sub_total;
+      let ticketItemName;
+      if (coupon.coupon_off_of === CouponOffOf.ITEM) {
+        const couponTicketItem = ticket.items!.find( ticketItem => {
+          Logger.log(ticketItem.ticket_item_id);
+          return ticketItem.ticket_item_id === coupon.menu_item_id;
+        });
+        if (!couponTicketItem) {
+          valid = false;
+          message = 'Coupon applies to an item not on the ticket and can not be applied.';
+          return {valid, message, dollar_value, taxDifference};
+        }
+        ticketItemName = couponTicketItem.name;
+        const itemUser = couponTicketItem.users!.find(user => user.user.uid === ticketUser.user!.uid);
+        if (!itemUser) {
+          valid = false;
+          message = 'Coupon applies to an item that the user is not paying for and can not be applied.';
+          return {valid, message, dollar_value, taxDifference};
+        }
+        itemPrice = itemUser.price ;
+      }
+      dollar_value = coupon.value;
+      if (coupon.coupon_type === CouponType.PERCENT) {
+        dollar_value = itemPrice * (coupon.value / 100);
+      }
 
-              if ((ticketUser.sub_total - couponValue.intValue) <= 25) {
-                return;
-              }
-              // coupon.estimated_dollar_value = couponValue;
-              const currentTax = currency(ticketTotal.tax);
-              const newTax = currency((ticketTotal.sub_total - couponValue.intValue) * ticketUser.ticket!.location!.tax_rate!);
-              const taxDiffernce = currentTax.subtract(newTax);
+      if ((ticketUser.sub_total - dollar_value) <= 25) {
+          valid = false;
+          message = 'Coupon makes user\'s subtotal fall below the $0.25 minimum and is not valid';
+          return {valid, message, dollar_value, taxDifference};
+      }
+      // coupon.estimated_dollar_value = couponValue;
+      const currentTax = ticket.ticketTotal!.tax;
+      const taxRate = coupon.location!.tax_rate!;
+      const newTax = (ticket.ticketTotal!.sub_total - dollar_value) * (taxRate / 100);
+      taxDifference = currency((currentTax - newTax) / 100).intValue;
 
-              const applicableCoupon: ApplicableCoupon = {
-                dollar_value: couponValue.intValue,
-                coupon,
-                ticketUser,
-                estimated_tax_difference: taxDiffernce.intValue,
-              };
-              const insertedApplicableCoupon = await transactionalEntityManager.save(ApplicableCoupon, applicableCoupon);
+      return {valid, message: ticketItemName, dollar_value, taxDifference};
+    }
 
-              validCoupons.push({ ...userCoupon.coupon, usage_count: userCoupon.usage_count,
-              menu_item_name: ticketItemName, applicableCoupon: insertedApplicableCoupon });
+    async getApplicableTicketUserCoupons(validCoupons: any[], ticket: Ticket, userUid: string) {
+      Logger.log(validCoupons);
+      validCoupons.filter(async coupon => {
+        const response = this.calculateCouponWorth(coupon, ticket, userUid);
+
+        coupon.dollar_value = response.dollar_value;
+        coupon.menu_item_name = response.message;
+        coupon.estimated_tax_difference = response.taxDifference;
+
+        return response.valid;
 
       });
 
-            transactionalEntityManager.queryRunner!.commitTransaction();
-          } catch (error) {
-            transactionalEntityManager.queryRunner!.rollbackTransaction();
-            throw new InternalServerErrorException(error);
-          }
-        });
       validCoupons.sort((couponA, couponB) => couponB.dollar_value - couponA.dollar_value);
+      Logger.log(validCoupons);
 
-      return {validCoupons, upcomingCoupons: [], usedCoupons: []};
+      return validCoupons;
     }
 
     async assignUsersValidCoupons(userUids: string[]) {
       await getManager().transaction(async (transactionalEntityManager: EntityManager) => {
         try {
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
             const coupons = await transactionalEntityManager.find(Coupon,
-              {where: {applies_to_everyone: true, coupon_end_date: MoreThanOrEqual(new Date())} });
+              {where: {applies_to_everyone: true, coupon_end_date: MoreThan(yesterday)} });
             const users = await transactionalEntityManager.find(User, {where: { uid: In(userUids) }});
 
             coupons.forEach(coupon => {
@@ -221,10 +217,7 @@ export class CouponService {
                 transactionalEntityManager.save(UserToCoupons, {usage_count: 0, user, coupon});
               });
             });
-
-            transactionalEntityManager.queryRunner!.commitTransaction();
           } catch (error) {
-            transactionalEntityManager.queryRunner!.rollbackTransaction();
             throw new InternalServerErrorException(error);
           }
         });
@@ -244,12 +237,11 @@ export class CouponService {
                 users = await transactionalEntityManager.find(User);
               }
               users.forEach(user => {
-                transactionalEntityManager.insert(UserToCoupons, {usage_count: 0, user, coupon: dbCoupon});
+                transactionalEntityManager.save(UserToCoupons, {usage_count: 0, user, coupon: dbCoupon});
               });
-              transactionalEntityManager.queryRunner!.commitTransaction();
               return dbCoupon;
             } catch (error) {
-              transactionalEntityManager.queryRunner!.rollbackTransaction();
+              Logger.log(error);
               throw new InternalServerErrorException();
             }
           });

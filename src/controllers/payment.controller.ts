@@ -1,7 +1,7 @@
 import { Get, Controller, Body, Param, Post, Delete, Res, Logger } from '@nestjs/common';
 import { PaymentMethodService, SpreedlyService, TicketService, TicketPaymentService, CouponService } from '@tabify/services';
 import { User } from '../decorators/user.decorator';
-import { Ticket, Coupon, ApplicableCoupon } from '@tabify/entities';
+import { Ticket, Coupon } from '@tabify/entities';
 
 @Controller('tickets/:ticketId/payments')
 export class PaymentController {
@@ -23,17 +23,19 @@ export class PaymentController {
     @Body('paymentMethodId') paymentMethodId: number,
     @Body('amount') amount: number,
     @Body('tip') tip: number,
-    @Body('applicableCouponId') applicableCouponId?: number,
+    @Body('couponId') couponId?: number,
   ) {
     const paymentMethod = await this.paymentMethodService.readPaymentMethod(uid, paymentMethodId);
     const { token: paymentMethodToken } = paymentMethod!;
-    const ticket = await this.ticketService.getTicket({ id: ticketId }, ['location', 'ticketTotal']) as Ticket;
+    const ticket = await this.ticketService.getTicket({ id: ticketId },
+      ['location', 'ticketTotal', 'users', 'items', 'items.users', 'users.user', 'items.users.user']) as Ticket;
 
-    let applicableCoupon: ApplicableCoupon | undefined;
-    if (applicableCouponId) {
-      applicableCoupon = await this.couponService.applyDiscount(applicableCouponId, ticket, uid);
+    let coupon: Coupon | undefined;
+    if (couponId) {
+      const response = await (await this.couponService.applyDiscount(couponId, ticket, uid));
+      coupon = response.coupon;
       Logger.log(`original amount to pay: ${amount}`);
-      amount -= applicableCoupon.estimated_tax_difference;
+      amount -= (response.res.dollar_value + response.res.taxDifference);
       Logger.log(`amount to pay after coupon: ${amount}`);
     }
 
@@ -42,7 +44,7 @@ export class PaymentController {
       paymentMethodToken,
       amount,
       tip,
-      applicableCoupon,
+      coupon,
     });
 
     return updatedTotal;

@@ -1,23 +1,20 @@
-import { Controller, Get, Post, Body, Param, Query, Logger } from '@nestjs/common';
-import { CouponService, TicketItemService, TicketUserService, TicketTotalService } from '@tabify/services';
+import { Controller, Get, Post, Body, Param, Query, Logger, BadRequestException } from '@nestjs/common';
+import { CouponService, TicketItemService, TicketUserService, TicketTotalService, TicketService } from '@tabify/services';
 import { User } from '../decorators/user.decorator';
-import { Coupon, TicketUser, TicketTotal } from '@tabify/entities';
+import { Coupon, TicketUser, TicketTotal, Ticket } from '@tabify/entities';
 
 @Controller('coupons')
 export class CouponController {
   constructor(
     private readonly couponService: CouponService,
-    private readonly ticketItemService: TicketItemService,
-    private readonly ticketUserService: TicketUserService,
-    private readonly ticketTotalService: TicketTotalService,
+    private readonly ticketService: TicketService,
   ) { }
 
   @Get()
   async getCoupons(
     @User('uid') uid: string,
   ) {
-    const userCoupons = await this.couponService.getUserCoupons(uid);
-    const coupons = this.couponService.groupCoupons(userCoupons);
+    const coupons = await this.couponService.getCoupons(uid);
     return coupons;
   }
 
@@ -26,11 +23,10 @@ export class CouponController {
     @User('uid') uid: string,
     @Param('ticketId') ticketId: number,
   ) {
-    const ticketItems = await this.ticketItemService.getTicketItems(ticketId, uid);
-    const ticketUser = await this.ticketUserService.getTicketUser(ticketId, uid) as TicketUser;
-    const userCoupons = await this.couponService.getUserCoupons(uid, ticketUser!.ticket!.location!.id);
-    const ticketTotals = await this.ticketTotalService.getTicketTotals(ticketId) as TicketTotal;
-    const coupons = this.couponService.assignTicketUserApplicableCoupons(ticketUser, userCoupons, ticketItems, ticketTotals);
+    const ticket = await this.ticketService.getTicket({ id: ticketId },
+      ['location', 'ticketTotal', 'users', 'items', 'items.users', 'users.user', 'items.users.user']) as Ticket;
+    const coupons = await this.couponService.getCoupons(uid, ticket!.location!.id);
+    coupons.validCoupons = await this.couponService.getApplicableTicketUserCoupons(coupons.validCoupons, ticket, uid);
     return coupons;
     // const userCoupons = await this.couponService.getUserCoupons(uid, locationId);
     // const coupons = this.couponService.userCouponsToCoupons(userCoupons);
@@ -42,6 +38,8 @@ export class CouponController {
     @Param('locationOmnivoreId') locationOmnivoreId: string,
     @Body('newCoupon') newCoupon: Coupon,
   ) {
+    newCoupon.coupon_end_date = new Date(newCoupon.coupon_end_date);
+    newCoupon.coupon_start_date = new Date(newCoupon.coupon_start_date);
     return await this.couponService.saveNewCoupon(newCoupon, locationOmnivoreId);
   }
 }

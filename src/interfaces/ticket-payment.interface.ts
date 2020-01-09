@@ -1,10 +1,10 @@
-import { Ticket, Coupon, ApplicableCoupon } from '@tabify/entities';
+import { Ticket, Coupon } from '@tabify/entities';
 
 export interface TicketPaymentInterface {
     ticket: Ticket;
     paymentMethodToken: string;
     amount: number;
     tip: number;
-    applicableCoupon?: ApplicableCoupon;
+    coupon?: Coupon;
     comment?: string;
 }

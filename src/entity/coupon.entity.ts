@@ -6,8 +6,11 @@ import {
     UpdateDateColumn,
     ManyToOne,
     OneToMany,
+    OneToOne,
   } from 'typeorm';
-import { Location, UserToCoupons, ApplicableCoupon } from '@tabify/entities';
+import { Location, UserToCoupons } from '@tabify/entities';
+import { TicketUser } from './ticket-user.entity';
+import { TicketPayment } from './ticket-payment.entity';
 
 export enum CouponType {
   PERCENT = 'percent',
@@ -74,6 +77,8 @@ export enum CouponOffOf {
     @OneToMany(type => UserToCoupons, userCoupon => userCoupon.coupon)
     userToCoupons?: UserToCoupons[];
 
-    @OneToMany(type => ApplicableCoupon, applicableCoupon => applicableCoupon.coupon)
-    applicableCoupons?: ApplicableCoupon[];
-  }
+    @OneToMany(type => TicketUser, ticketUser => ticketUser.selected_coupon, { nullable: true })
+    selectedTicketUsers?: TicketUser[];
+
+    @OneToMany(type => TicketPayment, ticketPayment => ticketPayment.coupon, { nullable: true })
+    ticketPayments?: TicketPayment[];  }
