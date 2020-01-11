@@ -39,14 +39,14 @@ export class PaymentController {
       Logger.log(`amount to pay after coupon: ${amount}`);
     }
 
-    const updatedTotal = await this.ticketPaymentService.sendTicketPayment(uid, {
-      ticket,
-      paymentMethodToken,
-      amount,
-      tip,
-      coupon,
-    });
+    // const updatedTotal = await this.ticketPaymentService.sendTicketPayment(uid, {
+    //   ticket,
+    //   paymentMethodToken,
+    //   amount,
+    //   tip,
+    //   coupon,
+    // });
 
-    return updatedTotal;
+    // return updatedTotal;
   }
 }

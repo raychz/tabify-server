@@ -45,13 +45,10 @@ export class CouponService {
           usedCoupons.push({ ...userCoupon.coupon, usage_count: userCoupon.usage_count });
         }
 
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-
         if (new Date(userCoupon.coupon.coupon_start_date).getTime() > new Date().getTime()) {
           upcomingCoupons.push({ ...userCoupon.coupon, usage_count: userCoupon.usage_count });
-        } else if (new Date(userCoupon.coupon.coupon_end_date).getTime() > yesterday.getTime()
-        && userCoupon.usage_count < userCoupon.coupon.usage_limit) {
+        } else if (new Date(userCoupon.coupon.coupon_end_date).getTime() >= new Date().getTime()
+        && (!userCoupon.coupon.usage_limit || userCoupon.usage_count < userCoupon.coupon.usage_limit)) {
           validCoupons.push({ ...userCoupon.coupon, usage_count: userCoupon.usage_count });
         }
       });
@@ -186,23 +183,14 @@ export class CouponService {
 
     async getApplicableTicketUserCoupons(coupons: any[], ticket: Ticket, userUid: string) {
       Logger.log(coupons);
-      const validCoupons: any[] = [];
-      // originally had this as a filter function however invalid objects were still making it 
-      // through even when valid was false
-      coupons.forEach(async coupon => {
+      const validCoupons = coupons.filter(async coupon => {
         const response = this.calculateCouponWorth(coupon, ticket, userUid);
 
         coupon.dollar_value = response.dollar_value;
         coupon.menu_item_name = response.message;
         coupon.estimated_tax_difference = response.taxDifference;
-        Logger.log(response.valid);
-        if (response.valid) {
-          Logger.log('response is valid');
-          validCoupons.push(coupon);
-        } else {
-          Logger.log('response is invalid');
-        }
 
+        return response.valid;
       });
 
       validCoupons.sort((couponA, couponB) => couponB.dollar_value - couponA.dollar_value);
@@ -214,10 +202,8 @@ export class CouponService {
     async assignUsersValidCoupons(userUids: string[]) {
       await getManager().transaction(async (transactionalEntityManager: EntityManager) => {
         try {
-            const yesterday = new Date();
-            yesterday.setDate(yesterday.getDate() - 1);
             const coupons = await transactionalEntityManager.find(Coupon,
-              {where: {applies_to_everyone: true, coupon_end_date: MoreThan(yesterday)} });
+              {where: {applies_to_everyone: true, coupon_end_date: MoreThanOrEqual(new Date())} });
             const users = await transactionalEntityManager.find(User, {where: { uid: In(userUids) }});
 
             coupons.forEach(coupon => {

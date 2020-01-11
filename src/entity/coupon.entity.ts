@@ -36,8 +36,8 @@ export enum CouponOffOf {
     @Column({ type: 'int', nullable: false })
     estimated_dollar_value!: number;
 
-    @Column({ type: 'int', nullable: false })
-    usage_limit!: number;
+    @Column({ type: 'int', nullable: true })
+    usage_limit?: number;
 
     @CreateDateColumn()
     date_created?: Date;
@@ -45,10 +45,10 @@ export enum CouponOffOf {
     @UpdateDateColumn()
     date_updated?: Date;
 
-    @Column({type: 'date', nullable: false})
+    @Column({type: 'datetime', nullable: false})
     coupon_start_date!: Date;
 
-    @Column({type: 'date', nullable: false})
+    @Column({type: 'datetime', nullable: false})
     coupon_end_date!: Date;
 
     @Column({
