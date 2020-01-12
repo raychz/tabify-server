@@ -20,18 +20,6 @@ export class TicketUserService {
     return ticketUser;
   }
 
-  async getTicketUser(ticketId: number, uid: string) {
-    const ticketUserRepo = getRepository(TicketUser);
-    return await ticketUserRepo.createQueryBuilder('ticketUser')
-    .leftJoinAndSelect('ticketUser.user', 'user')
-    .leftJoinAndSelect('ticketUser.ticket', 'ticket')
-    .leftJoinAndSelect('ticket.location', 'location')
-    .leftJoinAndSelect('ticketUser.applicable_coupons', 'applicable_coupons')
-    .where('user.uid = :uid', { uid })
-    .andWhere('ticket.id = :ticketId', { ticketId })
-    .getOne();
-  }
-
   /**
    * Adds user to existing database ticket
    */
@@ -210,10 +198,6 @@ export class TicketUserService {
           let allUsersTax = 0;
           let allUsersTotal = 0;
           ticketUsers.forEach((ticketUser: TicketUser, index: number) => {
-            // Subtract discount from each ticket user if applicable
-            // ticketUser.discounts = distributedDiscount[index].intValue;
-            // ticketUser.sub_total = ticketUser.sub_total - ticketUser.discounts;
-
             // Find sum of the selected items for this user
             let items = 0;
             ticketItems.forEach((ticketItem) => {
@@ -249,8 +233,6 @@ export class TicketUserService {
 
             // Distribute the tax proportionally
             ticketUser.tax = distributedTax[index].intValue;
-             // calculate user tax
-            // ticketUser.tax = currency( (ticketUser.sub_total / 100) * ticket.location!.tax_rate!).intValue;
             allUsersTax += ticketUser.tax;
 
             // Set the user total

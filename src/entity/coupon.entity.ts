@@ -72,6 +72,9 @@ export enum CouponOffOf {
     @Column({ type: 'bool', nullable: false})
     applies_to_everyone!: boolean;
 
+    @Column({ type: 'json', nullable: true})
+    coupon_restrictions?: any;
+
     @ManyToOne(type => Location, location => location.coupons, {
       cascade: true,
     })

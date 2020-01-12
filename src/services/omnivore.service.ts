@@ -15,7 +15,7 @@ export class OmnivoreService {
   async getLocations(): Promise<LocationEntity[]> {
     const headers = {
       'Content-Type': 'application/json',
-      'Api-Key': process.env.OMNIVORE_API_KEY_PROD || '',
+      'Api-Key': process.env.OMNIVORE_API_KEY_DEV || '',
     };
 
     const url = `${OmnivoreService.API_URL}/locations`;
@@ -99,8 +99,6 @@ export class OmnivoreService {
     const res = await fetch(url, { headers });
     const json = await res.json();
 
-    Logger.log(json);
-
     if (res.status === HttpStatus.NOT_FOUND) {
       throw new NotFoundException('The ticket could not be found in Omnivore.');
     }
@@ -108,8 +106,6 @@ export class OmnivoreService {
     if (this.hasError(json) || res.status !== HttpStatus.OK) {
       throw new BadGatewayException('Failed fetching ticket from source');
     }
-
-    // Logger.log(json);
 
     const { _embedded: { tickets } } = json;
 

@@ -31,8 +31,6 @@ export class CouponService {
 
         const userCoupons = await query.getMany();
 
-        Logger.log(userCoupons.length);
-
         return this.groupCoupons(userCoupons);
     }
 
@@ -60,7 +58,6 @@ export class CouponService {
 
           const couponsRepo = await getRepository(Coupon);
           const coupon = await couponsRepo.findOneOrFail({where: {id: couponId}, relations: ['location']});
-          Logger.log(coupon);
 
           const res = this.calculateCouponWorth(coupon, ticket, uid);
 
@@ -69,9 +66,6 @@ export class CouponService {
             const openDiscountId = ticket.location!.open_discount_id!;
             Logger.log('This discount is compatible. Apply it!');
             const discounts: OmnivoreTicketDiscount[] = [{ discount: openDiscountId, value: res.dollar_value }];
-            // Piccolas open discount id = '1847-53-17'
-            // const discounts: OmnivoreTicketDiscount[] = [{ discount: '1847-53-17', value: discountAmount }];
-            // const discountMenuItem: OmnivoreTicketItem = { menu_item: '1847-53-17', quantity: 1, price_per_unit: discountAmount };
             try {
               const currentTotalTax = ticket.ticketTotal!.tax;
 
@@ -146,7 +140,6 @@ export class CouponService {
       let ticketItemName;
       if (coupon.coupon_off_of === CouponOffOf.ITEM) {
         const couponTicketItem = ticket.items!.find( ticketItem => {
-          Logger.log(ticketItem.ticket_item_id);
           return ticketItem.menu_item_id === coupon.menu_item_id;
         });
         if (!couponTicketItem) {
@@ -183,7 +176,6 @@ export class CouponService {
     }
 
     async getApplicableTicketUserCoupons(coupons: any[], ticket: Ticket, userUid: string) {
-      Logger.log(coupons);
       const validCoupons: any[] = [];
       coupons.forEach(async coupon => {
         const response = this.calculateCouponWorth(coupon, ticket, userUid);
@@ -197,7 +189,6 @@ export class CouponService {
       });
 
       validCoupons.sort((couponA, couponB) => couponB.dollar_value - couponA.dollar_value);
-      Logger.log(validCoupons);
 
       return validCoupons;
     }

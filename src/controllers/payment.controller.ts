@@ -1,5 +1,5 @@
-import { Get, Controller, Body, Param, Post, Delete, Res, Logger } from '@nestjs/common';
-import { PaymentMethodService, SpreedlyService, TicketService, TicketPaymentService, CouponService } from '@tabify/services';
+import { Get, Controller, Body, Param, Post } from '@nestjs/common';
+import { PaymentMethodService, TicketService, TicketPaymentService, CouponService } from '@tabify/services';
 import { User } from '../decorators/user.decorator';
 import { Ticket, Coupon } from '@tabify/entities';
 
@@ -34,19 +34,17 @@ export class PaymentController {
     if (couponId) {
       const response = await (await this.couponService.applyDiscount(couponId, ticket, uid));
       coupon = response.coupon;
-      Logger.log(`original amount to pay: ${amount}`);
       amount -= (response.res.dollar_value + response.res.taxDifference);
-      Logger.log(`amount to pay after coupon: ${amount}`);
     }
 
-    // const updatedTotal = await this.ticketPaymentService.sendTicketPayment(uid, {
-    //   ticket,
-    //   paymentMethodToken,
-    //   amount,
-    //   tip,
-    //   coupon,
-    // });
+    const updatedTotal = await this.ticketPaymentService.sendTicketPayment(uid, {
+      ticket,
+      paymentMethodToken,
+      amount,
+      tip,
+      coupon,
+    });
 
-    // return updatedTotal;
+    return updatedTotal;
   }
 }

@@ -1,7 +1,7 @@
-import { Controller, Get, Post, Body, Param, Query, Logger, BadRequestException } from '@nestjs/common';
-import { CouponService, TicketItemService, TicketUserService, TicketTotalService, TicketService } from '@tabify/services';
+import { Controller, Get, Post, Body, Param } from '@nestjs/common';
+import { CouponService, TicketService } from '@tabify/services';
 import { User } from '../decorators/user.decorator';
-import { Coupon, TicketUser, TicketTotal, Ticket } from '@tabify/entities';
+import { Coupon, Ticket } from '@tabify/entities';
 
 @Controller('coupons')
 export class CouponController {
@@ -28,9 +28,6 @@ export class CouponController {
     const coupons = await this.couponService.getCoupons(uid, ticket!.location!.id);
     coupons.validCoupons = await this.couponService.getApplicableTicketUserCoupons(coupons.validCoupons, ticket, uid);
     return coupons;
-    // const userCoupons = await this.couponService.getUserCoupons(uid, locationId);
-    // const coupons = this.couponService.userCouponsToCoupons(userCoupons);
-    // return coupons;
   }
 
   @Post('location/:locationOmnivoreId')
