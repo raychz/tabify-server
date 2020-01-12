@@ -23,7 +23,6 @@ export class CouponService {
         .leftJoinAndSelect('coupon.location', 'location')
         .where('user.uid = :uid', { uid })
         .andWhere('location.open_discount_id IS NOT NULL')
-        .andWhere('coupon.coupon_end_date')
         .orderBy('coupon.estimated_dollar_value', 'DESC');
 
         if (locationId) {
@@ -31,6 +30,8 @@ export class CouponService {
         }
 
         const userCoupons = await query.getMany();
+
+        Logger.log(userCoupons.length);
 
         return this.groupCoupons(userCoupons);
     }
@@ -183,14 +184,16 @@ export class CouponService {
 
     async getApplicableTicketUserCoupons(coupons: any[], ticket: Ticket, userUid: string) {
       Logger.log(coupons);
-      const validCoupons = coupons.filter(async coupon => {
+      const validCoupons: any[] = [];
+      coupons.forEach(async coupon => {
         const response = this.calculateCouponWorth(coupon, ticket, userUid);
 
         coupon.dollar_value = response.dollar_value;
         coupon.menu_item_name = response.message;
         coupon.estimated_tax_difference = response.taxDifference;
-
-        return response.valid;
+        if (response.valid) {
+          validCoupons.push(coupon);
+        }
       });
 
       validCoupons.sort((couponA, couponB) => couponB.dollar_value - couponA.dollar_value);

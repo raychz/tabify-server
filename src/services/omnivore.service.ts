@@ -94,10 +94,12 @@ export class OmnivoreService {
     };
     // Omnivore query args used here. See https://panel.omnivore.io/docs/api/1.0/queries
     const where = `and(eq(open,true),eq(ticket_number,${encodeURIComponent(String(ticketNumber))}))`;
-    const fields = `totals,ticket_number,@items(price,name,quantity,comment,sent,sent_at,split)`;
+    const fields = `totals,ticket_number,@items(price,name,quantity,comment,sent,sent_at,split,@menu_item.id)`;
     const url = `${OmnivoreService.API_URL}/locations/${location.omnivore_id}/tickets?where=${where}&fields=${fields}`;
     const res = await fetch(url, { headers });
     const json = await res.json();
+
+    Logger.log(json);
 
     if (res.status === HttpStatus.NOT_FOUND) {
       throw new NotFoundException('The ticket could not be found in Omnivore.');
@@ -120,38 +122,17 @@ export class OmnivoreService {
     }
 
     const [customerTicket] = tickets;
-    Logger.log(customerTicket);
-    const ticketItemsUrl = customerTicket._links.items.href;
-
-    const res2 = await fetch(ticketItemsUrl, { headers });
-    const json2 = await res2.json();
-
-    if (res2.status === HttpStatus.NOT_FOUND) {
-      throw new NotFoundException('The ticket items could not be found in Omnivore.');
-    }
-
-    if (this.hasError(json2) || res2.status !== HttpStatus.OK) {
-      throw new BadGatewayException('Failed fetching ticket items from source');
-    }
-
-    Logger.log(json2);
-    const { _embedded: { items } } = json2;
-
-    Logger.log(items);
 
     // TODO: Support tickets with service/other charges
     if (location.omnivore_id !== 'i8yBgkjT' && customerTicket.totals.service_charges > 0 || customerTicket.totals.other_charges > 0) {
       throw new UnprocessableEntityException('Tickets with service/other charges are not currently supported.');
     }
 
-    // Logger.log('first item is:');
-    // Logger.log(customerTicket);
-
     const ticket: Ticket = {
       tab_id: customerTicket.id,
       location,
       ticket_number: customerTicket.ticket_number,
-      items: items.map((item: TicketItem | any) => ({
+      items: customerTicket._embedded.items.map((item: TicketItem | any) => ({
         ticket_item_id: item.id,
         name: item.name,
         comment: item.comment,
