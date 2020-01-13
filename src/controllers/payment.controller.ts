@@ -32,6 +32,7 @@ export class PaymentController {
       paymentMethodToken,
       amount,
       tip,
+      paymentMethodId,
     });
 
     return updatedTotal;
