@@ -5,6 +5,7 @@ import { SpreedlyService, TicketService } from '@tabify/services';
 import { TicketPaymentInterface } from '../interfaces';
 import { TicketTotalService } from './ticket-total.service';
 import { TicketPaymentStatus } from '../enums';
+import { PaymentMethodService } from './payment-method.service';
 
 @Injectable()
 export class TicketPaymentService {
@@ -12,16 +13,20 @@ export class TicketPaymentService {
     private spreedlyService: SpreedlyService,
     private ticketService: TicketService,
     private ticketTotalService: TicketTotalService,
+    private paymentMethodService: PaymentMethodService,
   ) { }
 
   async sendTicketPayment(uid: string, details: TicketPaymentInterface) {
     // Create a pending ticket payment
+    const paymentMethodAssociated = await this.paymentMethodService.readPaymentMethod(uid, details.paymentMethodId);
+
     const { id: ticketPaymentId } = await this.saveTicketPayment({
       ticket: details.ticket,
       ticket_payment_status: TicketPaymentStatus.PENDING,
       user: { uid } as User,
       amount: details.amount,
       tip: details.tip,
+      paymentMethod: paymentMethodAssociated,
     });
 
     // Attempt to send the ticket payment via Spreedly
@@ -118,6 +123,7 @@ export class TicketPaymentService {
         paymentMethodToken: details.paymentMethodToken,
         ticket: details.ticket,
         tip: details.tip,
+        paymentMethodId: details.paymentMethodId,
       });
     }
 
@@ -138,6 +144,7 @@ export class TicketPaymentService {
     const payments = await ticketPaymentRepo.find(
       {
         where: { ticket: ticketId, user: userId },
+        relations: ['paymentMethod'],
       });
 
     return payments;
