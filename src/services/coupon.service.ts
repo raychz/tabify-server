@@ -34,6 +34,7 @@ export class CouponService {
         return this.groupCoupons(userCoupons);
     }
 
+    // group coupons into the 3 classifications: valid, upcoming, and used
     groupCoupons(userCoupons: UserToCoupons[]) {
       const validCoupons: any[] = [];
       const usedCoupons: any[] = [];
@@ -54,39 +55,55 @@ export class CouponService {
       return {validCoupons, upcomingCoupons, usedCoupons};
     }
 
+    // apply the discount to the ticket
     async applyDiscount(couponId: number, ticket: Ticket, uid: string): Promise<{coupon: Coupon, res: any}> {
 
+        // find the coupon from the db
           const couponsRepo = await getRepository(Coupon);
           const coupon = await couponsRepo.findOneOrFail({where: {id: couponId}, relations: ['location']});
 
+          // calculate value of the coupon and its validity
           const res = this.calculateCouponWorth(coupon, ticket, uid);
 
-          // Apply discount on this ticket if it is compatbile - location has open discount and user's price > $0.25
+          // Apply discount on this ticket if it is compatbile
           if (res.valid) {
             const openDiscountId = ticket.location!.open_discount_id!;
-            Logger.log('This discount is compatible. Apply it!');
             const discounts: OmnivoreTicketDiscount[] = [{ discount: openDiscountId, value: res.dollar_value }];
             try {
+              // get the current totals object before discount
               const currentTotalTax = ticket.ticketTotal!.tax;
 
+              // apply the discount through omnivore
               const response = await this.omnivoreService.applyDiscountsToTicket(ticket.location!, ticket.tab_id!, discounts);
+
+              // get the totals object after discount
               const { totals } = response;
 
               const newTax: number = totals.tax;
+              // calculate how much the tax changed by
               const actualTaxDifference = currency((currentTotalTax / 100) - (newTax / 100)).intValue;
 
+              // compare actual tax difference to estimate
               if (res.taxDifference !== actualTaxDifference) {
                 Logger.log(`tax estimate was off by ${currency((res.taxDifference / 100) - (actualTaxDifference / 100))}`);
                 res.taxDifference = actualTaxDifference;
               }
 
+              if (!ticket.users) {
+                throw new InternalServerErrorException('ticket users is not defined');
+              }
+
+              // update the ticket user's tax, total, and discount fields
               const ticketUser = ticket.users!.find( user => user.user!.uid === uid)!;
 
               ticketUser.tax -= actualTaxDifference;
+              ticketUser.discounts += res.dollar_value;
+              ticketUser.total -= (actualTaxDifference + res.dollar_value);
               ticketUser.selected_coupon = coupon;
               const ticketUserRepo = await getRepository(TicketUser);
               await ticketUserRepo.save(ticketUser);
 
+              // update the ticket totals object with the new totals response
               await this.ticketTotalService.updateTicketTotals({
                 id: ticket.ticketTotal!.id,
                 discounts: totals.discounts,
@@ -100,7 +117,6 @@ export class CouponService {
                 tips: totals.tips,
                 total: totals.total,
               });
-              Logger.log(response, 'The updated ticket with discount');
 
               // increment the coupon usage in the database
               const userCouponsRepo = await getRepository(UserToCoupons);
@@ -124,24 +140,39 @@ export class CouponService {
       let taxDifference = 0;
       let valid = true;
       let message;
+
+      // invalid coupon if open discount id is not provided by the location entity
       if (!ticket.location!.open_discount_id) {
         valid = false;
         message = 'Location does not have an open discount id - coupon is invalid';
         return {valid, message, dollar_value, taxDifference};
       }
 
+      // throw an error if ticket.users is not defined
+      if (!ticket.users) {
+        throw new InternalServerErrorException('ticket users is not defined');
+      }
+
       const ticketUser = ticket.users!.find( user => user.user!.uid === userUid);
+
+      // invalid if user is not on the ticket
       if (!ticketUser) {
         valid = false;
         message = 'User is not on ticket';
         return {valid, message, dollar_value, taxDifference};
       }
+
+      // coupon is off of subtotal
       let itemPrice = ticketUser.sub_total;
       let ticketItemName;
+
+    // coupon is off a specific item
       if (coupon.coupon_off_of === CouponOffOf.ITEM) {
         const couponTicketItem = ticket.items!.find( ticketItem => {
           return ticketItem.menu_item_id === coupon.menu_item_id;
         });
+
+        // invalid if the item is not on the ticket
         if (!couponTicketItem) {
           valid = false;
           message = 'Coupon applies to an item not on the ticket and can not be applied.';
@@ -149,6 +180,8 @@ export class CouponService {
         }
         ticketItemName = couponTicketItem.name;
         const itemUser = couponTicketItem.users!.find(user => user.user.uid === ticketUser.user!.uid);
+
+        // invalid if the user is not on the ticket item
         if (!itemUser) {
           valid = false;
           message = 'Coupon applies to an item that the user is not paying for and can not be applied.';
@@ -156,25 +189,32 @@ export class CouponService {
         }
         itemPrice = itemUser.price ;
       }
+
+      // coupon value is a dollar value
       dollar_value = coupon.value;
+
+      // coupon value is a percentage
       if (coupon.coupon_type === CouponType.PERCENT) {
         dollar_value = itemPrice * (coupon.value / 100);
       }
 
+      // invalid if the user's subtotal is less than or equal to 25 cents
       if ((ticketUser.sub_total - dollar_value) <= 25) {
           valid = false;
           message = 'Coupon makes user\'s subtotal fall below the $0.25 minimum and is not valid';
           return {valid, message, dollar_value, taxDifference};
       }
-      // coupon.estimated_dollar_value = couponValue;
+
+      // calculate estimated tax difference of the coupon
       const currentTax = ticket.ticketTotal!.tax;
-      const taxRate = coupon.location!.tax_rate!;
-      const newTax = (ticket.ticketTotal!.sub_total - dollar_value) * (taxRate / 100);
+      const newTax = (ticket.ticketTotal!.sub_total - dollar_value) * (ticket.ticketTotal!.tax / ticket.ticketTotal!.sub_total);
       taxDifference = currency((currentTax - newTax) / 100).intValue;
 
+      // return coupon validity and worth response
       return {valid, message: ticketItemName, dollar_value, taxDifference};
     }
 
+    // get all valid coupons for a specific ticket and a specific ticket user
     async getApplicableTicketUserCoupons(coupons: any[], ticket: Ticket, userUid: string) {
       const validCoupons: any[] = [];
       coupons.forEach(async coupon => {
@@ -193,6 +233,7 @@ export class CouponService {
       return validCoupons;
     }
 
+    // assign new users valid coupons
     async assignUsersValidCoupons(userUids: string[]) {
       await getManager().transaction(async (transactionalEntityManager: EntityManager) => {
         try {
@@ -211,6 +252,7 @@ export class CouponService {
         });
     }
 
+    // save new coupon in the database
     async saveNewCoupon(coupon: Coupon, locationOmnivoreId: string, userUids?: string[]): Promise<Coupon> {
 
         return await getManager().transaction(async (transactionalEntityManager: EntityManager) => {

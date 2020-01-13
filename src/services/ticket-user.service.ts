@@ -93,7 +93,7 @@ export class TicketUserService {
     return ticketItemUsers;
   }
 
-  private calculateUserTax(users: TicketUser[], totals: TicketTotal, taxRate: number) {
+  private calculateUserTax(users: TicketUser[], totals: TicketTotal) {
     let distributedTaxTotal = 0;
     const distributedTax: currency[] = [];
     users.forEach( user => {
@@ -103,7 +103,6 @@ export class TicketUserService {
 
       // not sure which approach is better between top and bottom - leaning towards top
 
-      // const userTax = currency(taxRate * (user.sub_total / 100));
       distributedTax.push(userTax);
       distributedTaxTotal += userTax.intValue;
     });
@@ -111,10 +110,10 @@ export class TicketUserService {
     let index = 0;
     while (distributedTaxTotal !== totals.tax) {
       if (distributedTaxTotal < totals.tax) {
-        distributedTax[index].add(1);
+        distributedTax[index] = distributedTax[index].add(0.01);
         distributedTaxTotal += 1;
       } else if (distributedTaxTotal > totals.tax) {
-        distributedTax[index].subtract(1);
+        distributedTax[index] = distributedTax[index].subtract(0.01);
         distributedTaxTotal -= 1;
       }
 
@@ -191,7 +190,7 @@ export class TicketUserService {
           if (!ticketTotal) throw new InternalServerErrorException('Cannot load the ticket totals.');
 
           // const distributedTax = currency(ticketTotal.tax / 100).distribute(ticketUsers.length);
-          const distributedTax = this.calculateUserTax(ticketUsers, ticketTotal, ticket.location!.tax_rate!)
+          const distributedTax = this.calculateUserTax(ticketUsers, ticketTotal);
           let allUsersItems = 0;
           let allUsersDiscounts = 0;
           let allUsersSubtotal = 0;

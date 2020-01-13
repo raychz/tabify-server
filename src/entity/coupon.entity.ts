@@ -87,6 +87,5 @@ export enum CouponOffOf {
     selectedTicketUsers?: TicketUser[];
 
     @OneToMany(type => TicketPayment, ticketPayment => ticketPayment.coupon, { nullable: true })
-    ticketPayments?: TicketPayment[];  
-  
+    ticketPayments?: TicketPayment[];
   }
