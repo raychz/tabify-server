@@ -93,20 +93,20 @@ export class TicketUserService {
     return ticketItemUsers;
   }
 
+  // calculate the tax for each user
   private calculateUserTax(users: TicketUser[], totals: TicketTotal) {
     let distributedTaxTotal = 0;
     const distributedTax: currency[] = [];
+    // estimate each users tax
     users.forEach( user => {
       const subtotalPercentage = user.sub_total / totals.sub_total;
       Logger.log(subtotalPercentage);
       const userTax = currency(subtotalPercentage * (totals.tax / 100));
-
-      // not sure which approach is better between top and bottom - leaning towards top
-
       distributedTax.push(userTax);
       distributedTaxTotal += userTax.intValue;
     });
 
+    // if the tax is not equal to the toal tax add or subtract pennies from each user until it is
     let index = 0;
     while (distributedTaxTotal !== totals.tax) {
       if (distributedTaxTotal < totals.tax) {
