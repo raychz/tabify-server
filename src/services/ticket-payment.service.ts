@@ -18,6 +18,8 @@ export class TicketPaymentService {
 
   async sendTicketPayment(uid: string, details: TicketPaymentInterface) {
     // Create a pending ticket payment
+
+    // grab associated paymentMethod
     const paymentMethodAssociated = await this.paymentMethodService.readPaymentMethod(uid, details.paymentMethodId);
 
     const { id: ticketPaymentId } = await this.saveTicketPayment({
