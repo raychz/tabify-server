@@ -42,14 +42,7 @@ export class TicketPaymentService {
       // Something went wrong, so update the payment's status to failed
 
       // send error sms to server
-      if (details.ticket.server && details.ticket.server.phone) {
-        const server = details.ticket.server;
-        const tableName = details.ticket.table_name;
-        const textMsg = `Hi ${server.firstName}, a patron at table ${tableName} for ` +
-          `ticket# ${details.ticket.ticket_number} had a payment issue.`;
-
-        this.messageService.sendSMS(server.phone, textMsg);
-      }
+      this.sendPaymentFailSMSToServer(details);
 
       await this.saveTicketPayment({
         id: ticketPaymentId,
@@ -77,14 +70,7 @@ export class TicketPaymentService {
       Logger.error(spreedlyResponse, 'Error occurred while parsing the Spreedly response');
 
       // send error sms to server
-      if (details.ticket.server && details.ticket.server.phone) {
-        const server = details.ticket.server;
-        const tableName = details.ticket.table_name;
-        const textMsg = `Hi ${server.firstName}, a patron at table ${tableName} for ` +
-          `ticket# ${details.ticket.ticket_number} had a payment issue.`;
-
-        this.messageService.sendSMS(server.phone, textMsg);
-      }
+      this.sendPaymentFailSMSToServer(details);
 
       // Something went wrong, so update the payment's status to failed
       await this.saveTicketPayment({
@@ -115,6 +101,9 @@ export class TicketPaymentService {
       });
     } else {
       Logger.error(response, 'Error occurred while parsing the Omnivore response');
+
+      // send error sms to server
+      this.sendPaymentFailSMSToServer(details);
       throw new BadRequestException('This payment could not be processed.', response);
     }
 
@@ -149,6 +138,18 @@ export class TicketPaymentService {
     const updatedTicketTotals = await this.ticketTotalService.getTicketTotals(details.ticket.id!, ['ticket']);
 
     return updatedTicketTotals;
+  }
+
+  // send error sms to server
+  async sendPaymentFailSMSToServer(details: TicketPaymentInterface) {
+    if (details.ticket.server && details.ticket.server.phone) {
+      const server = details.ticket.server;
+      const tableName = details.ticket.table_name;
+      const textMsg = `Hi ${server.firstName}, a patron at table ${tableName} for ` +
+        `ticket# ${details.ticket.ticket_number} had a payment issue.`;
+
+      this.messageService.sendSMS(server.phone, textMsg);
+    }
   }
 
   async saveTicketPayment(ticketPayment: TicketPayment) {
