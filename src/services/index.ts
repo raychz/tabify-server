@@ -16,6 +16,7 @@ export * from './like.service';
 export * from './location.service';
 export * from './omnivore.service';
 export * from './payment-method.service';
+export * from './sms.service';
 export * from './server.service';
 export * from './spreedly.service';
 export * from './ticket.service';

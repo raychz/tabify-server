@@ -47,6 +47,7 @@
     "rxjs-compat": "6",
     "socket.io": "^2.2.0",
     "tsconfig-paths": "^3.8.0",
+    "twilio": "^3.39.0",
     "typeorm": "^0.2.19",
     "typescript": "3.4.5"
   },
