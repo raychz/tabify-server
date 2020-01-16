@@ -113,7 +113,7 @@ export class ServerService {
             const tip = currency(ticketTotal.tips / 100);
             const tipPercentage = Math.round(ticketTotal.tips / ticketTotal.total * 100);
 
-            const section1 = `Ticket #${ticket.ticket_number} has been paid.`;
+            const section1 = `Ticket #${ticket.ticket_number} has been paid with Tabify.`;
             const section2 = ` Total: $${total}. Tip: $${tip} (${tipPercentage}%).`;
             const section3 = ticketTableName ? ` Table/Revenue Center: ${ticketTableName}.` : '';
             const section4 = server ? ` Server: ${server.firstName}.` : '';

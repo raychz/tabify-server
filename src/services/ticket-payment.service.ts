@@ -146,7 +146,7 @@ export class TicketPaymentService {
       const server = details.ticket.server;
       const tableName = details.ticket.table_name;
 
-      const section1 = `Ticket #${details.ticket.ticket_number} just had a payment issue.`;
+      const section1 = `Ticket #${details.ticket.ticket_number} just had a payment issue with Tabify.`;
       const section2 = ` Please assist the patrons and verify that the ticket gets paid in full.`;
       const section3 = tableName ? ` Table/Revenue Center: ${tableName}.` : '';
       const section4 = server ? ` Server: ${server.firstName}.` : '';
