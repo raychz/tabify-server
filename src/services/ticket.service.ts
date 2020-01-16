@@ -105,10 +105,13 @@ export class TicketService {
 
         // upon creation of ticket, send an SMS to the server that users will be using Tabify for this ticket
         if (existingTicket.server && existingTicket.server.phone) {
+          const ticketNumber = existingTicket.ticket_number;
           const server = existingTicket.server;
           const tableName = existingTicket.table_name;
-          const textMsg = `Hi ${server.firstName}, patrons at table ${tableName} for ` +
-            `ticket# ${existingTicket.ticket_number} will be using Tabify for payment.`;
+          const section1 = `Ticket #${ticketNumber} will be paying with Tabify.`;
+          const section2 = tableName ? ` Table/Revenue Center: ${tableName}.` : '';
+          const section3 = server ? ` Server: ${server.firstName}.` : '';
+          const textMsg = section1 + section2 + section3;
 
           this.messageService.sendSMS(server.phone, textMsg);
         }

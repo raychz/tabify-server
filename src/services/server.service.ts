@@ -51,10 +51,10 @@ export class ServerService {
 
         // distribute reward ($1) among servers
         currency(1)
-        .distribute(serverRewards.length)
-        .forEach((pmnt_amount, index) => {
-          serverRewards[index].payment_amount = pmnt_amount.intValue;
-        });
+            .distribute(serverRewards.length)
+            .forEach((pmnt_amount, index) => {
+                serverRewards[index].payment_amount = pmnt_amount.intValue;
+            });
 
         // save server rewards in server rewards table
         const serverRewardsRepo = await getRepository(ServerRewardEntity);
@@ -105,21 +105,21 @@ export class ServerService {
         const ticket = await ticketRepo.findOneOrFail({ where: { id: ticketId }, relations: ['ticketTotal', 'server'] });
 
         const server = ticket.server;
-        const ticketNum = ticket.ticket_number;
         const ticketTableName = ticket.table_name;
-        const ticketTotalObj = ticket.ticketTotal;
+        const ticketTotal = ticket.ticketTotal;
 
-        if (ticketTotalObj && server && server.phone) {
-            const ticketTotal = currency(ticketTotalObj.total / 100);
-            const ticketTip = currency(ticketTotalObj.tips / 100);
+        if (ticketTotal && server && server.phone) {
+            const total = currency(ticketTotal.total / 100);
+            const tip = currency(ticketTotal.tips / 100);
+            const tipPercentage = Math.round(ticketTotal.tips / ticketTotal.total * 100);
 
-            const serverCellNum = server.phone;
-            const serverName = server.firstName;
+            const section1 = `Ticket #${ticket.ticket_number} has been paid.`;
+            const section2 = ` Total: $${total}. Tip: $${tip} (${tipPercentage}%).`;
+            const section3 = ticketTableName ? ` Table/Revenue Center: ${ticketTableName}.` : '';
+            const section4 = server ? ` Server: ${server.firstName}.` : '';
+            const textMsg = section1 + section2 + section3 + section4;
 
-            const message = `Hi ${serverName}, for closing ticket# ${ticketNum} (Table ${ticketTableName}),` +
-                ` the total was $${ticketTotal}, and the tip was $${ticketTip}. Thanks, Tabify.`;
-
-            await this.messageService.sendSMS(serverCellNum, message);
+            await this.messageService.sendSMS(server.phone, textMsg);
         }
     }
 }

@@ -130,7 +130,7 @@ export class TicketPaymentService {
         amount: 500,
         paymentMethodToken: details.paymentMethodToken,
         ticket: details.ticket,
-        tip: details.tip,
+        tip: 0,
       });
     }
 
@@ -145,8 +145,12 @@ export class TicketPaymentService {
     if (details.ticket.server && details.ticket.server.phone) {
       const server = details.ticket.server;
       const tableName = details.ticket.table_name;
-      const textMsg = `Hi ${server.firstName}, a patron at table ${tableName} for ` +
-        `ticket# ${details.ticket.ticket_number} had a payment issue.`;
+
+      const section1 = `Ticket #${details.ticket.ticket_number} just had a payment issue.`;
+      const section2 = ` Please assist the patrons and verify that the ticket gets paid in full.`;
+      const section3 = tableName ? ` Table/Revenue Center: ${tableName}.` : '';
+      const section4 = server ? ` Server: ${server.firstName}.` : '';
+      const textMsg = section1 + section2 + section3 + section4;
 
       this.messageService.sendSMS(server.phone, textMsg);
     }
