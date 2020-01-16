@@ -17,7 +17,7 @@ export class ServerController {
         return server;
     }
 
-    @Post('/postServer')
+    @Post()
     async postServer(
         @Body() serverDetails: any,
     ) {
