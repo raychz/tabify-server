@@ -130,8 +130,10 @@ export class OmnivoreService {
 
     // use the employee.id to find server in our DB. If this is undefined, the serverId field in 
     // the ticket will be null
+    const employee = customerTicket._embedded.employee;
+    const employeeId = employee ? employee.id : undefined;
     const serverToAssociate = await this.serverService
-      .getServerByEmployeeId(customerTicket._embedded.employee.id);
+      .getServerByEmployeeId(employeeId);
 
     const ticket: Ticket = {
       tab_id: customerTicket.id,
@@ -211,7 +213,7 @@ export class OmnivoreService {
 
   async openDemoTickets(numberOfTicketsRequested: number = 25): Promise<number[]> {
     // Only allow up to 25 virtual POS tickets to be created at a time
-    const numberOfTicketsToCreate = Math.min(numberOfTicketsRequested, 25);
+    const numberOfTicketsToCreate = Math.min(numberOfTicketsRequested, 100);
 
     const virtualPosId = 'i8yBgkjT';
 
