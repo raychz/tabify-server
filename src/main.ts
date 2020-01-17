@@ -13,7 +13,7 @@ async function bootstrap() {
   await connect();
   const app = await NestFactory.create(AppModule, expressApp, {
     cors: {
-      origin: ['http://localhost:8100', 'http://localhost:8101', 'https://m.tabifyapp.com'],
+      origin: ['http://localhost:8100', 'http://localhost:8101', 'http://localhost:8080', 'https://m.tabifyapp.com'],
     },
   });
   await app.init();
