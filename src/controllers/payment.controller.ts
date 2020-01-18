@@ -2,6 +2,7 @@ import { Get, Controller, Body, Param, Post, Delete, Res } from '@nestjs/common'
 import { PaymentMethodService, SpreedlyService, TicketService, TicketPaymentService } from '@tabify/services';
 import { User } from '../decorators/user.decorator';
 import { Ticket } from '@tabify/entities';
+import { MoreThanOrEqual } from 'typeorm';
 
 @Controller('tickets/:ticketId/payments')
 export class PaymentController {
@@ -23,9 +24,15 @@ export class PaymentController {
     @Body('amount') amount: number,
     @Body('tip') tip: number,
   ) {
+
+    // get ticket that was created today
+    const startOfDay = new Date();
+    startOfDay.setUTCHours(0, 0, 0, 0);
+
     const paymentMethod = await this.paymentMethodService.readPaymentMethod(uid, paymentMethodId);
     const { token: paymentMethodToken } = paymentMethod!;
-    const ticket = await this.ticketService.getTicket({ id: ticketId }, ['location', 'ticketTotal']) as Ticket;
+    const ticket = await this.ticketService.getTicket({ id: ticketId, date_created: MoreThanOrEqual(startOfDay)},
+    ['location', 'ticketTotal']) as Ticket;
 
     const updatedTotal = await this.ticketPaymentService.sendTicketPayment(uid, {
       ticket,

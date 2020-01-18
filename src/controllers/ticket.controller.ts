@@ -2,6 +2,7 @@ import { Get, Controller, Query, Res, Post, Body, Put, Param, BadRequestExceptio
 import { FirebaseService, FraudPreventionCodeService, TicketService, OmnivoreService, StoryService, TicketUserService } from '@tabify/services';
 import { User } from '../decorators/user.decorator';
 import { Response } from 'express';
+import { MoreThanOrEqual } from 'typeorm';
 
 @Controller('tickets')
 export class TicketController {
@@ -22,7 +23,11 @@ export class TicketController {
       throw new BadRequestException('Missing ticket id');
     }
 
-    const ticket = await this.ticketService.getTicket({ id },
+    // get ticket that was created today
+    const startOfDay = new Date();
+    startOfDay.setUTCHours(0, 0, 0, 0);
+
+    const ticket = await this.ticketService.getTicket({ id, date_created: MoreThanOrEqual(startOfDay) },
       ['items', 'items.users', 'location', 'users', 'users.user', 'users.user.userDetail', 'ticketTotal'],
     );
 
@@ -39,6 +44,11 @@ export class TicketController {
     @Query() params: any,
   ) {
     const { id, ticket_number, location } = params;
+
+    // get ticket that was created today
+    const startOfDay = new Date();
+    startOfDay.setUTCHours(0, 0, 0, 0);
+    params.date_created = MoreThanOrEqual(startOfDay);
 
     if (!location && (!ticket_number || !id)) {
       throw new BadRequestException('Missing ticket number and/or location');
