@@ -5,12 +5,16 @@ import { Location as LocationEntity, Ticket, TicketItem } from '@tabify/entities
 import { LocationService } from '@tabify/services';
 import { sleep } from '../utilities/general.utilities';
 import { OmnivoreTicketItem, OmnivoreTicketDiscount } from '@tabify/interfaces';
+import { ServerService } from './server.service';
 
 @Injectable()
 export class OmnivoreService {
   static readonly API_URL = 'https://api.omnivore.io/1.0';
 
-  constructor(private locationService: LocationService) { }
+  constructor(
+    private locationService: LocationService,
+    private serverService: ServerService,
+  ) { }
 
   async getLocations(): Promise<LocationEntity[]> {
     const headers = {
@@ -101,7 +105,7 @@ export class OmnivoreService {
 
     // Omnivore query args used here. See https://panel.omnivore.io/docs/api/1.0/queries
     const where = `and(eq(open,true),eq(ticket_number,${encodeURIComponent(String(ticketNumber))}),gte(opened_at,${encodeURIComponent(String(startOfDayTime))}))`;
-    const fields = `totals,ticket_number,@items(price,name,quantity,comment,sent,sent_at,split)`;
+    const fields = `totals,@employee,@revenue_center,ticket_number,@items(price,name,quantity,comment,sent,sent_at,split)`;
     const url = `${OmnivoreService.API_URL}/locations/${location.omnivore_id}/tickets?where=${where}&fields=${fields}`;
     const res = await fetch(url, { headers });
     const json = await res.json();
@@ -131,6 +135,13 @@ export class OmnivoreService {
       throw new UnprocessableEntityException('Tickets with service/other charges are not currently supported.');
     }
 
+    // use the employee.id to find server in our DB. If this is undefined, the serverId field in 
+    // the ticket will be null
+    const employee = customerTicket._embedded.employee;
+    const employeeId = employee ? employee.id : undefined;
+    const serverToAssociate = await this.serverService
+      .getServerByEmployeeId(employeeId);
+
     const ticket: Ticket = {
       tab_id: customerTicket.id,
       location,
@@ -157,6 +168,8 @@ export class OmnivoreService {
         tips: customerTicket.totals.tips,
         total: customerTicket.totals.total,
       },
+      server: serverToAssociate,
+      table_name: customerTicket._embedded.revenue_center.name,
     };
     return ticket;
   }
@@ -207,7 +220,7 @@ export class OmnivoreService {
 
   async openDemoTickets(numberOfTicketsRequested: number = 25): Promise<number[]> {
     // Only allow up to 25 virtual POS tickets to be created at a time
-    const numberOfTicketsToCreate = Math.min(numberOfTicketsRequested, 25);
+    const numberOfTicketsToCreate = Math.min(numberOfTicketsRequested, 100);
 
     const virtualPosId = 'i8yBgkjT';
 

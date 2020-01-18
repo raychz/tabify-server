@@ -77,7 +77,7 @@ export class TicketController {
 
     // Create ticket in our database
     const { created, ticket: newTicket } = await this.ticketService.createTicket(omnivoreTicket,
-      ['items', 'items.users', 'items.users.user', 'items.users.user.userDetail', 'location', 'users', 'users.user', 'users.user.userDetail', 'ticketTotal'],
+      ['items', 'server', 'items.users', 'items.users.user', 'items.users.user.userDetail', 'location', 'users', 'users.user', 'users.user.userDetail', 'ticketTotal'],
     );
 
     if (created) {
@@ -161,5 +161,14 @@ export class TicketController {
   @Post('demo-tickets')
   async openDemoTickets(@Param('numberOfTickets') numberOfTickets: number) {
     return await this.omnivoreService.openDemoTickets(numberOfTickets);
+  }
+
+  @Put(':id/closeTicket')
+  async closeTicket(
+    @User('uid') uid: string,
+    @Param('id') ticketId: number,
+  ) {
+    const response = await this.ticketService.closeTicket(ticketId);
+    return response;
   }
 }

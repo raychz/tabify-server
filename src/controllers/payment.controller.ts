@@ -32,7 +32,7 @@ export class PaymentController {
     const paymentMethod = await this.paymentMethodService.readPaymentMethod(uid, paymentMethodId);
     const { token: paymentMethodToken } = paymentMethod!;
     const ticket = await this.ticketService.getTicket({ id: ticketId, date_created: MoreThanOrEqual(startOfDay)},
-    ['location', 'ticketTotal']) as Ticket;
+    ['location', 'ticketTotal', 'server']) as Ticket;
 
     const updatedTotal = await this.ticketPaymentService.sendTicketPayment(uid, {
       ticket,

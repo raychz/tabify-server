@@ -1,7 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, ManyToOne, Column, OneToMany, Index } from 'typeorm';
-import { Location, UserDetail } from '@tabify/entities';
+import { Entity, PrimaryGeneratedColumn, ManyToOne, Column, OneToMany, Index, Unique } from 'typeorm';
+import { Location, UserDetail, Ticket, ServerReward } from '@tabify/entities';
 
 @Entity()
+@Unique(['employeeId', 'location'])
 export class Server {
     @PrimaryGeneratedColumn()
     id!: number;
@@ -21,6 +22,7 @@ export class Server {
     @Column({type: 'varchar', nullable: true})
     password!: string;
 
+    @Index()
     @Column({type: 'varchar', length: 5, nullable: true})
     employeeId!: string;
 
@@ -33,4 +35,10 @@ export class Server {
 
     @OneToMany(type => UserDetail, userDetail => userDetail.server)
     users!: UserDetail[];
+
+    @OneToMany(type => Ticket, ticket => ticket.server)
+    ticket!: Ticket[];
+
+    @OneToMany(type => ServerReward, serverReward => serverReward.server)
+    serverRewards!: ServerReward[];
 }
