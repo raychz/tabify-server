@@ -97,14 +97,8 @@ export class OmnivoreService {
       'Api-Key': apiKey!,
     };
 
-    // query omnivore only for tickets that were opened today
-    const startOfDay = new Date();
-    startOfDay.setUTCHours(0, 0, 0, 0);
-    // divide start of day time by 1000 since unix does not store ms while javascript does
-    const startOfDayTime = startOfDay.getTime() / 1000;
-
     // Omnivore query args used here. See https://panel.omnivore.io/docs/api/1.0/queries
-    const where = `and(eq(open,true),eq(ticket_number,${encodeURIComponent(String(ticketNumber))}),gte(opened_at,${encodeURIComponent(String(startOfDayTime))}))`;
+    const where = `and(eq(open,true),eq(ticket_number,${encodeURIComponent(String(ticketNumber))}))`;
     const fields = `totals,@employee,@revenue_center,ticket_number,@items(price,name,quantity,comment,sent,sent_at,split)`;
     const url = `${OmnivoreService.API_URL}/locations/${location.omnivore_id}/tickets?where=${where}&fields=${fields}`;
     const res = await fetch(url, { headers });

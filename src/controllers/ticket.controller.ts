@@ -23,11 +23,7 @@ export class TicketController {
       throw new BadRequestException('Missing ticket id');
     }
 
-    // get ticket that was created today
-    const startOfDay = new Date();
-    startOfDay.setUTCHours(0, 0, 0, 0);
-
-    const ticket = await this.ticketService.getTicket({ id, date_created: MoreThanOrEqual(startOfDay) },
+    const ticket = await this.ticketService.getTicket({ id },
       ['items', 'items.users', 'location', 'users', 'users.user', 'users.user.userDetail', 'ticketTotal'],
     );
 
@@ -38,17 +34,20 @@ export class TicketController {
     return ticket;
   }
 
-  @Get()
+  @Get('openedToday/:openedToday')
   async getTicket(
     @User('uid') uid: string,
+    @Param('openedToday') openedToday: boolean,
     @Query() params: any,
   ) {
     const { id, ticket_number, location } = params;
 
     // get ticket that was created today
-    const startOfDay = new Date();
-    startOfDay.setUTCHours(0, 0, 0, 0);
-    params.date_created = MoreThanOrEqual(startOfDay);
+    if (openedToday) {
+      const startOfDay = new Date();
+      startOfDay.setUTCHours(0, 0, 0, 0);
+      params.date_created = MoreThanOrEqual(startOfDay);
+    }
 
     if (!location && (!ticket_number || !id)) {
       throw new BadRequestException('Missing ticket number and/or location');

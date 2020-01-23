@@ -24,14 +24,9 @@ export class PaymentController {
     @Body('amount') amount: number,
     @Body('tip') tip: number,
   ) {
-
-    // get ticket that was created today
-    const startOfDay = new Date();
-    startOfDay.setUTCHours(0, 0, 0, 0);
-
     const paymentMethod = await this.paymentMethodService.readPaymentMethod(uid, paymentMethodId);
     const { token: paymentMethodToken } = paymentMethod!;
-    const ticket = await this.ticketService.getTicket({ id: ticketId, date_created: MoreThanOrEqual(startOfDay)},
+    const ticket = await this.ticketService.getTicket({ id: ticketId },
     ['location', 'ticketTotal', 'server']) as Ticket;
 
     const updatedTotal = await this.ticketPaymentService.sendTicketPayment(uid, {
