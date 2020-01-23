@@ -290,7 +290,7 @@ export class TicketUserService {
 
       if (sendNotification) {
         const messages: { name: string, data: any }[] = [
-          { name: TicketUpdates.TICKET_USERS_UPDATED, data: updatedTicketUsers }
+          { name: TicketUpdates.TICKET_USERS_UPDATED, data: updatedTicketUsers },
         ];
         if (ticketTotal) {
           messages.push({ name: TicketUpdates.TICKET_TOTALS_UPDATED, data: ticketTotal });

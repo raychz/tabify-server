@@ -9,7 +9,8 @@ import {
   TicketItem,
   TicketTotal,
 } from '@tabify/entities';
-import { TicketStatus } from '../enums';
+import { TicketStatus, TicketUpdates } from '../enums';
+import { AblyService } from './ably.service';
 
 @Injectable()
 export class TicketService {
@@ -18,6 +19,7 @@ export class TicketService {
     private readonly messageService: SMSService,
     private readonly serverService: ServerService,
     private readonly userService: UserService,
+    private readonly ablyService: AblyService,
   ) { }
 
   /**
@@ -141,6 +143,8 @@ export class TicketService {
     await this.userService.setNewUsersFalse(ticketId);
 
     await this.serverService.sendTicketCloseSMSToServer(ticketId);
+
+    await this.ablyService.publish(TicketUpdates.TICKET_STATUS_UPDATED, {id: ticketId, ticket_status: TicketStatus.CLOSED}, ticketId.toString());
 
     return res;
   }
