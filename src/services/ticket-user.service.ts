@@ -46,6 +46,28 @@ export class TicketUserService {
     return ticketUser;
   }
 
+  /**
+   * Removes a user from a database ticket
+   */
+  async removeUserFromTicket(ticketId: number, uid: string, sendNotification: boolean) {
+    const ticketUserRepo = await getRepository(TicketUser);
+    const ticketUser = await ticketUserRepo.findOne({ ticket: { id: ticketId }, user: { uid } }, { relations: ['user', 'user.userDetail'] });
+
+    // The user is currently on the ticket, so remove them and send a notification if necessary
+    if (ticketUser) {
+      try {
+        await ticketUserRepo.delete({ ticket: { id: ticketId }, user: { uid } });
+        if (sendNotification) {
+          await this.ablyService.publish(TicketUpdates.TICKET_USER_REMOVED, ticketUser, ticketId.toString());
+        }
+      } catch (e) {
+        throw new InternalServerErrorException('an error occured while deleting user from DB');
+      }
+    }
+
+    return ticketUser;
+  }
+
   /** Update subtotal, total, and selected items count for this user */
   async updateTicketUserTotals(ticketId: number, uid: string, manager: EntityManager) {
     const ticketUserRepo = await manager.getRepository(TicketUser);
