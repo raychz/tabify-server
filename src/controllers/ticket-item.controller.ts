@@ -33,6 +33,6 @@ export class TicketItemController {
     ticketId = Number(ticketId);
     ticketUserId = Number(ticketUserId);
     itemId = Number(itemId);
-    return await this.ticketItemService.removeUserFromTicketItem(uid, ticketUserId, itemId, ticketId, true);
+    return await this.ticketItemService.removeUserFromTicketItem(uid, ticketUserId, [itemId], ticketId, true);
   }
 }
