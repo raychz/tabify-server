@@ -26,7 +26,7 @@ export class TicketItemService {
        not ${TicketUserStatus.SELECTING}. Please try again or refresh the app.`);
     }
 
-    itemIds.forEach(async itemId => {
+    for (const itemId of itemIds) {
       const updatedTicketItemUsers: TicketItemUser[] = await retry(
         async (context: AttemptContext, options) => {
           if (context.attemptNum !== 0) {
@@ -105,8 +105,7 @@ export class TicketItemService {
           { name: TicketUpdates.TICKET_USERS_UPDATED, data: updatedTicketUsers },
         ], ticketId.toString());
       }
-
-    });
+    }
     // return { updatedTicketItemUsers, updatedTicketUsers };
     return null;
   }
@@ -118,7 +117,7 @@ export class TicketItemService {
       not ${TicketUserStatus.SELECTING}. Please try again or refresh the app.`);
     }
 
-    await itemIds.forEach(async itemId => {
+    for (const itemId of itemIds) {
       const result: { updatedTicketItemUsers: TicketItemUser[], usersAffected: TicketItemUser[] } = await retry(
         async (context: AttemptContext, options) => {
           if (context.attemptNum !== 0) {
@@ -199,7 +198,7 @@ export class TicketItemService {
           { name: TicketUpdates.TICKET_USERS_UPDATED, data: updatedTicketUsers },
         ], ticketId.toString());
       }
-    });
+    }
     // return { updatedTicketItemUsers: result.updatedTicketItemUsers, updatedTicketUsers };
     return null;
   }
@@ -243,16 +242,14 @@ export class TicketItemService {
         .getMany();
 
       // remove user from all ticket items that they had selected on this ticket
-      if (items.length > 0) {
 
-        // get only the Ids of each item
-        const itemIds: number[] = [];
-        items.forEach(item => {
-          itemIds.push(Number(item.id));
-        });
+      // get only the Ids of each item
+      const itemIds: number[] = [];
+      items.forEach(item => {
+        itemIds.push(Number(item.id));
+      });
 
-        await this.removeUserFromTicketItem(uid, ticketUser.id, itemIds, ticketId, true);
-      }
+      await this.removeUserFromTicketItem(uid, ticketUser.id, itemIds, ticketId, true);
 
       try {
         await ticketUserRepo.delete({ ticket: { id: ticketId }, user: { uid } });
