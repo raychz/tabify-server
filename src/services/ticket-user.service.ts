@@ -1,10 +1,11 @@
 import { Injectable, Logger, BadRequestException, NotFoundException, InternalServerErrorException, ForbiddenException } from '@nestjs/common';
 import { getRepository, getConnection, FindOneOptions, FindConditions, EntityManager, In } from 'typeorm';
-import { TicketUser, Ticket, User, TicketItemUser, TicketItem } from '@tabify/entities';
+import { TicketUser, Ticket, TicketItemUser, TicketItem } from '@tabify/entities';
 import { AblyService, OmnivoreService, TicketTotalService } from '@tabify/services';
 import { TicketUpdates, TicketUserStatus, TicketUserStatusOrder } from '../enums';
 import * as currency from 'currency.js';
 import { OmnivoreTicketItem, OmnivoreTicketDiscount } from '@tabify/interfaces';
+import { TicketItemUserService } from './ticket-item-user.service';
 
 @Injectable()
 export class TicketUserService {
@@ -55,14 +56,23 @@ export class TicketUserService {
 
     // The user is currently on the ticket, so remove them and send a notification if necessary
     if (ticketUser) {
-      try {
-        await ticketUserRepo.delete({ ticket: { id: ticketId }, user: { uid } });
-        if (sendNotification) {
-          await this.ablyService.publish(TicketUpdates.TICKET_USER_REMOVED, ticketUser, ticketId.toString());
-        }
-      } catch (e) {
-        throw new InternalServerErrorException('an error occured while deleting user from DB');
-      }
+      // get all ticket items that the user is part of
+      const ticketItemRepo = await getRepository(TicketItem);
+      const itemIds = await ticketItemRepo.createQueryBuilder('ticketItem')
+        .innerJoin('ticketItem.users', 'ticketUser', 'ticketUser.user = :uid', { uid })
+        .where('ticketItem.ticket = :ticketId', { ticketId })
+        .getMany();
+
+      // remove user from all ticket items that they had selected on this
+
+      //   try {
+      //     await ticketUserRepo.delete({ ticket: { id: ticketId }, user: { uid } });
+      //     if (sendNotification) {
+      //       await this.ablyService.publish(TicketUpdates.TICKET_USER_REMOVED, ticketUser, ticketId.toString());
+      //     }
+      //   } catch (e) {
+      //     throw new InternalServerErrorException('An error occured while deleting ticket user from DB.');
+      //   }
     }
 
     return ticketUser;
