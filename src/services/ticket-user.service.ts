@@ -5,7 +5,7 @@ import { AblyService, OmnivoreService, TicketTotalService } from '@tabify/servic
 import { TicketUpdates, TicketUserStatus, TicketUserStatusOrder } from '../enums';
 import * as currency from 'currency.js';
 import { OmnivoreTicketItem, OmnivoreTicketDiscount } from '@tabify/interfaces';
-import { TicketItemUserService } from './ticket-item-user.service';
+// import { TicketItemService } from './ticket-item.service';
 
 @Injectable()
 export class TicketUserService {
@@ -13,6 +13,7 @@ export class TicketUserService {
     private readonly ablyService: AblyService,
     private readonly ticketTotalService: TicketTotalService,
     private readonly omnivoreService: OmnivoreService,
+    // private readonly ticketItemService: TicketItemService,
   ) { }
 
   async getTicketUserByTicketUserId(ticketUserId: number) {
@@ -58,21 +59,31 @@ export class TicketUserService {
     if (ticketUser) {
       // get all ticket items that the user is part of
       const ticketItemRepo = await getRepository(TicketItem);
-      const itemIds = await ticketItemRepo.createQueryBuilder('ticketItem')
+      const items = await ticketItemRepo.createQueryBuilder('ticketItem')
         .innerJoin('ticketItem.users', 'ticketUser', 'ticketUser.user = :uid', { uid })
         .where('ticketItem.ticket = :ticketId', { ticketId })
         .getMany();
 
-      // remove user from all ticket items that they had selected on this
+      // remove user from all ticket items that they had selected on this ticket
+      if (items.length > 0) {
 
-      //   try {
-      //     await ticketUserRepo.delete({ ticket: { id: ticketId }, user: { uid } });
-      //     if (sendNotification) {
-      //       await this.ablyService.publish(TicketUpdates.TICKET_USER_REMOVED, ticketUser, ticketId.toString());
-      //     }
-      //   } catch (e) {
-      //     throw new InternalServerErrorException('An error occured while deleting ticket user from DB.');
-      //   }
+        // get only the Ids of each item
+        const itemIds: number[] = [];
+        items.forEach(item => {
+          itemIds.push(Number(item.id));
+        });
+
+        // await this.ticketItemService.removeUserFromTicketItem(uid, ticketUser.id, itemIds, ticketId, true);
+      }
+
+      try {
+        await ticketUserRepo.delete({ ticket: { id: ticketId }, user: { uid } });
+        if (sendNotification) {
+          await this.ablyService.publish(TicketUpdates.TICKET_USER_REMOVED, ticketUser, ticketId.toString());
+        }
+      } catch (e) {
+        throw new InternalServerErrorException('An error occured while deleting ticket user from DB.');
+      }
     }
 
     return ticketUser;
