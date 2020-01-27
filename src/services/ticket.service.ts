@@ -144,7 +144,7 @@ export class TicketService {
 
     await this.serverService.sendTicketCloseSMSToServer(ticketId);
 
-    await this.ablyService.publish(TicketUpdates.TICKET_STATUS_UPDATED, {id: ticketId, ticket_status: TicketStatus.CLOSED}, ticketId.toString());
+    await this.ablyService.publish(TicketUpdates.TICKET_UPDATED, {id: ticketId, ticket_status: TicketStatus.CLOSED}, ticketId.toString());
 
     return res;
   }
