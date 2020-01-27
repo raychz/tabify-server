@@ -19,91 +19,96 @@ export class TicketItemService {
 
   constructor(private ticketUserService: TicketUserService, private readonly ablyService: AblyService, private userService: UserService) { }
 
-  async addUserToTicketItem(uid: string, ticketUserId: number, itemId: number, ticketId: number, sendNotification: boolean) {
+  async addUserToTicketItem(uid: string, ticketUserId: number, itemIds: number[], ticketId: number, sendNotification: boolean) {
     const ticketUser = await this.ticketUserService.getTicketUserByTicketUserId(ticketUserId);
     if (ticketUser.status !== TicketUserStatus.SELECTING) {
-      throw new BadRequestException(`This user cannot modify their selections because their status is ${ticketUser.status}, not ${TicketUserStatus.SELECTING}. Please try again or refresh the app.`);
+      throw new BadRequestException(`This user cannot modify their selections because their status is ${ticketUser.status},
+       not ${TicketUserStatus.SELECTING}. Please try again or refresh the app.`);
     }
 
-    const updatedTicketItemUsers: TicketItemUser[] = await retry(
-      async (context: AttemptContext, options) => {
-        if (context.attemptNum !== 0) {
-          Logger.error(
-            `A failure occurred. Making attempt #${context.attemptNum + 1} of adding user to ticket item.
+    itemIds.forEach(async itemId => {
+      const updatedTicketItemUsers: TicketItemUser[] = await retry(
+        async (context: AttemptContext, options) => {
+          if (context.attemptNum !== 0) {
+            Logger.error(
+              `A failure occurred. Making attempt #${context.attemptNum + 1} of adding user to ticket item.
             Attempts remaining: ${context.attemptsRemaining}.`,
-            undefined,
-            'addUserToTicketItem:updatedTicketItemUsers',
-            true,
-          );
-        }
-        return await getConnection().transaction(async transactionalEntityManager => {
-          // Get existing users for this ticket item and lock the rows for update using pessimistic_write
-          const ticketItemUsers = await this.ticketUserService.getTicketItemUsers(itemId, transactionalEntityManager);
-
-          // Check if the current user has already claimed this item
-          const hasCurrentUser = ticketItemUsers.find(ticketItemUser => ticketItemUser.user.uid === uid);
-          if (hasCurrentUser) {
-            throw new BadRequestException('This item has already been added to your tab.');
-          }
-
-          // Get associated ticket item
-          const ticketItem = await this.getTicketItem(itemId, transactionalEntityManager);
-
-          // Add current user to array of ticket item users
-          const newTicketItemUser: TicketItemUser = { ticketItem: { id: ticketItem.id }, user: await this.userService.getUser(uid), price: 0 };
-          ticketItemUsers.push(newTicketItemUser);
-
-          // Evenly distribute the cost of the item amongst the ticket item users
-          this.distributeItemPrice(ticketItem.price!, ticketItemUsers);
-
-          // Insert new ticket item user
-          const ticketItemUserRepo = await transactionalEntityManager.getRepository(TicketItemUser);
-          const { identifiers: [inserted] } = await ticketItemUserRepo.insert(newTicketItemUser);
-          newTicketItemUser.id = inserted.id;
-
-          // Update price of all ticket item users, EXCEPT for the newly created one, which was inserted above
-          if (ticketItemUsers.length > 1) {
-            const ticketItemUsersToUpdate = ticketItemUsers.slice(0, -1);
-            await Promise.all(ticketItemUsersToUpdate.map(u => ticketItemUserRepo.update(u.id!, { price: u.price })));
-          }
-          return ticketItemUsers;
-        });
-      }, this.retryOptions);
-
-    const updatedTicketUsers: TicketUser[] = await retry(
-      async (context: AttemptContext, options) => {
-        if (context.attemptNum !== 0) {
-          Logger.error(
-            `A failure occurred. Making attempt #${context.attemptNum + 1} of updating ticket users after adding user to ticket item..
-            Attempts remaining: ${context.attemptsRemaining}.`,
-            undefined,
-            'addUserToTicketItem:updatedTicketUsers',
-            true,
-          );
-        }
-        return await getConnection().transaction(async transactionalEntityManager => {
-          // Update subtotals for each user on this item;
-          // get their items and get their TicketUser entity and update the price to be the sum of the items
-          const ticketUsers = [];
-          for (const updatedTicketItemUser of updatedTicketItemUsers) {
-            const updatedTicketUser = await this.ticketUserService.updateTicketUserTotals(
-              ticketId,
-              updatedTicketItemUser.user.uid,
-              transactionalEntityManager,
+              undefined,
+              'addUserToTicketItem:updatedTicketItemUsers',
+              true,
             );
-            ticketUsers.push(updatedTicketUser);
           }
-          return ticketUsers;
-        });
-      }, this.retryOptions);
+          return await getConnection().transaction(async transactionalEntityManager => {
+            // Get existing users for this ticket item and lock the rows for update using pessimistic_write
+            const ticketItemUsers = await this.ticketUserService.getTicketItemUsers(itemId, transactionalEntityManager);
 
-    if (sendNotification) {
-      await this.ablyService.publish(TicketUpdates.MULTIPLE_UPDATES, [
-        { name: TicketUpdates.TICKET_ITEM_USERS_REPLACED, data: { newTicketItemUsers: updatedTicketItemUsers, itemId } },
-        { name: TicketUpdates.TICKET_USERS_UPDATED, data: updatedTicketUsers },
-      ], ticketId.toString());
-    }
-    return { updatedTicketItemUsers, updatedTicketUsers };
+            // Check if the current user has already claimed this item
+            const hasCurrentUser = ticketItemUsers.find(ticketItemUser => ticketItemUser.user.uid === uid);
+            if (hasCurrentUser) {
+              throw new BadRequestException('This item has already been added to your tab.');
+            }
+
+            // Get associated ticket item
+            const ticketItem = await this.getTicketItem(itemId, transactionalEntityManager);
+
+            // Add current user to array of ticket item users
+            const newTicketItemUser: TicketItemUser = { ticketItem: { id: ticketItem.id }, user: await this.userService.getUser(uid), price: 0 };
+            ticketItemUsers.push(newTicketItemUser);
+
+            // Evenly distribute the cost of the item amongst the ticket item users
+            this.distributeItemPrice(ticketItem.price!, ticketItemUsers);
+
+            // Insert new ticket item user
+            const ticketItemUserRepo = await transactionalEntityManager.getRepository(TicketItemUser);
+            const { identifiers: [inserted] } = await ticketItemUserRepo.insert(newTicketItemUser);
+            newTicketItemUser.id = inserted.id;
+
+            // Update price of all ticket item users, EXCEPT for the newly created one, which was inserted above
+            if (ticketItemUsers.length > 1) {
+              const ticketItemUsersToUpdate = ticketItemUsers.slice(0, -1);
+              await Promise.all(ticketItemUsersToUpdate.map(u => ticketItemUserRepo.update(u.id!, { price: u.price })));
+            }
+            return ticketItemUsers;
+          });
+        }, this.retryOptions);
+
+      const updatedTicketUsers: TicketUser[] = await retry(
+        async (context: AttemptContext, options) => {
+          if (context.attemptNum !== 0) {
+            Logger.error(
+              `A failure occurred. Making attempt #${context.attemptNum + 1} of updating ticket users after adding user to ticket item..
+            Attempts remaining: ${context.attemptsRemaining}.`,
+              undefined,
+              'addUserToTicketItem:updatedTicketUsers',
+              true,
+            );
+          }
+          return await getConnection().transaction(async transactionalEntityManager => {
+            // Update subtotals for each user on this item;
+            // get their items and get their TicketUser entity and update the price to be the sum of the items
+            const ticketUsers = [];
+            for (const updatedTicketItemUser of updatedTicketItemUsers) {
+              const updatedTicketUser = await this.ticketUserService.updateTicketUserTotals(
+                ticketId,
+                updatedTicketItemUser.user.uid,
+                transactionalEntityManager,
+              );
+              ticketUsers.push(updatedTicketUser);
+            }
+            return ticketUsers;
+          });
+        }, this.retryOptions);
+
+      if (sendNotification) {
+        await this.ablyService.publish(TicketUpdates.MULTIPLE_UPDATES, [
+          { name: TicketUpdates.TICKET_ITEM_USERS_REPLACED, data: { newTicketItemUsers: updatedTicketItemUsers, itemId } },
+          { name: TicketUpdates.TICKET_USERS_UPDATED, data: updatedTicketUsers },
+        ], ticketId.toString());
+      }
+
+    });
+    // return { updatedTicketItemUsers, updatedTicketUsers };
+    return null;
   }
 
   async removeUserFromTicketItem(uid: string, ticketUserId: number, itemIds: number[], ticketId: number, sendNotification: boolean) {
@@ -195,7 +200,6 @@ export class TicketItemService {
         ], ticketId.toString());
       }
     });
-
     // return { updatedTicketItemUsers: result.updatedTicketItemUsers, updatedTicketUsers };
     return null;
   }
