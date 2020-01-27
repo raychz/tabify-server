@@ -98,7 +98,7 @@ export class TicketPaymentService {
         tax: responseTicket.totals.tax,
         tips: responseTicket.totals.tips,
         total: responseTicket.totals.total,
-      });
+      }, details.ticket.id!);
     } else {
       Logger.error(response, 'Error occurred while parsing the Omnivore response');
 

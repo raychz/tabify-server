@@ -176,7 +176,7 @@ export class TicketUserService {
                 tax: totals.tax,
                 tips: totals.tips,
                 total: totals.total,
-              });
+              }, ticketId);
               Logger.log(response, 'The updated ticket with discount');
             } catch (e) {
               Logger.error(e, undefined, 'An error occurred while adding the discount ticket item');
