@@ -1,11 +1,10 @@
-import { Injectable, Logger, BadRequestException, NotFoundException, InternalServerErrorException, ForbiddenException } from '@nestjs/common';
-import { getRepository, getConnection, FindOneOptions, FindConditions, EntityManager, In } from 'typeorm';
+import { Injectable, Logger, BadRequestException, InternalServerErrorException, ForbiddenException } from '@nestjs/common';
+import { getRepository, getConnection, EntityManager } from 'typeorm';
 import { TicketUser, Ticket, TicketItemUser, TicketItem } from '@tabify/entities';
 import { AblyService, OmnivoreService, TicketTotalService } from '@tabify/services';
 import { TicketUpdates, TicketUserStatus, TicketUserStatusOrder } from '../enums';
 import * as currency from 'currency.js';
-import { OmnivoreTicketItem, OmnivoreTicketDiscount } from '@tabify/interfaces';
-// import { TicketItemService } from './ticket-item.service';
+import { OmnivoreTicketDiscount } from '@tabify/interfaces';
 
 @Injectable()
 export class TicketUserService {
@@ -13,7 +12,6 @@ export class TicketUserService {
     private readonly ablyService: AblyService,
     private readonly ticketTotalService: TicketTotalService,
     private readonly omnivoreService: OmnivoreService,
-    // private readonly ticketItemService: TicketItemService,
   ) { }
 
   async getTicketUserByTicketUserId(ticketUserId: number) {
@@ -42,47 +40,6 @@ export class TicketUserService {
       ticketUser = await ticketUserRepo.findOneOrFail({ ticket: { id: ticketId }, user: { uid } }, { relations: ['user', 'user.userDetail'] });
       if (sendNotification) {
         await this.ablyService.publish(TicketUpdates.TICKET_USER_ADDED, ticketUser, ticketId.toString());
-      }
-    }
-
-    return ticketUser;
-  }
-
-  /**
-   * Removes a user from a database ticket
-   */
-  async removeUserFromTicket(ticketId: number, uid: string, sendNotification: boolean) {
-    const ticketUserRepo = await getRepository(TicketUser);
-    const ticketUser = await ticketUserRepo.findOne({ ticket: { id: ticketId }, user: { uid } }, { relations: ['user', 'user.userDetail'] });
-
-    // The user is currently on the ticket, so remove them and send a notification if necessary
-    if (ticketUser) {
-      // get all ticket items that the user is part of
-      const ticketItemRepo = await getRepository(TicketItem);
-      const items = await ticketItemRepo.createQueryBuilder('ticketItem')
-        .innerJoin('ticketItem.users', 'ticketUser', 'ticketUser.user = :uid', { uid })
-        .where('ticketItem.ticket = :ticketId', { ticketId })
-        .getMany();
-
-      // remove user from all ticket items that they had selected on this ticket
-      if (items.length > 0) {
-
-        // get only the Ids of each item
-        const itemIds: number[] = [];
-        items.forEach(item => {
-          itemIds.push(Number(item.id));
-        });
-
-        // await this.ticketItemService.removeUserFromTicketItem(uid, ticketUser.id, itemIds, ticketId, true);
-      }
-
-      try {
-        await ticketUserRepo.delete({ ticket: { id: ticketId }, user: { uid } });
-        if (sendNotification) {
-          await this.ablyService.publish(TicketUpdates.TICKET_USER_REMOVED, ticketUser, ticketId.toString());
-        }
-      } catch (e) {
-        throw new InternalServerErrorException('An error occured while deleting ticket user from DB.');
       }
     }
 

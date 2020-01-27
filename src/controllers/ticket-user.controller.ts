@@ -1,12 +1,13 @@
 import { Get, Controller, Query, Res, Post, Body, Put, Param, Patch, BadRequestException, Delete } from '@nestjs/common';
 import { User } from '../decorators/user.decorator';
-import { TicketUserService } from '@tabify/services';
+import { TicketUserService, TicketItemService } from '@tabify/services';
 import { TicketUserStatus } from '../enums';
 
 @Controller('tickets/:ticketId/users')
 export class TicketUserController {
   constructor(
     private readonly ticketUserService: TicketUserService,
+    private readonly ticketItemService: TicketItemService,
   ) { }
 
   /** Adds user to Tabify database ticket */
@@ -25,7 +26,7 @@ export class TicketUserController {
     @User('uid') uid: string,
     @Param('ticketId') ticketId: number,
   ) {
-    const ticketUser = await this.ticketUserService.removeUserFromTicket(ticketId, uid, true);
+    const ticketUser = await this.ticketItemService.removeUserFromTicket(ticketId, uid, true);
     return ticketUser;
   }
 

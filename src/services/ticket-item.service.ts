@@ -1,4 +1,4 @@
-import { Injectable, ConflictException, BadRequestException, Logger } from '@nestjs/common';
+import { Injectable, ConflictException, BadRequestException, Logger, InternalServerErrorException } from '@nestjs/common';
 import { getRepository, getConnection, EntityManager, In } from 'typeorm';
 import { TicketItemUser, TicketItem, User, TicketUser, Ticket } from '@tabify/entities';
 import { AblyService, TicketUserService, UserService } from '@tabify/services';
@@ -118,7 +118,7 @@ export class TicketItemService {
       not ${TicketUserStatus.SELECTING}. Please try again or refresh the app.`);
     }
 
-    itemIds.forEach(async itemId => {
+    await itemIds.forEach(async itemId => {
       const result: { updatedTicketItemUsers: TicketItemUser[], usersAffected: TicketItemUser[] } = await retry(
         async (context: AttemptContext, options) => {
           if (context.attemptNum !== 0) {
@@ -223,5 +223,47 @@ export class TicketItemService {
     currency(price / 100)
       .distribute(ticketItemUsers.length)
       .forEach((d, index) => ticketItemUsers[index].price = d.intValue);
+  }
+
+  /**
+   * Removes a user from a database ticket, and removes the user from all items of the ticket that
+   * they were a part of
+   */
+  async removeUserFromTicket(ticketId: number, uid: string, sendNotification: boolean) {
+    const ticketUserRepo = await getRepository(TicketUser);
+    const ticketUser = await ticketUserRepo.findOne({ ticket: { id: ticketId }, user: { uid } }, { relations: ['user', 'user.userDetail'] });
+
+    // The user is currently on the ticket, so remove them and send a notification if necessary
+    if (ticketUser) {
+      // get all ticket items that the user is part of
+      const ticketItemRepo = await getRepository(TicketItem);
+      const items = await ticketItemRepo.createQueryBuilder('ticketItem')
+        .innerJoin('ticketItem.users', 'ticketUser', 'ticketUser.user = :uid', { uid })
+        .where('ticketItem.ticket = :ticketId', { ticketId })
+        .getMany();
+
+      // remove user from all ticket items that they had selected on this ticket
+      if (items.length > 0) {
+
+        // get only the Ids of each item
+        const itemIds: number[] = [];
+        items.forEach(item => {
+          itemIds.push(Number(item.id));
+        });
+
+        await this.removeUserFromTicketItem(uid, ticketUser.id, itemIds, ticketId, true);
+      }
+
+      try {
+        await ticketUserRepo.delete({ ticket: { id: ticketId }, user: { uid } });
+        if (sendNotification) {
+          await this.ablyService.publish(TicketUpdates.TICKET_USER_REMOVED, ticketUser, ticketId.toString());
+        }
+      } catch (e) {
+        throw new InternalServerErrorException('An error occured while deleting ticket user from DB.');
+      }
+    }
+
+    return ticketUser;
   }
 }
