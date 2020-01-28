@@ -1,5 +1,5 @@
 import { Injectable, Logger, BadRequestException, NotFoundException, InternalServerErrorException } from '@nestjs/common';
-import { getRepository, getConnection, FindOneOptions, FindConditions, InsertResult } from 'typeorm';
+import { getRepository, getConnection, FindOneOptions, FindConditions, InsertResult, MoreThanOrEqual } from 'typeorm';
 import { auth } from 'firebase-admin';
 import { FirebaseService, OmnivoreService, UserService, SMSService, ServerService } from '@tabify/services';
 import {
@@ -55,8 +55,14 @@ export class TicketService {
    * @param ticket
    */
   async createTicket(ticket: TicketEntity, relations: string[]) {
+
+    // see if a ticket was created in the last 6 hours
+    const date = new Date();
+    date.setUTCHours(date.getUTCHours() - 6);
+
     const ticketFindOptions = {
-      where: { location: ticket.location, tab_id: ticket.tab_id, ticket_number: ticket.ticket_number, ticket_status: TicketStatus.OPEN },
+      where: { location: ticket.location, tab_id: ticket.tab_id, ticket_number: ticket.ticket_number,
+        ticket_status: TicketStatus.OPEN, date_created: MoreThanOrEqual(date) },
       relations,
       lock: { mode: 'pessimistic_write' },
     };

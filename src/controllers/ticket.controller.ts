@@ -1,4 +1,4 @@
-import { Get, Controller, Query, Res, Post, Body, Put, Param, BadRequestException, NotFoundException, NotImplementedException, HttpStatus } from '@nestjs/common';
+import { Get, Controller, Query, Res, Post, Body, Put, Param, BadRequestException, NotFoundException, NotImplementedException, HttpStatus, Logger } from '@nestjs/common';
 import { FirebaseService, FraudPreventionCodeService, TicketService, OmnivoreService, StoryService, TicketUserService } from '@tabify/services';
 import { User } from '../decorators/user.decorator';
 import { Response } from 'express';
@@ -34,19 +34,20 @@ export class TicketController {
     return ticket;
   }
 
-  @Get('openedToday/:openedToday')
+  @Get()
   async getTicket(
     @User('uid') uid: string,
-    @Param('openedToday') openedToday: boolean,
     @Query() params: any,
   ) {
-    const { id, ticket_number, location } = params;
+    const { opened_recently, id, ticket_number, location } = params;
 
-    // get ticket that was created today
-    if (openedToday) {
-      const startOfDay = new Date();
-      startOfDay.setUTCHours(0, 0, 0, 0);
-      params.date_created = MoreThanOrEqual(startOfDay);
+    // get ticket that was created in the last 6 hours
+    if (opened_recently) {
+      Logger.log('inside if');
+      const date = new Date();
+      date.setUTCHours(date.getUTCHours() - 6);
+      delete params.opened_recently;
+      params.date_created = MoreThanOrEqual(date);
     }
 
     if (!location && (!ticket_number || !id)) {
