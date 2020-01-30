@@ -75,7 +75,7 @@ export class TicketController {
     );
 
     // Create ticket in our database
-    const { created, ticket: newTicket } = await this.ticketService.createTicket(omnivoreTicket, check_opened_recently,
+    const { created, ticket: newTicket } = await this.ticketService.createTicket(omnivoreTicket, Boolean(JSON.parse(check_opened_recently)),
       ['items', 'server', 'items.users', 'items.users.user', 'items.users.user.userDetail', 'location', 'users', 'users.user', 'users.user.userDetail', 'ticketTotal'],
     );
 
