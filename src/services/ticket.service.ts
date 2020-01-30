@@ -56,7 +56,8 @@ export class TicketService {
    */
   async createTicket(ticket: TicketEntity, check_opened_recenlty: boolean, relations: string[]) {
 
-    const where: any = { location: ticket.location, tab_id: ticket.tab_id, ticket_number: ticket.ticket_number, ticket_status: TicketStatus.OPEN };
+    const where: FindConditions<TicketEntity> = { location: ticket.location, tab_id: ticket.tab_id,
+      ticket_number: ticket.ticket_number, ticket_status: TicketStatus.OPEN };
 
     // see if a ticket was created in the last 6 hours
     if (check_opened_recenlty) {
