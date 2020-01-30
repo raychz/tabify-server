@@ -45,9 +45,9 @@ export class TicketController {
     if (Boolean(JSON.parse(opened_recently))) {
       const date = new Date();
       date.setUTCHours(date.getUTCHours() - 6);
-      delete params.opened_recently;
       params.date_created = MoreThanOrEqual(date);
     }
+    delete params.opened_recently;
 
     if (!location && (!ticket_number || !id)) {
       throw new BadRequestException('Missing ticket number and/or location');

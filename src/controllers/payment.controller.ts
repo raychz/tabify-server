@@ -2,7 +2,6 @@ import { Get, Controller, Body, Param, Post, Delete, Res } from '@nestjs/common'
 import { PaymentMethodService, SpreedlyService, TicketService, TicketPaymentService } from '@tabify/services';
 import { User } from '../decorators/user.decorator';
 import { Ticket } from '@tabify/entities';
-import { MoreThanOrEqual } from 'typeorm';
 
 @Controller('tickets/:ticketId/payments')
 export class PaymentController {
