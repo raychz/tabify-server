@@ -42,8 +42,7 @@ export class TicketController {
     const { opened_recently, id, ticket_number, location } = params;
 
     // get ticket that was created in the last 6 hours
-    if (opened_recently) {
-      Logger.log('inside if');
+    if (Boolean(JSON.parse(opened_recently))) {
       const date = new Date();
       date.setUTCHours(date.getUTCHours() - 6);
       delete params.opened_recently;

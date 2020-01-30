@@ -85,4 +85,5 @@ export class Ticket {
 
   @OneToMany(type => ServerReward, serverReward => serverReward.ticket)
   serverReward?: ServerReward;
+  where: any;
 }
