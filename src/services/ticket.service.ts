@@ -54,15 +54,19 @@ export class TicketService {
    * Creates the ticket, returns it if it already exists
    * @param ticket
    */
-  async createTicket(ticket: TicketEntity, relations: string[]) {
+  async createTicket(ticket: TicketEntity, check_opened_recenlty: boolean, relations: string[]) {
+
+    const where: any = { location: ticket.location, tab_id: ticket.tab_id, ticket_number: ticket.ticket_number, ticket_status: TicketStatus.OPEN };
 
     // see if a ticket was created in the last 6 hours
-    const date = new Date();
-    date.setUTCHours(date.getUTCHours() - 6);
+    if (check_opened_recenlty) {
+      const date = new Date();
+      date.setUTCHours(date.getUTCHours() - 6);
+      where.date_created = MoreThanOrEqual(date);
+    }
 
     const ticketFindOptions = {
-      where: { location: ticket.location, tab_id: ticket.tab_id, ticket_number: ticket.ticket_number,
-        ticket_status: TicketStatus.OPEN, date_created: MoreThanOrEqual(date) },
+      where,
       relations,
       lock: { mode: 'pessimistic_write' },
     };
