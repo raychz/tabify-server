@@ -1,7 +1,7 @@
 import { Injectable, Logger, BadRequestException, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { getRepository, getConnection, FindOneOptions, FindConditions, InsertResult } from 'typeorm';
 import { auth } from 'firebase-admin';
-import { FirebaseService, OmnivoreService, UserService, SMSService, ServerService } from '@tabify/services';
+import { FirebaseService, OmnivoreService, UserService, SMSService, ServerService, AblyService } from '@tabify/services';
 import {
   Ticket as TicketEntity,
   TicketItem as TicketItemEntity,
@@ -10,7 +10,6 @@ import {
   TicketTotal,
 } from '@tabify/entities';
 import { TicketStatus, TicketUpdates } from '../enums';
-import { AblyService } from './ably.service';
 
 @Injectable()
 export class TicketService {

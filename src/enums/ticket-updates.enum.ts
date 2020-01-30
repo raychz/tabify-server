@@ -2,7 +2,7 @@ export enum TicketUpdates {
     /** Used to bundle multiple messages together */
     MULTIPLE_UPDATES = 'MULTIPLE_UPDATES',
 
-    //cTicket-related updates
+    // Ticket-related updates
     /** The stats of the ticket changed and should be represented as such */
     TICKET_UPDATED = 'TICKET_UPDATED',
 
