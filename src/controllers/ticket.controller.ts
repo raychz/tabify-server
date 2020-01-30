@@ -66,7 +66,7 @@ export class TicketController {
 
   @Post()
   async createTicket(@Body() body: any, @Res() res: Response) {
-    const { ticket_number, location, check_opened_recently } = body;
+    const { ticket_number, location, opened_recently } = body;
 
     // Get ticket data from Omnivore
     const omnivoreTicket = await this.omnivoreService.getTicketByTicketNumber(
@@ -75,7 +75,7 @@ export class TicketController {
     );
 
     // Create ticket in our database
-    const { created, ticket: newTicket } = await this.ticketService.createTicket(omnivoreTicket, Boolean(JSON.parse(check_opened_recently)),
+    const { created, ticket: newTicket } = await this.ticketService.createTicket(omnivoreTicket, Boolean(JSON.parse(opened_recently)),
       ['items', 'server', 'items.users', 'items.users.user', 'items.users.user.userDetail', 'location', 'users', 'users.user', 'users.user.userDetail', 'ticketTotal'],
     );
 
