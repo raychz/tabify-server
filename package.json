@@ -42,7 +42,7 @@
     "firebase-admin": "^7.0.0",
     "mysql": "^2.16.0",
     "reflect-metadata": "^0.1.13",
-    "rimraf": "^2.6.2",
+    "rimraf": "^3.0.1",
     "rxjs": "6",
     "rxjs-compat": "6",
     "socket.io": "^2.2.0",
