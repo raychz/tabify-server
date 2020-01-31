@@ -32,8 +32,18 @@ export class PaymentController {
       paymentMethodToken,
       amount,
       tip,
+      paymentMethodId,
     });
 
     return updatedTotal;
+  }
+
+  @Get()
+  async getTicketPaymentsForUser(
+    @User('uid') uid: string,
+    @Param('ticketId') ticketId: number,
+  ) {
+    const res = await this.ticketPaymentService.getTicketPaymentsByUser(ticketId, uid);
+    return res;
   }
 }
