@@ -42,7 +42,7 @@ export class TicketController {
     const { opened_recently, id, ticket_number, location } = params;
 
     // get ticket that was created in the last 6 hours
-    if (Boolean(JSON.parse(opened_recently))) {
+    if (opened_recently && Boolean(JSON.parse(opened_recently))) {
       const date = new Date();
       date.setUTCHours(date.getUTCHours() - 6);
       params.date_created = MoreThanOrEqual(date);
@@ -74,8 +74,9 @@ export class TicketController {
       ticket_number
     );
 
+    const openedRecently = opened_recently && Boolean(JSON.parse(opened_recently));
     // Create ticket in our database
-    const { created, ticket: newTicket } = await this.ticketService.createTicket(omnivoreTicket, Boolean(JSON.parse(opened_recently)),
+    const { created, ticket: newTicket } = await this.ticketService.createTicket(omnivoreTicket, openedRecently,
       ['items', 'server', 'items.users', 'items.users.user', 'items.users.user.userDetail', 'location', 'users', 'users.user', 'users.user.userDetail', 'ticketTotal'],
     );
 
