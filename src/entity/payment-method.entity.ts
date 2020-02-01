@@ -7,8 +7,10 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   Unique,
+  OneToOne,
 } from 'typeorm';
 import { Ticket, User } from '@tabify/entities';
+import { TicketPayment } from './ticket-payment.entity';
 
 @Entity()
 @Unique(['user', 'fingerprint'])
@@ -54,4 +56,7 @@ export class PaymentMethod {
 
   @UpdateDateColumn()
   date_updated!: Date;
+
+  @OneToMany(type => TicketPayment, ticketPayment => ticketPayment.paymentMethod)
+  ticketPayment!: TicketPayment[];
 }

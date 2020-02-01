@@ -25,15 +25,26 @@ export class PaymentController {
   ) {
     const paymentMethod = await this.paymentMethodService.readPaymentMethod(uid, paymentMethodId);
     const { token: paymentMethodToken } = paymentMethod!;
-    const ticket = await this.ticketService.getTicket({ id: ticketId }, ['location', 'ticketTotal', 'server']) as Ticket;
+    const ticket = await this.ticketService.getTicket({ id: ticketId },
+    ['location', 'ticketTotal', 'server']) as Ticket;
 
     const updatedTotal = await this.ticketPaymentService.sendTicketPayment(uid, {
       ticket,
       paymentMethodToken,
       amount,
       tip,
+      paymentMethodId,
     });
 
     return updatedTotal;
+  }
+
+  @Get()
+  async getTicketPaymentsForUser(
+    @User('uid') uid: string,
+    @Param('ticketId') ticketId: number,
+  ) {
+    const res = await this.ticketPaymentService.getTicketPaymentsByUser(ticketId, uid);
+    return res;
   }
 }

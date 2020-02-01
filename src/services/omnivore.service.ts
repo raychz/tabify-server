@@ -96,6 +96,7 @@ export class OmnivoreService {
       'Content-Type': 'application/json',
       'Api-Key': apiKey!,
     };
+
     // Omnivore query args used here. See https://panel.omnivore.io/docs/api/1.0/queries
     const where = `and(eq(open,true),eq(ticket_number,${encodeURIComponent(String(ticketNumber))}))`;
     const fields = `totals,@employee,@revenue_center,ticket_number,@items(price,name,quantity,comment,sent,sent_at,split)`;

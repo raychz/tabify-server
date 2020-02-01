@@ -6,4 +6,5 @@ export interface TicketPaymentInterface {
     amount: number;
     tip: number;
     comment?: string;
+    paymentMethodId: number;
 }

@@ -1,11 +1,9 @@
 import { Injectable, BadRequestException, InternalServerErrorException, Logger } from '@nestjs/common';
 import { getRepository } from 'typeorm';
 import { TicketPayment, Ticket, User, Server } from '@tabify/entities';
-import { SpreedlyService, TicketService } from '@tabify/services';
+import { SpreedlyService, TicketService, PaymentMethodService, SMSService, TicketTotalService } from '@tabify/services';
 import { TicketPaymentInterface } from '../interfaces';
-import { TicketTotalService } from './ticket-total.service';
 import { TicketPaymentStatus } from '../enums';
-import { SMSService } from './sms.service';
 
 @Injectable()
 export class TicketPaymentService {
@@ -13,17 +11,23 @@ export class TicketPaymentService {
     private spreedlyService: SpreedlyService,
     private ticketService: TicketService,
     private ticketTotalService: TicketTotalService,
+    private paymentMethodService: PaymentMethodService,
     private messageService: SMSService,
   ) { }
 
   async sendTicketPayment(uid: string, details: TicketPaymentInterface) {
     // Create a pending ticket payment
+
+    // grab associated paymentMethod
+    const paymentMethodAssociated = await this.paymentMethodService.readPaymentMethod(uid, details.paymentMethodId);
+
     const { id: ticketPaymentId } = await this.saveTicketPayment({
       ticket: details.ticket,
       ticket_payment_status: TicketPaymentStatus.PENDING,
       user: { uid } as User,
       amount: details.amount,
       tip: details.tip,
+      paymentMethod: paymentMethodAssociated,
     });
 
     // Attempt to send the ticket payment via Spreedly
@@ -130,6 +134,7 @@ export class TicketPaymentService {
         amount: 500,
         paymentMethodToken: details.paymentMethodToken,
         ticket: details.ticket,
+        paymentMethodId: details.paymentMethodId,
         tip: 0,
       });
     }
@@ -159,5 +164,17 @@ export class TicketPaymentService {
   async saveTicketPayment(ticketPayment: TicketPayment) {
     const ticketPaymentRepo = await getRepository(TicketPayment);
     return await ticketPaymentRepo.save(ticketPayment);
+  }
+
+  async getTicketPaymentsByUser(ticketId: number, userId: string) {
+    const ticketPaymentRepo = await getRepository(TicketPayment);
+
+    const payments = await ticketPaymentRepo.find(
+      {
+        where: { ticket: ticketId, user: userId },
+        relations: ['paymentMethod'],
+      });
+
+    return payments;
   }
 }
