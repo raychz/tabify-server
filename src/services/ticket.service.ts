@@ -57,8 +57,10 @@ export class TicketService {
    */
   async createTicket(ticket: TicketEntity, opened_recently: boolean, relations: string[]) {
 
-    const where: FindConditions<TicketEntity> = { location: ticket.location, tab_id: ticket.tab_id,
-      ticket_number: ticket.ticket_number, ticket_status: TicketStatus.OPEN };
+    const where: FindConditions<TicketEntity> = {
+      location: ticket.location, tab_id: ticket.tab_id,
+      ticket_number: ticket.ticket_number, ticket_status: TicketStatus.OPEN,
+    };
 
     // see if a ticket was created in the last 6 hours
     if (opened_recently) {
@@ -154,7 +156,7 @@ export class TicketService {
 
     await this.serverService.sendTicketCloseSMSToServer(ticketId);
 
-    await this.ablyService.publish(TicketUpdates.TICKET_UPDATED, {id: ticketId, ticket_status: TicketStatus.CLOSED}, ticketId.toString());
+    await this.ablyService.publish(TicketUpdates.TICKET_UPDATED, { ticket_status: TicketStatus.CLOSED }, ticketId.toString());
 
     return res;
   }
