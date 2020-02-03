@@ -54,7 +54,8 @@ export class TicketController {
     }
 
     const ticket = await this.ticketService.getTicket(params,
-      ['items', 'items.users', 'items.users.user', 'items.users.user.userDetail', 'location', 'users', 'users.user', 'users.user.userDetail', 'ticketTotal'],
+      ['items', 'items.users', 'items.users.user', 'items.users.user.userDetail', 'location', 'users',
+      'users.selected_coupon', 'users.user', 'users.user.userDetail', 'ticketTotal'],
     );
 
     if (!ticket) {
@@ -77,7 +78,8 @@ export class TicketController {
     const openedRecently = opened_recently && Boolean(JSON.parse(opened_recently));
     // Create ticket in our database
     const { created, ticket: newTicket } = await this.ticketService.createTicket(omnivoreTicket, openedRecently,
-      ['items', 'server', 'items.users', 'items.users.user', 'items.users.user.userDetail', 'location', 'users', 'users.user', 'users.user.userDetail', 'ticketTotal'],
+      ['items', 'items.users', 'server', 'items.users.user', 'items.users.user.userDetail', 'location', 'users', 'users.user',
+      'users.selected_coupon', 'users.user.userDetail', 'ticketTotal'],
     );
 
     if (created) {

@@ -2,9 +2,10 @@ import { Injectable, BadRequestException, InternalServerErrorException, Logger }
 import { getRepository, getManager, EntityManager, In, MoreThanOrEqual, LessThanOrEqual, MoreThan } from 'typeorm';
 import { UserToCoupons, Coupon, User, Location, Ticket, CouponOffOf,
   CouponType, TicketUser, TicketItem, TicketTotal  } from '@tabify/entities';
-import { OmnivoreService, TicketTotalService } from '@tabify/services';
+import { OmnivoreService, TicketTotalService, AblyService } from '@tabify/services';
 import { OmnivoreTicketDiscount } from '@tabify/interfaces';
 import * as currency from 'currency.js';
+import { TicketUpdates } from 'enums';
 
 @Injectable()
 export class CouponService {
@@ -12,6 +13,7 @@ export class CouponService {
     constructor(
       private readonly omnivoreService: OmnivoreService,
       private readonly ticketTotalService: TicketTotalService,
+      private readonly ablyService: AblyService,
     ) { }
 
     // get user's coupons from db
@@ -56,7 +58,7 @@ export class CouponService {
     }
 
     // apply the discount to the ticket
-    async applyDiscount(couponId: number, ticket: Ticket, uid: string): Promise<{coupon: Coupon, res: any}> {
+    async applyDiscount(couponId: number, ticket: Ticket, uid: string): Promise<{coupon: Coupon | undefined, res: any}> {
 
         // find the coupon from the db
           const couponsRepo = await getRepository(Coupon);
@@ -64,7 +66,14 @@ export class CouponService {
 
           // calculate value of the coupon and its validity
           const res = this.calculateCouponWorth(coupon, ticket, uid);
-
+          const ticketUser = ticket.users!.find( user => user.user!.uid === uid)!;
+          // if the user has already applied a coupon, don't let them apply a second one.
+          // silently return rather than throwing an error as to not disrupt the rest of the payment flow
+          // if (ticketUser.selected_coupon) {
+          //   const message = 'User has already applied a coupon, cannot apply a second one.';
+          //   Logger.log(message);
+          //   return {coupon: undefined, res: {valid: false, message, dollar_value: 0, taxDifference: 0}};
+          // }
           // Apply discount on this ticket if it is compatbile
           if (res.valid) {
             const openDiscountId = ticket.location!.open_discount_id!;
@@ -94,14 +103,15 @@ export class CouponService {
               }
 
               // update the ticket user's tax, total, and discount fields
-              const ticketUser = ticket.users!.find( user => user.user!.uid === uid)!;
-
               ticketUser.tax -= actualTaxDifference;
               ticketUser.discounts += res.dollar_value;
               ticketUser.total -= (actualTaxDifference + res.dollar_value);
               ticketUser.selected_coupon = coupon;
               const ticketUserRepo = await getRepository(TicketUser);
-              await ticketUserRepo.save(ticketUser);
+              const updatedTicketUser = await ticketUserRepo.save(ticketUser);
+
+              // send an ably message to signify that the coupon has been applied - disable coupon editing later if payment fails
+              await this.ablyService.publish(TicketUpdates.TICKET_USERS_UPDATED, [updatedTicketUser], String(ticket.id));
 
               // update the ticket totals object with the new totals response
               await this.ticketTotalService.updateTicketTotals({
@@ -116,7 +126,7 @@ export class CouponService {
                 tax: totals.tax,
                 tips: totals.tips,
                 total: totals.total,
-              });
+              }, ticket.id!);
 
               // increment the coupon usage in the database
               const userCouponsRepo = await getRepository(UserToCoupons);
@@ -134,12 +144,65 @@ export class CouponService {
           return {coupon, res};
     }
 
+    private checkCouponRestrictions(coupon: Coupon) {
+      let timeIsValid = true;
+      const couponRestrictions = coupon.coupon_restrictions;
+      if (couponRestrictions) {
+        const now = new Date();
+        if (couponRestrictions.validTimes) {
+          const validTimes: any[] = couponRestrictions.validTimes[now.getDay()];
+          if (validTimes) {
+            timeIsValid = false;
+            for (const validTime of validTimes) {
+              const validStartTime = new Date();
+              const startTime = validTime.startTime.split(':');
+              validStartTime.setHours(startTime[0], startTime[1], startTime[2]);
+              const validEndTime = new Date();
+              const endTime = validTime.endTime.split(':');
+              validEndTime.setHours(endTime[0], endTime[1], endTime[2]);
+              if (now.getTime() >= validStartTime.getTime() && now.getTime() <= validEndTime.getTime()) {
+                timeIsValid = true;
+                break;
+              }
+            }
+          }
+        }
+        if (couponRestrictions.invalidTimes && timeIsValid) {
+          const invalidTimes: any[] = couponRestrictions.invalidTimes[now.getDay()];
+          if (invalidTimes) {
+            for (const invalidTime of invalidTimes) {
+              const invalidStartTime = new Date();
+              const startTime = invalidTime.startTime.split(':');
+              invalidStartTime.setHours(startTime[0], startTime[1], startTime[2]);
+              const invalidEndTime = new Date();
+              const endTime = invalidTime.endTime.split(':');
+              invalidEndTime.setHours(endTime[0], endTime[1], endTime[2]);
+              if (now.getTime() >= invalidStartTime.getTime() && now.getTime() <= invalidEndTime.getTime()) {
+                timeIsValid = false;
+                break;
+              }
+            }
+          }
+        }
+      }
+      return timeIsValid;
+    }
+
     private calculateCouponWorth(coupon: Coupon, ticket: Ticket, userUid: string):
     {valid: boolean, message: string | undefined, dollar_value: number, taxDifference: number} {
       let dollar_value = 0;
       let taxDifference = 0;
       let valid = true;
       let message;
+
+      // check if the coupon is valid at the current time
+      if (!this.checkCouponRestrictions(coupon) ||
+      new Date(coupon.coupon_start_date).getTime() > new Date().getTime() ||
+      new Date(coupon.coupon_end_date).getTime() < new Date().getTime()) {
+        valid = false;
+        message = 'Coupon is not valid at the current time';
+        return {valid, message, dollar_value, taxDifference};
+      }
 
       // invalid coupon if open discount id is not provided by the location entity
       if (!ticket.location!.open_discount_id) {

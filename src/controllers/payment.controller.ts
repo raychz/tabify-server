@@ -1,4 +1,4 @@
-import { Get, Controller, Body, Param, Post } from '@nestjs/common';
+import { Get, Controller, Body, Param, Post, BadRequestException } from '@nestjs/common';
 import { PaymentMethodService, TicketService, TicketPaymentService, CouponService } from '@tabify/services';
 import { User } from '../decorators/user.decorator';
 import { Ticket, Coupon } from '@tabify/entities';
@@ -28,7 +28,8 @@ export class PaymentController {
     const paymentMethod = await this.paymentMethodService.readPaymentMethod(uid, paymentMethodId);
     const { token: paymentMethodToken } = paymentMethod!;
     const ticket = await this.ticketService.getTicket({ id: ticketId },
-      ['location', 'ticketTotal', 'server', 'users', 'items', 'items.users', 'users.user', 'items.users.user']) as Ticket;
+      ['location', 'ticketTotal', 'users', 'server', 'items', 'users.selected_coupon', 'items.users',
+      'users.user', 'users.user.userDetail', 'items.users.user']) as Ticket;
 
     let coupon: Coupon | undefined;
     if (couponId) {
@@ -37,16 +38,16 @@ export class PaymentController {
       amount -= (response.res.dollar_value + response.res.taxDifference);
     }
 
-    const updatedTotal = await this.ticketPaymentService.sendTicketPayment(uid, {
-      ticket,
-      paymentMethodToken,
-      amount,
-      tip,
-      coupon,
-      paymentMethodId,
-    });
+    // const updatedTotal = await this.ticketPaymentService.sendTicketPayment(uid, {
+    //   ticket,
+    //   paymentMethodToken,
+    //   amount,
+    //   tip,
+    //   coupon,
+    // });
 
-    return updatedTotal;
+    // return updatedTotal;
+    throw new BadRequestException('fail');
   }
 
   @Get()
