@@ -1,7 +1,7 @@
 import { Injectable, Logger, BadRequestException, NotFoundException, InternalServerErrorException } from '@nestjs/common';
-import { getRepository, getConnection, FindOneOptions, FindConditions, InsertResult } from 'typeorm';
+import { getRepository, getConnection, FindOneOptions, FindConditions, InsertResult, MoreThanOrEqual } from 'typeorm';
 import { auth } from 'firebase-admin';
-import { FirebaseService, OmnivoreService, StoryService } from '@tabify/services';
+import { FirebaseService, OmnivoreService, UserService, SMSService, ServerService, AblyService } from '@tabify/services';
 import {
   Ticket as TicketEntity,
   TicketItem as TicketItemEntity,
@@ -9,10 +9,17 @@ import {
   TicketItem,
   TicketTotal,
 } from '@tabify/entities';
-import { TicketStatus } from '../enums';
+import { TicketStatus, TicketUpdates } from '../enums';
 
 @Injectable()
 export class TicketService {
+
+  constructor(
+    private readonly messageService: SMSService,
+    private readonly serverService: ServerService,
+    private readonly userService: UserService,
+    private readonly ablyService: AblyService,
+  ) { }
 
   /**
    * Attemps to load a ticket from local database if it exists
@@ -48,9 +55,22 @@ export class TicketService {
    * Creates the ticket, returns it if it already exists
    * @param ticket
    */
-  async createTicket(ticket: TicketEntity, relations: string[]) {
+  async createTicket(ticket: TicketEntity, opened_recently: boolean, relations: string[]) {
+
+    const where: FindConditions<TicketEntity> = {
+      location: ticket.location, tab_id: ticket.tab_id,
+      ticket_number: ticket.ticket_number, ticket_status: TicketStatus.OPEN,
+    };
+
+    // see if a ticket was created in the last 6 hours
+    if (opened_recently) {
+      const date = new Date();
+      date.setUTCHours(date.getUTCHours() - 6);
+      where.date_created = MoreThanOrEqual(date);
+    }
+
     const ticketFindOptions = {
-      where: { location: ticket.location, tab_id: ticket.tab_id, ticket_number: ticket.ticket_number, ticket_status: TicketStatus.OPEN },
+      where,
       relations,
       lock: { mode: 'pessimistic_write' },
     };
@@ -98,6 +118,20 @@ export class TicketService {
         Logger.log('Retrieving the created ticket');
         existingTicket = await ticketRepo.findOneOrFail(ticketFindOptions as FindOneOptions<TicketEntity>);
         Logger.log(existingTicket, 'Retrieved the created ticket');
+
+        // upon creation of ticket, send an SMS to the server that users will be using Tabify for this ticket
+        if (existingTicket.server && existingTicket.server.phone) {
+          const ticketNumber = existingTicket.ticket_number;
+          const server = existingTicket.server;
+          const tableName = existingTicket.table_name;
+          const section1 = `Ticket #${ticketNumber} will be paying with Tabify.`;
+          const section2 = tableName ? ` Table/Revenue Center: ${tableName}.` : '';
+          const section3 = server ? ` Server: ${server.firstName}.` : '';
+          const textMsg = section1 + section2 + section3;
+
+          this.messageService.sendSMS(server.phone, textMsg);
+        }
+
         return { created: true, ticket: existingTicket };
       }
     });
@@ -108,12 +142,23 @@ export class TicketService {
    * @param ticketId
    */
   async closeTicket(ticketId: number) {
+
+    // add server rewards for new users referrals
+    await this.serverService.addServerReward(ticketId);
+
     const res = await getConnection()
       .createQueryBuilder()
       .update(TicketEntity)
       .set({ ticket_status: TicketStatus.CLOSED })
       .where('id = :id', { id: ticketId })
       .execute();
+
+    // set newUser status to false on users completing their first ticket
+    await this.userService.setNewUsersFalse(ticketId);
+
+    await this.serverService.sendTicketCloseSMSToServer(ticketId);
+
+    await this.ablyService.publish(TicketUpdates.TICKET_UPDATED, { ticket_status: TicketStatus.CLOSED }, ticketId.toString());
 
     return res;
   }

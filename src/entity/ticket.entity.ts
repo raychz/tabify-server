@@ -13,7 +13,10 @@ import {
   Index,
   UpdateDateColumn,
 } from 'typeorm';
-import { FraudPreventionCode, Location, Story, TicketItem, TicketTotal, TicketPayment, User, TicketUser } from '@tabify/entities';
+import {
+  FraudPreventionCode, Location, Story, TicketItem, TicketTotal, TicketPayment, User, TicketUser, Server,
+  ServerReward,
+} from '@tabify/entities';
 import { TicketStatus } from '../enums/ticket-status.enum';
 
 @Entity()
@@ -71,4 +74,15 @@ export class Ticket {
     cascade: true,
   })
   ticketPayments?: TicketPayment[];
+
+  @ManyToOne(type => Server, server => server.ticket, {
+    nullable: true,
+  })
+  server?: Server;
+
+  @Column({ type: 'varchar', nullable: true })
+  table_name?: string;
+
+  @OneToMany(type => ServerReward, serverReward => serverReward.ticket)
+  serverReward?: ServerReward;
 }

@@ -1,9 +1,8 @@
 import { Injectable, BadRequestException, InternalServerErrorException, Logger } from '@nestjs/common';
 import { getRepository } from 'typeorm';
-import { TicketPayment, Ticket, User } from '@tabify/entities';
-import { SpreedlyService, TicketService } from '@tabify/services';
+import { TicketPayment, Ticket, User, Server } from '@tabify/entities';
+import { SpreedlyService, TicketService, PaymentMethodService, SMSService, TicketTotalService } from '@tabify/services';
 import { TicketPaymentInterface } from '../interfaces';
-import { TicketTotalService } from './ticket-total.service';
 import { TicketPaymentStatus } from '../enums';
 
 @Injectable()
@@ -12,10 +11,16 @@ export class TicketPaymentService {
     private spreedlyService: SpreedlyService,
     private ticketService: TicketService,
     private ticketTotalService: TicketTotalService,
+    private paymentMethodService: PaymentMethodService,
+    private messageService: SMSService,
   ) { }
 
   async sendTicketPayment(uid: string, details: TicketPaymentInterface) {
     // Create a pending ticket payment
+
+    // grab associated paymentMethod
+    const paymentMethodAssociated = await this.paymentMethodService.readPaymentMethod(uid, details.paymentMethodId);
+
     const { id: ticketPaymentId } = await this.saveTicketPayment({
       ticket: details.ticket,
       ticket_payment_status: TicketPaymentStatus.PENDING,
@@ -23,6 +28,7 @@ export class TicketPaymentService {
       amount: details.amount,
       tip: details.tip,
       coupon: details.coupon,
+      paymentMethod: paymentMethodAssociated,
     });
 
     // Attempt to send the ticket payment via Spreedly
@@ -39,6 +45,10 @@ export class TicketPaymentService {
     } catch (error) {
       Logger.error(error);
       // Something went wrong, so update the payment's status to failed
+
+      // send error sms to server
+      this.sendPaymentFailSMSToServer(details);
+
       await this.saveTicketPayment({
         id: ticketPaymentId,
         ticket_payment_status: TicketPaymentStatus.FAILED,
@@ -63,6 +73,10 @@ export class TicketPaymentService {
       });
     } else {
       Logger.error(spreedlyResponse, 'Error occurred while parsing the Spreedly response');
+
+      // send error sms to server
+      this.sendPaymentFailSMSToServer(details);
+
       // Something went wrong, so update the payment's status to failed
       await this.saveTicketPayment({
         id: ticketPaymentId,
@@ -89,9 +103,12 @@ export class TicketPaymentService {
         tax: responseTicket.totals.tax,
         tips: responseTicket.totals.tips,
         total: responseTicket.totals.total,
-      });
+      }, details.ticket.id!);
     } else {
       Logger.error(response, 'Error occurred while parsing the Omnivore response');
+
+      // send error sms to server
+      this.sendPaymentFailSMSToServer(details);
       throw new BadRequestException('This payment could not be processed.', response);
     }
 
@@ -118,7 +135,8 @@ export class TicketPaymentService {
         amount: 500,
         paymentMethodToken: details.paymentMethodToken,
         ticket: details.ticket,
-        tip: details.tip,
+        paymentMethodId: details.paymentMethodId,
+        tip: 0,
       });
     }
 
@@ -128,8 +146,36 @@ export class TicketPaymentService {
     return updatedTicketTotals;
   }
 
+  // send error sms to server
+  async sendPaymentFailSMSToServer(details: TicketPaymentInterface) {
+    if (details.ticket.server && details.ticket.server.phone) {
+      const server = details.ticket.server;
+      const tableName = details.ticket.table_name;
+
+      const section1 = `Ticket #${details.ticket.ticket_number} just had a payment issue with Tabify.`;
+      const section2 = ` Please assist the patrons and verify that the ticket gets paid in full.`;
+      const section3 = tableName ? ` Table/Revenue Center: ${tableName}.` : '';
+      const section4 = server ? ` Server: ${server.firstName}.` : '';
+      const textMsg = section1 + section2 + section3 + section4;
+
+      this.messageService.sendSMS(server.phone, textMsg);
+    }
+  }
+
   async saveTicketPayment(ticketPayment: TicketPayment) {
     const ticketPaymentRepo = await getRepository(TicketPayment);
     return await ticketPaymentRepo.save(ticketPayment);
+  }
+
+  async getTicketPaymentsByUser(ticketId: number, userId: string) {
+    const ticketPaymentRepo = await getRepository(TicketPayment);
+
+    const payments = await ticketPaymentRepo.find(
+      {
+        where: { ticket: ticketId, user: userId },
+        relations: ['paymentMethod'],
+      });
+
+    return payments;
   }
 }

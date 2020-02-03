@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 import { Ticket, User, Coupon } from '@tabify/entities';
 import { TicketPaymentStatus } from '../enums/ticket-payment-status.enum';
+import { PaymentMethod } from './payment-method.entity';
 
 /** Saves the ticket payment metadata that we get back from Omnivore */
 @Entity()
@@ -63,4 +64,6 @@ export class TicketPayment {
 
     @ManyToOne(type => Coupon, coupon => coupon.ticketPayments, { nullable: true })
     coupon?: Coupon;
+    @ManyToOne(type => PaymentMethod, paymentMethod => paymentMethod.ticketPayment)
+    paymentMethod?: PaymentMethod;
 }

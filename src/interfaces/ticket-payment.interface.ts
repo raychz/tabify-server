@@ -7,4 +7,5 @@ export interface TicketPaymentInterface {
     tip: number;
     coupon?: Coupon;
     comment?: string;
+    paymentMethodId: number;
 }

@@ -28,7 +28,7 @@ export class PaymentController {
     const paymentMethod = await this.paymentMethodService.readPaymentMethod(uid, paymentMethodId);
     const { token: paymentMethodToken } = paymentMethod!;
     const ticket = await this.ticketService.getTicket({ id: ticketId },
-      ['location', 'ticketTotal', 'users', 'items', 'items.users', 'users.user', 'items.users.user']) as Ticket;
+      ['location', 'ticketTotal', 'server', 'users', 'items', 'items.users', 'users.user', 'items.users.user']) as Ticket;
 
     let coupon: Coupon | undefined;
     if (couponId) {
@@ -43,8 +43,18 @@ export class PaymentController {
       amount,
       tip,
       coupon,
+      paymentMethodId,
     });
 
     return updatedTotal;
+  }
+
+  @Get()
+  async getTicketPaymentsForUser(
+    @User('uid') uid: string,
+    @Param('ticketId') ticketId: number,
+  ) {
+    const res = await this.ticketPaymentService.getTicketPaymentsByUser(ticketId, uid);
+    return res;
   }
 }

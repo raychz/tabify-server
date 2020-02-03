@@ -1,11 +1,11 @@
 {
   "name": "tabify-server",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Tabify's Nest API and TypeORM database.",
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "format": "prettier --write \"src/**/*.ts\"",
-    "start:dev": "nodemon",
+    "start": "nodemon",
     "prestart:prod": "rimraf dist && npm run build",
     "start:prod": "node -r ./tsconfig-paths-bootstrap.js -r dotenv-safe/config dist/main.js",
     "lint": "tslint -p tsconfig.json -c tslint.json",
@@ -47,6 +47,7 @@
     "rxjs-compat": "6",
     "socket.io": "^2.2.0",
     "tsconfig-paths": "^3.8.0",
+    "twilio": "^3.39.0",
     "typeorm": "^0.2.19",
     "typescript": "3.4.5"
   },

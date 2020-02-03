@@ -60,4 +60,32 @@ export class UserService {
         const user = await userRepo.findOneOrFail(uid, { relations: ['userDetail'] });
         return user;
     }
+
+    // sets newUser of all users part of ticketId to false
+    async setNewUsersFalse(ticketId: number) {
+        const userRepo = getRepository(UserEntity);
+
+        // get all users associated with the ticket
+        const users = await userRepo.createQueryBuilder('user')
+            .innerJoin('user.tickets', 'ticketUser')
+            .innerJoin('ticketUser.ticket', 'ticket')
+            .where('ticket.id = :ticketId', { ticketId })
+            .getMany();
+
+        const userDetailsRepo = await getRepository(UserDetailEntity);
+
+        // extract all uids
+        const userIDs = users.map(user => {
+            return user.uid;
+        });
+
+        // update their newUser status to false
+        const updateNewUsers = await userDetailsRepo.createQueryBuilder()
+            .update()
+            .set({ newUser: false })
+            .where('user.uid IN (:...userIDs)', { userIDs })
+            .execute();
+
+        return updateNewUsers;
+    }
 }
