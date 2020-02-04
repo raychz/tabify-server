@@ -72,6 +72,36 @@ export enum CouponOffOf {
     @Column({ type: 'bool', nullable: false})
     applies_to_everyone!: boolean;
 
+    /**
+     * Coupon restrictions can include both valid (validTimes) and invalid (invalidTimes) days and times,
+     * both json objects have fields 0-6 which corresponds to the days of the week - sunday through saturday.
+     * Not specifying the day in either validTimes or invalidTimes will default to valid for the whole day.
+     * The value of these fields are an array of objects with startTime and endTime properties,
+     * these times represents the range(s) for when the coupon is valid on the given day.
+     *
+     * Example:
+     *
+     * Formatted JSON Data
+     *   {
+     *     "validTimes":{
+     *         "1":[
+     *           {
+     *               "startTime":"13:00:00",
+     *               "endTime":"17:70:00"
+     *           }
+     *         ]
+     *     },
+     *     "invalidTimes":{
+     *         "2":[
+     *           {
+     *               "startTime":"10:00:00",
+     *               "endTime":"12:00:00"
+     *           }
+     *         ]
+     *     }
+     *   }
+     *
+     */
     @Column({ type: 'json', nullable: true})
     coupon_restrictions?: any;
 
