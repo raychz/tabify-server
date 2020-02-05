@@ -2,6 +2,8 @@ import { Get, Controller, Query, Res, Post, Body, Put, Param, Patch, BadRequestE
 import { User } from '../decorators/user.decorator';
 import { TicketUserService, TicketItemService } from '@tabify/services';
 import { TicketUserStatus } from '../enums';
+import { getRepository } from 'typeorm';
+import { TicketItemUser, TicketItem, TicketUser, Ticket } from '@tabify/entities';
 
 @Controller('tickets/:ticketId/users')
 export class TicketUserController {
@@ -28,6 +30,23 @@ export class TicketUserController {
   ) {
     const ticketUser = await this.ticketItemService.removeUserFromTicket(ticketId, uid, true);
     return ticketUser;
+  }
+
+  /** Delete user from Tabify database ticket */
+  @Delete('/:ticketUserId')
+  async removeUserFromAllItemsOnTicket(
+    @User('uid') uid: string,
+    @Param('ticketId') ticketId: number,
+    @Param('ticketUserId') ticketUserId: number,
+  ) {
+    ticketId = Number(ticketId);
+    const ticketItemRepo = await getRepository(TicketItem);
+    const items = await ticketItemRepo.find({ ticket: { id: ticketId } });
+    const itemIds: number[] = [];
+    items.forEach(item => {
+      itemIds.push(Number(item.id));
+    });
+    return await this.ticketItemService.removeUserFromTicketItem(uid, ticketUserId, itemIds, ticketId, true);
   }
 
   @Patch()

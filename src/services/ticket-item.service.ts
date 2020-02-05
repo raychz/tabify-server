@@ -110,15 +110,21 @@ export class TicketItemService {
     return null;
   }
 
+  // removes user from items (itemIds is an array)
   async removeUserFromTicketItem(uid: string, ticketUserId: number, itemIds: number[], ticketId: number, sendNotification: boolean) {
     const ticketUser = await this.ticketUserService.getTicketUserByTicketUserId(ticketUserId);
+
+    let updatedTicketItemUsersGlobal: TicketItemUser[] = [];
+    let uidsAffectedGlobal: Set<string> = new Set();
+
     if (ticketUser.status !== TicketUserStatus.SELECTING) {
       throw new BadRequestException(`This user cannot modify their selections because their status is ${ticketUser.status},
       not ${TicketUserStatus.SELECTING}. Please try again or refresh the app.`);
     }
 
+    // use set of users usersAffected
     for (const itemId of itemIds) {
-      const result: { updatedTicketItemUsers: TicketItemUser[], usersAffected: TicketItemUser[] } = await retry(
+      await retry(
         async (context: AttemptContext, options) => {
           if (context.attemptNum !== 0) {
             Logger.error(
@@ -129,22 +135,29 @@ export class TicketItemService {
               true,
             );
           }
+
           return await getConnection().transaction(async transactionalEntityManager => {
             // Get existing users for this ticket item and lock the rows for update using pessimistic_write
+            // TODO: get ALL ticket Item users
+            // TODO: MAKE getTicketItemS_users
             const ticketItemUsers = await this.ticketUserService.getTicketItemUsers(itemId, transactionalEntityManager);
 
             // Check if the current user has already unclaimed this item
+            // TODO: check if user has already unclaimed ALL the items. if unclaimed, pass. If none left, exit
             const hasCurrentUser = ticketItemUsers.find(ticketItemUser => ticketItemUser.user.uid === uid);
             if (!hasCurrentUser) {
               throw new BadRequestException('This item has already been removed from your tab.');
             }
 
             // Get associated ticket item
+            // TODO: get array of all ticket items
             const ticketItem = await this.getTicketItem(itemId, transactionalEntityManager);
 
             // Remove current user from array of ticket item users
             const userIndex = ticketItemUsers.findIndex(ticketItemUser => ticketItemUser.user.uid === uid);
             const removedTicketItemUser = ticketItemUsers.splice(userIndex, 1)[0];
+
+            updatedTicketItemUsersGlobal = [...updatedTicketItemUsersGlobal, ...ticketItemUsers];
 
             // Evenly distribute the cost of the item amongst the ticket item users
             this.distributeItemPrice(ticketItem.price!, ticketItemUsers);
@@ -159,46 +172,55 @@ export class TicketItemService {
             }
 
             // Push the removed user so that it gets included in the subtotals update below
-            const usersAffected: TicketItemUser[] = [...ticketItemUsers, removedTicketItemUser];
+            const uidsAffected: Set<string> = new Set(ticketItemUsers.map(tiu => tiu.user.uid));
+            // const usersAffected: User[] = [...ticketItemUsers, removedTicketItemUser];
 
-            return { updatedTicketItemUsers: ticketItemUsers, usersAffected };
+            uidsAffectedGlobal = new Set([...uidsAffectedGlobal, ...uidsAffected]);
+
+            return;
           });
         });
-
-      const updatedTicketUsers: TicketUser[] = await retry(
-        async (context: AttemptContext, options) => {
-          if (context.attemptNum !== 0) {
-            Logger.error(
-              `A failure occurred. Making attempt #${context.attemptNum + 1} of updating ticket users after removing user from ticket item.
-              Attempts remaining: ${context.attemptsRemaining}.`,
-              undefined,
-              'removeUserFromTicketItem:updatedTicketUsers',
-              true,
-            );
-          }
-          return await getConnection().transaction(async transactionalEntityManager => {
-            // Update subtotals for each user on this item;
-            // get their items and get their TicketUser entity and update the price to be the sum of the items
-            const ticketUsers = [];
-            for (const updatedTicketItemUser of result.usersAffected) {
-              const updatedTicketUser = await this.ticketUserService.updateTicketUserTotals(
-                ticketId,
-                updatedTicketItemUser.user.uid,
-                transactionalEntityManager,
-              );
-              ticketUsers.push(updatedTicketUser);
-            }
-            return ticketUsers;
-          });
-        }, this.retryOptions);
-
-      if (sendNotification) {
-        await this.ablyService.publish(TicketUpdates.MULTIPLE_UPDATES, [
-          { name: TicketUpdates.TICKET_ITEM_USERS_REPLACED, data: { newTicketItemUsers: result.updatedTicketItemUsers, itemId } },
-          { name: TicketUpdates.TICKET_USERS_UPDATED, data: updatedTicketUsers },
-        ], ticketId.toString());
-      }
     }
+
+    const updatedTicketUsers: TicketUser[] = await retry(
+      async (context: AttemptContext, options) => {
+        if (context.attemptNum !== 0) {
+          Logger.error(
+            `A failure occurred. Making attempt #${context.attemptNum + 1} of updating ticket users after removing user from ticket item.
+              Attempts remaining: ${context.attemptsRemaining}.`,
+            undefined,
+            'removeUserFromTicketItem:updatedTicketUsers',
+            true,
+          );
+        }
+        return await getConnection().transaction(async transactionalEntityManager => {
+          // Update subtotals for each user on this item;
+          // get their items and get their TicketUser entity and update the price to be the sum of the items
+          const ticketUsers = [];
+          for (const uidAffected of uidsAffectedGlobal) {
+            const updatedTicketUser = await this.ticketUserService.updateTicketUserTotals(
+              ticketId,
+              uidAffected,
+              transactionalEntityManager,
+            );
+            ticketUsers.push(updatedTicketUser);
+          }
+          return ticketUsers;
+        });
+      }, this.retryOptions);
+
+    if (sendNotification) {
+      // TODO: msg name should be ENUM
+      await this.ablyService.publish(TicketUpdates.MULTIPLE_UPDATES, [
+        // TODO: make itemId array
+        // TODO: updated Ticket ITEMSSSS users
+        // TODO: array of objs, each with itemId and an array of updated ticketItemUsers
+        // TODO: Change front end stuff
+        // { name: TicketUpdates.TICKET_ITEM_USERS_REPLACED, data: { newTicketItemUsers: updatedTicketItemUsersGlobal, itemIds } },
+        // { name: TicketUpdates.TICKET_USERS_UPDATED, data: updatedTicketUsers },
+      ], ticketId.toString());
+    }
+
     // return { updatedTicketItemUsers: result.updatedTicketItemUsers, updatedTicketUsers };
     return null;
   }
