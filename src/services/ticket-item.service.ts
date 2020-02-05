@@ -179,7 +179,7 @@ export class TicketItemService {
 
             return;
           });
-        });
+        }, this.retryOptions);
     }
 
     const updatedTicketUsers: TicketUser[] = await retry(
