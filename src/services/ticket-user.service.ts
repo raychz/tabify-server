@@ -145,7 +145,7 @@ export class TicketUserService {
           let ticketTotal = await this.ticketTotalService.getTicketTotals(ticketId);
           if (!ticketTotal) throw new InternalServerErrorException('Cannot load the ticket totals.');
 
-          let discountAmount = currency(ticketTotal.sub_total / 100).multiply(0.2).intValue;
+          let discountAmount = currency(ticketTotal.sub_total / 100).multiply(0.15).intValue;
           let distributedDiscount = currency(discountAmount / 100).distribute(ticketUsers.length);
 
           // Verify that every user's subtotal remains > $0.25 by applying the discount
