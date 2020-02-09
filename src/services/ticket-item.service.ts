@@ -23,6 +23,10 @@ export class TicketItemService {
 
   async addUserToTicketItem(uid: string, ticketUserId: number, itemIds: number[], ticketId: number, sendNotification: boolean) {
     const ticketUser = await this.ticketUserService.getTicketUserByTicketUserId(ticketUserId);
+
+    const updatedTicketItemUsersMap: ItemIdToTicketItemUsers = {};
+    let uidsAffectedAll: Set<string> = new Set();
+
     if (ticketUser.status !== TicketUserStatus.SELECTING) {
       throw new BadRequestException(`This user cannot modify their selections because their status is ${ticketUser.status},
        not ${TicketUserStatus.SELECTING}. Please try again or refresh the app.`);
@@ -57,6 +61,13 @@ export class TicketItemService {
             const newTicketItemUser: TicketItemUser = { ticketItem: { id: ticketItem.id }, user: await this.userService.getUser(uid), price: 0 };
             ticketItemUsers.push(newTicketItemUser);
 
+            if (!updatedTicketItemUsersMap[itemId]) {
+              updatedTicketItemUsersMap[itemId] = new Set();
+              concatSets(updatedTicketItemUsersMap[itemId], new Set(ticketItemUsers));
+            } else {
+              concatSets(updatedTicketItemUsersMap[itemId], new Set(ticketItemUsers));
+            }
+
             // Evenly distribute the cost of the item amongst the ticket item users
             this.distributeItemPrice(ticketItem.price!, ticketItemUsers);
 
@@ -70,6 +81,11 @@ export class TicketItemService {
               const ticketItemUsersToUpdate = ticketItemUsers.slice(0, -1);
               await Promise.all(ticketItemUsersToUpdate.map(u => ticketItemUserRepo.update(u.id!, { price: u.price })));
             }
+
+            // Push the new user so that it gets included in the subtotals update below
+            const uidsAffected: Set<string> = new Set(ticketItemUsers.map(tiu => tiu.user.uid));
+            uidsAffectedAll = new Set([...uidsAffectedAll, ...uidsAffected]);
+
             return ticketItemUsers;
           });
         }, this.retryOptions);
@@ -78,7 +94,7 @@ export class TicketItemService {
         async (context: AttemptContext, options) => {
           if (context.attemptNum !== 0) {
             Logger.error(
-              `A failure occurred. Making attempt #${context.attemptNum + 1} of updating ticket users after adding user to ticket item..
+              `A failure occurred. Making attempt #$ontext.attemptNum + 1} of updating ticket users after adding user to ticket item..
             Attempts remaining: ${context.attemptsRemaining}.`,
               undefined,
               'addUserToTicketItem:updatedTicketUsers',
@@ -89,10 +105,10 @@ export class TicketItemService {
             // Update subtotals for each user on this item;
             // get their items and get their TicketUser entity and update the price to be the sum of the items
             const ticketUsers = [];
-            for (const updatedTicketItemUser of updatedTicketItemUsers) {
+            for (const uidAffected of uidsAffectedAll) {
               const updatedTicketUser = await this.ticketUserService.updateTicketUserTotals(
                 ticketId,
-                updatedTicketItemUser.user.uid,
+                uidAffected,
                 transactionalEntityManager,
               );
               ticketUsers.push(updatedTicketUser);
@@ -102,14 +118,14 @@ export class TicketItemService {
         }, this.retryOptions);
 
       if (sendNotification) {
+        console.log(updatedTicketItemUsersMap);
         await this.ablyService.publish(TicketUpdates.MULTIPLE_UPDATES, [
-          { name: TicketUpdates.TICKET_ITEM_USERS_REPLACED, data: { newTicketItemUsers: updatedTicketItemUsers, itemId } },
+          { name: TicketUpdates.TICKET_ITEM_USERS_REPLACED, data: { newTicketItemUsers: updatedTicketItemUsersMap } },
           { name: TicketUpdates.TICKET_USERS_UPDATED, data: updatedTicketUsers },
         ], ticketId.toString());
       }
+      return { updatedTicketItemUsersMap, updatedTicketUsers };
     }
-    // return { updatedTicketItemUsers, updatedTicketUsers };
-    return null;
   }
 
   // removes user from items (itemIds is an array)
@@ -219,7 +235,7 @@ export class TicketItemService {
       ], ticketId.toString());
     }
 
-    return { updatedTicketItemUsers: updatedTicketItemUsersMap, uidsAffectedAll };
+    return { updatedTicketItemUsers: updatedTicketItemUsersMap, updatedTicketUsers };
   }
 
   async getTicketItem(itemId: number, manager: EntityManager) {
