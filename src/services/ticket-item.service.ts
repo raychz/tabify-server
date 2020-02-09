@@ -5,6 +5,7 @@ import { AblyService, TicketUserService, UserService } from '@tabify/services';
 import * as currency from 'currency.js';
 import { TicketUpdates, TicketUserStatus } from '../enums';
 import { retry, AttemptContext, PartialAttemptOptions } from '@lifeomic/attempt';
+import { concatSets } from '../utilities/general.utilities';
 
 @Injectable()
 export class TicketItemService {
@@ -114,7 +115,7 @@ export class TicketItemService {
   async removeUserFromTicketItem(uid: string, ticketUserId: number, itemIds: number[], ticketId: number, sendNotification: boolean) {
     const ticketUser = await this.ticketUserService.getTicketUserByTicketUserId(ticketUserId);
 
-    let updatedTicketItemUsersGlobal: TicketItemUser[] = [];
+    let updatedTicketItemUsersGlobal: Set<TicketItemUser> = new Set();
     let uidsAffectedGlobal: Set<string> = new Set();
 
     if (ticketUser.status !== TicketUserStatus.SELECTING) {
@@ -157,7 +158,7 @@ export class TicketItemService {
             const userIndex = ticketItemUsers.findIndex(ticketItemUser => ticketItemUser.user.uid === uid);
             const removedTicketItemUser = ticketItemUsers.splice(userIndex, 1)[0];
 
-            updatedTicketItemUsersGlobal = [...updatedTicketItemUsersGlobal, ...ticketItemUsers];
+            concatSets(updatedTicketItemUsersGlobal, new Set(ticketItemUsers));
 
             // Evenly distribute the cost of the item amongst the ticket item users
             this.distributeItemPrice(ticketItem.price!, ticketItemUsers);
