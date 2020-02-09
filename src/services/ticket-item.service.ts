@@ -6,6 +6,7 @@ import * as currency from 'currency.js';
 import { TicketUpdates, TicketUserStatus } from '../enums';
 import { retry, AttemptContext, PartialAttemptOptions } from '@lifeomic/attempt';
 import { concatSets } from '../utilities/general.utilities';
+import { ItemIdToTicketItemUsers } from 'interfaces/ItemIdToTicketItemUsers';
 
 @Injectable()
 export class TicketItemService {
@@ -115,8 +116,8 @@ export class TicketItemService {
   async removeUserFromTicketItem(uid: string, ticketUserId: number, itemIds: number[], ticketId: number, sendNotification: boolean) {
     const ticketUser = await this.ticketUserService.getTicketUserByTicketUserId(ticketUserId);
 
-    let updatedTicketItemUsersGlobal: Set<TicketItemUser> = new Set();
-    let uidsAffectedGlobal: Set<string> = new Set();
+    const updatedTicketItemUsersMap: ItemIdToTicketItemUsers = {};
+    let uidsAffectedAll: Set<string> = new Set();
 
     if (ticketUser.status !== TicketUserStatus.SELECTING) {
       throw new BadRequestException(`This user cannot modify their selections because their status is ${ticketUser.status},
@@ -139,8 +140,6 @@ export class TicketItemService {
 
           return await getConnection().transaction(async transactionalEntityManager => {
             // Get existing users for this ticket item and lock the rows for update using pessimistic_write
-            // TODO: get ALL ticket Item users
-            // TODO: MAKE getTicketItemS_users
             const ticketItemUsers = await this.ticketUserService.getTicketItemUsers(itemId, transactionalEntityManager);
 
             // Check if the current user has already unclaimed this item
@@ -151,14 +150,18 @@ export class TicketItemService {
             }
 
             // Get associated ticket item
-            // TODO: get array of all ticket items
             const ticketItem = await this.getTicketItem(itemId, transactionalEntityManager);
 
             // Remove current user from array of ticket item users
             const userIndex = ticketItemUsers.findIndex(ticketItemUser => ticketItemUser.user.uid === uid);
             const removedTicketItemUser = ticketItemUsers.splice(userIndex, 1)[0];
 
-            concatSets(updatedTicketItemUsersGlobal, new Set(ticketItemUsers));
+            if (!updatedTicketItemUsersMap[itemId]) {
+              updatedTicketItemUsersMap[itemId] = new Set();
+              concatSets(updatedTicketItemUsersMap[itemId], new Set(ticketItemUsers));
+            } else {
+              concatSets(updatedTicketItemUsersMap[itemId], new Set(ticketItemUsers));
+            }
 
             // Evenly distribute the cost of the item amongst the ticket item users
             this.distributeItemPrice(ticketItem.price!, ticketItemUsers);
@@ -174,9 +177,8 @@ export class TicketItemService {
 
             // Push the removed user so that it gets included in the subtotals update below
             const uidsAffected: Set<string> = new Set(ticketItemUsers.map(tiu => tiu.user.uid));
-            // const usersAffected: User[] = [...ticketItemUsers, removedTicketItemUser];
 
-            uidsAffectedGlobal = new Set([...uidsAffectedGlobal, ...uidsAffected]);
+            uidsAffectedAll = new Set([...uidsAffectedAll, ...uidsAffected]);
 
             return;
           });
@@ -198,7 +200,7 @@ export class TicketItemService {
           // Update subtotals for each user on this item;
           // get their items and get their TicketUser entity and update the price to be the sum of the items
           const ticketUsers = [];
-          for (const uidAffected of uidsAffectedGlobal) {
+          for (const uidAffected of uidsAffectedAll) {
             const updatedTicketUser = await this.ticketUserService.updateTicketUserTotals(
               ticketId,
               uidAffected,
@@ -211,19 +213,13 @@ export class TicketItemService {
       }, this.retryOptions);
 
     if (sendNotification) {
-      // TODO: msg name should be ENUM
       await this.ablyService.publish(TicketUpdates.MULTIPLE_UPDATES, [
-        // TODO: make itemId array
-        // TODO: updated Ticket ITEMSSSS users
-        // TODO: array of objs, each with itemId and an array of updated ticketItemUsers
-        // TODO: Change front end stuff
-        // { name: TicketUpdates.TICKET_ITEM_USERS_REPLACED, data: { newTicketItemUsers: updatedTicketItemUsersGlobal, itemIds } },
-        // { name: TicketUpdates.TICKET_USERS_UPDATED, data: updatedTicketUsers },
+        { name: TicketUpdates.TICKET_ITEM_USERS_REPLACED, data: { newTicketItemUsers: updatedTicketItemUsersMap} },
+        { name: TicketUpdates.TICKET_USERS_UPDATED, data: updatedTicketUsers },
       ], ticketId.toString());
     }
 
-    // return { updatedTicketItemUsers: result.updatedTicketItemUsers, updatedTicketUsers };
-    return null;
+    return { updatedTicketItemUsers: updatedTicketItemUsersMap, uidsAffectedAll };
   }
 
   async getTicketItem(itemId: number, manager: EntityManager) {
