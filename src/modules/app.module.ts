@@ -4,8 +4,10 @@ import {
   MiddlewareConsumer,
   RequestMethod,
 } from '@nestjs/common';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 import * as firAdmin from 'firebase-admin';
 import firAdminConfig from '../globals/firebase';
+import { RavenModule, RavenInterceptor } from 'nest-raven';
 
 /**
  * Middleware
@@ -27,9 +29,15 @@ import * as tabifyServices from '@tabify/services';
 firAdmin.initializeApp(firAdminConfig);
 
 @Module({
-  imports: [],
+  imports: [RavenModule],
   controllers: Object.values(tabifyControllers),
-  providers: Object.values(tabifyServices),
+  providers: [
+    ...Object.values(tabifyServices),
+    {
+      provide: APP_INTERCEPTOR,
+      useValue: new RavenInterceptor(),
+    },
+  ],
 })
 export class AppModule implements NestModule {
   constructor() { }
