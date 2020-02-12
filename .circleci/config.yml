@@ -8,16 +8,8 @@ jobs:
 
     steps: 
       - checkout
-      - restore_cache:
-          name: Restore Yarn Package Cache
-          keys:
-            - yarn-packages-{{ checksum "package.json" }}
-      - run: yarn install
-      - run: yarn prestart:prod
-      - run: yarn test
-
-      - save_cache:
-          name: Save Yarn Package Cache
-          key: yarn-packages-{{ checksum "package.json" }}
-          paths:
-            - ~/.cache/yarn
+      - run:
+          name: Install dependencies
+          command: npm ci
+      - run: npm run prestart:prod
+      - run: npm run test
