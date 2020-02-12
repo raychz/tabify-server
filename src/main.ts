@@ -16,15 +16,10 @@ import { AppModule } from './modules/app.module';
 import { connect } from './globals/connection';
 import { Logger } from '@nestjs/common';
 import { TabifyLogger } from './services/tabify-logger.service';
-import * as express from 'express';
-import * as http from 'http';
-
-const expressApp = express();
-export const httpServer = http.createServer(expressApp);
 
 async function bootstrap() {
   await connect();
-  const app = await NestFactory.create(AppModule, expressApp, {
+  const app = await NestFactory.create(AppModule, {
     cors: {
       origin: [
         'http://localhost:8100',
@@ -43,8 +38,7 @@ async function bootstrap() {
     })],
   });
   app.useLogger(app.get(TabifyLogger));
-  await app.init();
-  await httpServer.listen(process.env.PORT, () => {
+  await app.listen(process.env.PORT!, () => {
     Logger.log(`NODE_ENV set to ${process.env.NODE_ENV}`);
     Logger.log(`Server listening on port ${process.env.PORT}`);
   });

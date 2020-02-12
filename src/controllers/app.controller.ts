@@ -6,8 +6,6 @@ export class AppController {
 
   @Get()
   async helloWorld() {
-    var obj = {};
-    (obj as any).helloWorld()!;
     return 'Hello World!';
   }
 }

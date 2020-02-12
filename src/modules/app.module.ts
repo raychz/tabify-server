@@ -4,10 +4,9 @@ import {
   MiddlewareConsumer,
   RequestMethod,
 } from '@nestjs/common';
-import { APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_FILTER } from '@nestjs/core';
 import * as firAdmin from 'firebase-admin';
 import firAdminConfig from '../globals/firebase';
-import { RavenModule, RavenInterceptor } from 'nest-raven';
 
 /**
  * Middleware
@@ -25,17 +24,22 @@ import * as tabifyControllers from '@tabify/controllers';
  */
 import * as tabifyServices from '@tabify/services';
 
+/**
+ * Filters
+ */
+import { AllExceptionsFilter } from '../filters/all-exceptions.filter';
+
 // Initializing the FIRAdmin app probably should be somewhere else
 firAdmin.initializeApp(firAdminConfig);
 
 @Module({
-  imports: [RavenModule],
+  imports: [],
   controllers: Object.values(tabifyControllers),
   providers: [
     ...Object.values(tabifyServices),
     {
-      provide: APP_INTERCEPTOR,
-      useValue: new RavenInterceptor(),
+      provide: APP_FILTER,
+      useClass: AllExceptionsFilter,
     },
   ],
 })
