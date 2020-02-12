@@ -1,11 +1,18 @@
-version: 2
-jobs: 
-  build:
+# Javascript Node CircleCI 2.1 configuration file
+#
+# Check https://circleci.com/docs/ for more details
+#
+version: 2.1
+
+executors:
+  tabify-executor:
     docker:
-      - image: circleci/node:8.9.1
-    
+      - image: circleci/node:8.15.0
     working_directory: ~/repo
 
+jobs: 
+  build:
+    executor: tabify-executor
     steps: 
       - checkout
       - run:
@@ -13,3 +20,8 @@ jobs:
           command: npm ci
       - run: npm run prestart:prod
       - run: npm run test
+
+workflows:
+  build-and-no-deploy:
+    jobs:
+      - build
