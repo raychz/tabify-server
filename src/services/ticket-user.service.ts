@@ -145,7 +145,7 @@ export class TicketUserService {
           let ticketTotal = await this.ticketTotalService.getTicketTotals(ticketId);
           if (!ticketTotal) throw new InternalServerErrorException('Cannot load the ticket totals.');
 
-          let discountAmount = currency(ticketTotal.sub_total / 100).multiply(0.15).intValue;
+          let discountAmount = currency(ticketTotal.sub_total / 100).multiply(0).intValue;
           let distributedDiscount = currency(discountAmount / 100).distribute(ticketUsers.length);
 
           // Verify that every user's subtotal remains > $0.25 by applying the discount
@@ -156,7 +156,7 @@ export class TicketUserService {
           const isPiccolas = ticket.location!.omnivore_id === 'cx9pap8i';
 
           // Apply discount on this ticket if containsNewUser and compatibleDiscount and isPiccolas
-          if (compatibleDiscount && isPiccolas) {
+          if (discountAmount > 0 && compatibleDiscount && isPiccolas) {
             Logger.log('This discount is compatible. Apply it!');
             // TODO: Move discount id to database
             const discounts: OmnivoreTicketDiscount[] = [{ discount: '1847-53-17', value: discountAmount }];
