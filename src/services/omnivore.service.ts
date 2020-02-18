@@ -129,7 +129,7 @@ export class OmnivoreService {
       throw new UnprocessableEntityException('Tickets with service/other charges are not currently supported.');
     }
 
-    // use the employee.id to find server in our DB. If this is undefined, the serverId field in 
+    // use the employee.id to find server in our DB. If this is undefined, the serverId field in
     // the ticket will be null
     const employee = customerTicket._embedded.employee;
     const employeeId = employee ? employee.id : undefined;
@@ -331,5 +331,34 @@ export class OmnivoreService {
 
   hasError(json: any): boolean {
     return !!json.error;
+  }
+
+  async submitPayment(location: LocationEntity, omnivoreTicketId: string, number: string, year: string, month: string) {
+    if (!location || !location.omnivore_id) {
+      throw new NotFoundException('Location not found');
+    }
+
+    const apiKey = location.omnivore_id === 'i8yBgkjT' ? process.env.OMNIVORE_API_KEY_DEV : process.env.OMNIVORE_API_KEY_PROD;
+    const headers = {
+      'Content-Type': 'application/json',
+      'Api-Key': apiKey!,
+    };
+
+    const body = {
+      amount: 500,
+      tip: 0,
+      card_info: {
+        exp_month: Number(month),
+        exp_year: Number(year),
+        number: number,
+      },
+      type: 'emv',
+    };
+    console.log('the body', body);
+    const url = `${OmnivoreService.API_URL}/locations/${location.omnivore_id}/tickets/${omnivoreTicketId}/payments/`;
+    const res = await fetch(url, { headers, method: 'POST', body: JSON.stringify(body) });
+    const json = await res.json();
+
+    return json;
   }
 }
