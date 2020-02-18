@@ -32,6 +32,7 @@ async function bootstrap() {
     },
   });
   Sentry.init({
+    enabled: process.env.NODE_ENV === 'production',
     dsn: process.env.SENTRY_DSN,
     integrations: [new RewriteFrames({
       root: global.__rootdir__,

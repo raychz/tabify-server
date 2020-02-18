@@ -14,6 +14,7 @@ export class AllExceptionsFilter extends BaseExceptionFilter {
         ? exception.getStatus()
         : HttpStatus.INTERNAL_SERVER_ERROR;
 
+    // Report this error to Sentry
     if (status >= 400) {
       const transactionId = request.headers['x-transaction-id'];
       const uid = request.user && request.user.uid;
