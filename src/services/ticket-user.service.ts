@@ -156,7 +156,7 @@ export class TicketUserService {
           const isPiccolas = ticket.location!.omnivore_id === 'cx9pap8i';
 
           // Apply discount on this ticket if containsNewUser and compatibleDiscount and isPiccolas
-          if (compatibleDiscount && isPiccolas) {
+          if (discountAmount > 0 && compatibleDiscount && isPiccolas) {
             Logger.log('This discount is compatible. Apply it!');
             // TODO: Move discount id to database
             const discounts: OmnivoreTicketDiscount[] = [{ discount: '1847-53-17', value: discountAmount }];
