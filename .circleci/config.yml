@@ -17,7 +17,7 @@ jobs:
       - checkout
       - run:
           name: Install dependencies
-          command: npm ci
+          command: npm i # TODO: Change back to "npm ci" when node-gyp issue is resolved
       - run: npm run prestart:prod
       - run: npm run test
 
