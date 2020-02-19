@@ -10,10 +10,11 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Prerequisites
 
-Install the following:
+Install and configure the following:
 - [Docker](https://docs.docker.com/install/)
-- [Node](https://nodejs.org/en/download/)
-- [Yarn](https://yarnpkg.com/en/docs/install)
+- [nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- Node (install Node using nvm and ensure that the version matches what is in the `.node-version` file)
+- [avn](https://github.com/wbyoung/avn)
 - [Postman](https://www.getpostman.com/)
 - MySQL database client of choice ([DataGrip](https://www.jetbrains.com/datagrip/download/) is recommended)
 
@@ -43,12 +44,12 @@ docker-compose ps
 4. Install the dependencies.
 
 ```
-yarn install
+npm install
 ```
 
 5. Run the development server.
 ```
-yarn start:dev
+npm start
 ```
 
 6. Make a test GET request by opening your browser to http://localhost:3000, using a tool like [Postman](https://www.getpostman.com/), or simply using Curl.
@@ -56,7 +57,7 @@ yarn start:dev
 curl localhost:3000
 ```
 
-If you see a message about a missing auth token, you've successfully started the server! 🎉
+If you see a Hello World message, you've successfully started the dev server! 🎉
 
 ### Retrieving an auth token
 
@@ -106,3 +107,4 @@ WIP Add additional notes about how to deploy this on a live system
 * [NestJS](https://docs.nestjs.com/) - A framework for building efficient, scalable Node.js server-side applications
 * [TypeORM](https://typeorm.io/#/) - ORM for TypeScript and JavaScript (ES7, ES6, ES5). Supports MySQL and many others
 * [Firebase](https://firebase.google.com/) - Authentication, Cloud Firestore, and Hosting are a few of the Firebase products we use
+* [Love](https://www.goodtherapy.org/blog/psychpedia/love)
