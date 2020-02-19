@@ -1,6 +1,6 @@
 {
   "name": "tabify-server",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "Tabify's Nest API and TypeORM database.",
   "scripts": {
     "build": "tsc -p tsconfig.json",
