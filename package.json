@@ -42,7 +42,7 @@
     "dotenv-safe": "^8.1.0",
     "firebase": "^5.8.2",
     "firebase-admin": "^7.0.0",
-    "mysql": "^2.16.0",
+    "mysql": "^2.18.1",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^2.6.2",
     "rxjs": "6",
