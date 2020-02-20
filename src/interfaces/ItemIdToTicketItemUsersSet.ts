@@ -1,5 +1,5 @@
 import { TicketItemUser } from '@tabify/entities';
 
-export interface ItemIdToTicketItemUsers {
+export interface ItemIdToTicketItemUsersSet {
     [itemId: number]: Set<TicketItemUser>;
 }

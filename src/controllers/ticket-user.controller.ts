@@ -32,7 +32,7 @@ export class TicketUserController {
     return ticketUser;
   }
 
-  /** Delete user from Tabify database ticket */
+  /** Remove User from all ticket items on ticket */
   @Delete('/:ticketUserId')
   async removeUserFromAllItemsOnTicket(
     @User('uid') uid: string,
@@ -40,13 +40,18 @@ export class TicketUserController {
     @Param('ticketUserId') ticketUserId: number,
   ) {
     ticketId = Number(ticketId);
-    const ticketItemRepo = await getRepository(TicketItem);
-    const items = await ticketItemRepo.find({ ticket: { id: ticketId } });
-    const itemIds: number[] = [];
-    items.forEach(item => {
-      itemIds.push(Number(item.id));
-    });
-    return await this.ticketItemService.removeUserFromTicketItem(uid, ticketUserId, itemIds, ticketId, true);
+    return await this.ticketItemService.removeUserFromAllTicketItems(ticketId, uid, true);
+  }
+
+  /** Adds User to all ticket items on ticket */
+  @Post(':ticketUserId')
+  async addUserToAllItemsOnTicket(
+    @User('uid') uid: string,
+    @Param('ticketId') ticketId: number,
+    @Param('ticketUserId') ticketUserId: number,
+  ) {
+    ticketId = Number(ticketId);
+    return await this.ticketItemService.addUserToAllTicketItems(ticketId, uid, true);
   }
 
   @Patch()

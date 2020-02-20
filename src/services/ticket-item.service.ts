@@ -6,7 +6,8 @@ import * as currency from 'currency.js';
 import { TicketUpdates, TicketUserStatus } from '../enums';
 import { retry, AttemptContext, PartialAttemptOptions } from '@lifeomic/attempt';
 import { concatSets } from '../utilities/general.utilities';
-import { ItemIdToTicketItemUsers } from 'interfaces/ItemIdToTicketItemUsers';
+import { ItemIdToTicketItemUsersSet } from 'interfaces/ItemIdToTicketItemUsersSet';
+import { ItemIdToTicketItemUsersArray } from 'interfaces/ItemIdToTicketItemUsersArray';
 
 @Injectable()
 export class TicketItemService {
@@ -21,10 +22,10 @@ export class TicketItemService {
 
   constructor(private ticketUserService: TicketUserService, private readonly ablyService: AblyService, private userService: UserService) { }
 
-  async addUserToTicketItem(uid: string, ticketUserId: number, itemIds: number[], ticketId: number, sendNotification: boolean) {
+  async addUserToTicketItems(uid: string, ticketUserId: number, itemIds: number[], ticketId: number, sendNotification: boolean) {
     const ticketUser = await this.ticketUserService.getTicketUserByTicketUserId(ticketUserId);
 
-    const updatedTicketItemUsersMap: ItemIdToTicketItemUsers = {};
+    const updatedTicketItemUsersMap: ItemIdToTicketItemUsersSet = {};
     let uidsAffectedAll: Set<string> = new Set();
 
     if (ticketUser.status !== TicketUserStatus.SELECTING) {
@@ -117,10 +118,15 @@ export class TicketItemService {
           });
         }, this.retryOptions);
 
+      // convert sets to arrays
+      const newTicketItemUsers: ItemIdToTicketItemUsersArray = {};
+      // tslint:disable-next-line: forin
+      for (const itemId in updatedTicketItemUsersMap) {
+        newTicketItemUsers[Number(itemId)] = Array.from(updatedTicketItemUsersMap[itemId]);
+      }
       if (sendNotification) {
-        console.log(updatedTicketItemUsersMap);
         await this.ablyService.publish(TicketUpdates.MULTIPLE_UPDATES, [
-          { name: TicketUpdates.TICKET_ITEM_USERS_REPLACED, data: { newTicketItemUsers: updatedTicketItemUsersMap } },
+          { name: TicketUpdates.TICKET_ITEM_USERS_REPLACED, data: { newTicketItemUsers } },
           { name: TicketUpdates.TICKET_USERS_UPDATED, data: updatedTicketUsers },
         ], ticketId.toString());
       }
@@ -129,10 +135,10 @@ export class TicketItemService {
   }
 
   // removes user from items (itemIds is an array)
-  async removeUserFromTicketItem(uid: string, ticketUserId: number, itemIds: number[], ticketId: number, sendNotification: boolean) {
+  async removeUserFromTicketItems(uid: string, ticketUserId: number, itemIds: number[], ticketId: number, sendNotification: boolean) {
     const ticketUser = await this.ticketUserService.getTicketUserByTicketUserId(ticketUserId);
 
-    const updatedTicketItemUsersMap: ItemIdToTicketItemUsers = {};
+    const updatedTicketItemUsersMap: ItemIdToTicketItemUsersSet = {};
     let uidsAffectedAll: Set<string> = new Set();
 
     if (ticketUser.status !== TicketUserStatus.SELECTING) {
@@ -228,9 +234,15 @@ export class TicketItemService {
         });
       }, this.retryOptions);
 
+    // convert sets to arrays
+    const newTicketItemUsers: ItemIdToTicketItemUsersArray = {};
+    // tslint:disable-next-line: forin
+    for (const itemId in updatedTicketItemUsersMap) {
+      newTicketItemUsers[Number(itemId)] = Array.from(updatedTicketItemUsersMap[itemId]);
+    }
     if (sendNotification) {
       await this.ablyService.publish(TicketUpdates.MULTIPLE_UPDATES, [
-        { name: TicketUpdates.TICKET_ITEM_USERS_REPLACED, data: { newTicketItemUsers: updatedTicketItemUsersMap} },
+        { name: TicketUpdates.TICKET_ITEM_USERS_REPLACED, data: { newTicketItemUsers } },
         { name: TicketUpdates.TICKET_USERS_UPDATED, data: updatedTicketUsers },
       ], ticketId.toString());
     }
@@ -284,7 +296,7 @@ export class TicketItemService {
         itemIds.push(Number(item.id));
       });
 
-      await this.removeUserFromTicketItem(uid, ticketUser.id, itemIds, ticketId, true);
+      await this.removeUserFromTicketItems(uid, ticketUser.id, itemIds, ticketId, true);
 
       try {
         await ticketUserRepo.delete({ ticket: { id: ticketId }, user: { uid } });
@@ -298,4 +310,57 @@ export class TicketItemService {
 
     return ticketUser;
   }
-}
+
+  /**
+   * Removes a user from a all itmes on a ticket
+   */
+  async removeUserFromAllTicketItems(ticketId: number, uid: string, sendNotification: boolean) {
+    const ticketUserRepo = await getRepository(TicketUser);
+    const ticketUser = await ticketUserRepo.findOne({ ticket: { id: ticketId }, user: { uid } }, { relations: ['user', 'user.userDetail'] });
+
+    if (ticketUser) {
+      // get all ticket items that the user is part of
+      const ticketItemRepo = await getRepository(TicketItem);
+      const items = await ticketItemRepo.createQueryBuilder('ticketItem')
+        .innerJoin('ticketItem.users', 'ticketUser', 'ticketUser.user = :uid', { uid })
+        .where('ticketItem.ticket = :ticketId', { ticketId })
+        .getMany();
+
+      // remove user from all ticket items that they had selected on this ticket
+
+      // get only the Ids of each item
+      const itemIds: number[] = [];
+      items.forEach(item => {
+        itemIds.push(Number(item.id));
+      });
+
+      await this.removeUserFromTicketItems(uid, ticketUser.id, itemIds, ticketId, true);
+    }
+    return null;
+  }
+
+  /**
+   * Add a user to all itmes on a ticket
+   */
+  async addUserToAllTicketItems(ticketId: number, uid: string, sendNotification: boolean) {
+    const ticketUserRepo = await getRepository(TicketUser);
+    const ticketUser = await ticketUserRepo.findOne({ ticket: { id: ticketId }, user: { uid } }, { relations: ['user', 'user.userDetail'] });
+
+    if (ticketUser) {
+      // get all ticket items that the user is not part of
+      const ticketItemRepo = await getRepository(TicketItem);
+      const items = await ticketItemRepo.find({where: {ticket: ticketId}});
+
+      console.log(items);
+      // remove user from all ticket items that they had selected on this ticket
+
+      // get only the Ids of each item
+      const itemIds: number[] = [];
+      items.forEach(item => {
+        itemIds.push(Number(item.id));
+      });
+
+      await this.addUserToTicketItems(uid, ticketUser.id, itemIds, ticketId, true);
+    }
+    return null;
+  }}
