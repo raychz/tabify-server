@@ -4,6 +4,7 @@ import {
   MiddlewareConsumer,
   RequestMethod,
 } from '@nestjs/common';
+import { APP_FILTER } from '@nestjs/core';
 import * as firAdmin from 'firebase-admin';
 import firAdminConfig from '../globals/firebase';
 
@@ -23,13 +24,24 @@ import * as tabifyControllers from '@tabify/controllers';
  */
 import * as tabifyServices from '@tabify/services';
 
+/**
+ * Filters
+ */
+import { AllExceptionsFilter } from '../filters/all-exceptions.filter';
+
 // Initializing the FIRAdmin app probably should be somewhere else
 firAdmin.initializeApp(firAdminConfig);
 
 @Module({
   imports: [],
   controllers: Object.values(tabifyControllers),
-  providers: Object.values(tabifyServices),
+  providers: [
+    ...Object.values(tabifyServices),
+    {
+      provide: APP_FILTER,
+      useClass: AllExceptionsFilter,
+    },
+  ],
 })
 export class AppModule implements NestModule {
   constructor() { }
