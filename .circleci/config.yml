@@ -1,23 +1,27 @@
-version: 2
-jobs: 
-  build:
+# Javascript Node CircleCI 2.1 configuration file
+#
+# Check https://circleci.com/docs/ for more details
+#
+version: 2.1
+
+executors:
+  tabify-executor:
     docker:
-      - image: circleci/node:8.9.1
-    
+      - image: circleci/node:10.19.0
     working_directory: ~/repo
 
+jobs: 
+  build:
+    executor: tabify-executor
     steps: 
       - checkout
-      - restore_cache:
-          name: Restore Yarn Package Cache
-          keys:
-            - yarn-packages-{{ checksum "package.json" }}
-      - run: yarn install
-      - run: yarn prestart:prod
-      - run: yarn test
+      - run:
+          name: Install dependencies
+          command: npm i # TODO: Change back to "npm ci" when node-gyp issue is resolved
+      - run: npm run prestart:prod
+      - run: npm run test
 
-      - save_cache:
-          name: Save Yarn Package Cache
-          key: yarn-packages-{{ checksum "package.json" }}
-          paths:
-            - ~/.cache/yarn
+workflows:
+  build-and-no-deploy:
+    jobs:
+      - build
