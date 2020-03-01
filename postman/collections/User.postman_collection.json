@@ -1,0 +1,36 @@
+{
+	"info": {
+		"_postman_id": "65dadcb6-8342-441c-ba6e-92de38458dae",
+		"name": "User",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get User Info",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "eyJhbGciOiJSUzI1NiIsImtpZCI6IjI5NGNlMzNhNWQ3MmI0NjYyNzI3ZGFiYmRhNzVjZjg4Y2Y5OTg4MGUiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vdGFiaWZ5LTQwNzQ2IiwiYXVkIjoidGFiaWZ5LTQwNzQ2IiwiYXV0aF90aW1lIjoxNTcwMDYwMTUwLCJ1c2VyX2lkIjoiSWRDR1loU29naU1paGl2bnJvVXQ5Qlkwc1hwMSIsInN1YiI6IklkQ0dZaFNvZ2lNaWhpdm5yb1V0OUJZMHNYcDEiLCJpYXQiOjE1NzAwNjAxNTAsImV4cCI6MTU3MDA2Mzc1MCwiZW1haWwiOiJyb2dlckB0YWJpZnlhcHAuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImZpcmViYXNlIjp7ImlkZW50aXRpZXMiOnsiZW1haWwiOlsicm9nZXJAdGFiaWZ5YXBwLmNvbSJdfSwic2lnbl9pbl9wcm92aWRlciI6InBhc3N3b3JkIn19.EQCG8TXQYreLcckh4Wl_41MHN1o9dKeOWV2Cv3T_sH6dLoAW_L0DAngNhOdVb_u29ag5QSuvx01rjjDRxpaJ8tlUBK_Kz_CUELhLY_ZzACh9YpIwZ6DQF9gz1bzazLJR-TdgH82llCGuIvUSIUmTCQZJnDGvTG4_U7IYAAY4FUeSvPMAllYSswrf5U1VRLWWAGcl1avBCd1G4wsfYHbHjg_2GzlplX78apATe_pvVqYk15pN9hdV2efoO9uLscIe_V52T6xxI4hp6HoLC7Sof1zbuNsppnWJn7N1zxBCBIJ2ND-t5p2K-Y3bGCrGwuCyKgoSFAnVVkdBXPmuwV2Teg",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "https://api.tabifyapp.com/user",
+					"protocol": "https",
+					"host": [
+						"api",
+						"tabifyapp",
+						"com"
+					],
+					"path": [
+						"user"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}

@@ -1,0 +1,58 @@
+{
+	"info": {
+		"_postman_id": "466d4bcb-98c1-4850-abc9-8559360b2435",
+		"name": "Newsfeed",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get ticket items for a ticket for logged in user",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "authorization",
+						"value": "eyJhbGciOiJSUzI1NiIsImtpZCI6IjUxMjRjY2JhZDVkNWZiZjNiYTJhOGI1ZWE3MTE4NDVmOGNiMjZhMzYiLCJ0eXAiOiJKV1QifQ.eyJuYW1lIjoiSGFzc2FuIEtoYW4iLCJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vdGFiaWZ5LTQwNzQ2IiwiYXVkIjoidGFiaWZ5LTQwNzQ2IiwiYXV0aF90aW1lIjoxNTc4MjgxMTgzLCJ1c2VyX2lkIjoiS2d2MW1qWWV6TlFSZ1lFUkc1ckRmZmc1d29TMiIsInN1YiI6IktndjFtalllek5RUmdZRVJHNXJEZmZnNXdvUzIiLCJpYXQiOjE1NzgyODExODMsImV4cCI6MTU3ODI4NDc4MywiZW1haWwiOiJoYXNzYW5AdGVzdC5jb20iLCJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsImZpcmViYXNlIjp7ImlkZW50aXRpZXMiOnsiZW1haWwiOlsiaGFzc2FuQHRlc3QuY29tIl19LCJzaWduX2luX3Byb3ZpZGVyIjoicGFzc3dvcmQifX0.FLNy6sqgDg6hr5WbGgFS5EmA8UKJq-PzPJQwDawPaXiQJ9X1APF55n8kqqdYVa4aGqUpKWfHkFedpUOsBf1bj-vMdvxS68c16SDCrQqq6VEJL0sbKC1ohjqWVYRPJffcWtyeUfKfIeDORiSeLkVCYohx32ZUVq3fRbwTjNpL6inDWF6YeUNS5VK0dJRgtdSaD9v6yULpk-S3j12P_XNax8VzzMPnX6fRm28_wXD_MJklZ3xALzF8yZdEcyrWGkPiSpT_hdOEHBpQ8Gd_Uergmlc6EbPW_HPxBilchGN5_izxKfC7VvPF4VDNe0GWhsDuN3vGJ2s53POTiF0hq6O6LQ",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{serverUrl}}:{{serverPort}}/tickets/53048/items/user",
+					"host": [
+						"{{serverUrl}}"
+					],
+					"port": "{{serverPort}}",
+					"path": [
+						"tickets",
+						"53048",
+						"items",
+						"user"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "7023fb05-eb3b-4d3a-b67f-5c2847324d92",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "268fafb2-c20c-4629-a760-3af069ba7ef0",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
