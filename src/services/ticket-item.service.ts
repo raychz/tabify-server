@@ -25,7 +25,10 @@ export class TicketItemService {
   async addUserToTicketItems(uid: string, ticketUserId: number, itemIds: number[], ticketId: number, sendNotification: boolean) {
     const ticketUser = await this.ticketUserService.getTicketUserByTicketUserId(ticketUserId);
 
+    // using a map of itemIds to (arrays of) ticketItemUsers to track which users are part of items
     const updatedTicketItemUsersMap: ItemIdToTicketItemUsersSet = {};
+
+    // uids of all the users affected by adding/removing items
     let uidsAffectedAll: Set<string> = new Set();
 
     if (ticketUser.status !== TicketUserStatus.SELECTING) {
@@ -140,7 +143,10 @@ export class TicketItemService {
   async removeUserFromTicketItems(uid: string, ticketUserId: number, itemIds: number[], ticketId: number, sendNotification: boolean) {
     const ticketUser = await this.ticketUserService.getTicketUserByTicketUserId(ticketUserId);
 
+    // using a map of itemIds to (arrays of) ticketItemUsers to track which users are part of items
     const updatedTicketItemUsersMap: ItemIdToTicketItemUsersSet = {};
+
+    // uids of all the users affected by adding/removing items
     let uidsAffectedAll: Set<string> = new Set();
 
     if (ticketUser.status !== TicketUserStatus.SELECTING) {
@@ -292,10 +298,7 @@ export class TicketItemService {
       // remove user from all ticket items that they had selected on this ticket
 
       // get only the Ids of each item
-      const itemIds: number[] = [];
-      items.forEach(item => {
-        itemIds.push(Number(item.id));
-      });
+      const itemIds: number[] = items.map(item => Number(item.id));
 
       await this.removeUserFromTicketItems(uid, ticketUser.id, itemIds, ticketId, true);
 
@@ -328,10 +331,7 @@ export class TicketItemService {
         .getMany();
 
       // get only the Ids of each item
-      const itemIds: number[] = [];
-      items.forEach(item => {
-        itemIds.push(Number(item.id));
-      });
+      const itemIds: number[] = items.map(item => Number(item.id));
 
       await this.removeUserFromTicketItems(uid, ticketUser.id, itemIds, ticketId, sendNotification);
     }
@@ -354,10 +354,7 @@ export class TicketItemService {
         .getMany();
 
       // get only the Ids of each item
-      const itemIds: number[] = [];
-      items.forEach(item => {
-        itemIds.push(Number(item.id));
-      });
+      const itemIds: number[] = items.map(item => Number(item.id));
 
       await this.addUserToTicketItems(uid, ticketUser.id, itemIds, ticketId, sendNotification);
     }
