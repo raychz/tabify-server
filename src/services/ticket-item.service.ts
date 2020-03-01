@@ -34,7 +34,7 @@ export class TicketItemService {
     }
 
     for (const itemId of itemIds) {
-      const updatedTicketItemUsers: TicketItemUser[] = await retry(
+      await retry(
         async (context: AttemptContext, options) => {
           if (context.attemptNum !== 0) {
             Logger.error(
@@ -45,6 +45,7 @@ export class TicketItemService {
               true,
             );
           }
+
           return await getConnection().transaction(async transactionalEntityManager => {
             // Get existing users for this ticket item and lock the rows for update using pessimistic_write
             const ticketItemUsers = await this.ticketUserService.getTicketItemUsers(itemId, transactionalEntityManager);
@@ -87,51 +88,52 @@ export class TicketItemService {
             const uidsAffected: Set<string> = new Set(ticketItemUsers.map(tiu => tiu.user.uid));
             uidsAffectedAll = new Set([...uidsAffectedAll, ...uidsAffected]);
 
-            return ticketItemUsers;
+            return;
           });
         }, this.retryOptions);
-
-      const updatedTicketUsers: TicketUser[] = await retry(
-        async (context: AttemptContext, options) => {
-          if (context.attemptNum !== 0) {
-            Logger.error(
-              `A failure occurred. Making attempt #$ontext.attemptNum + 1} of updating ticket users after adding user to ticket item..
-            Attempts remaining: ${context.attemptsRemaining}.`,
-              undefined,
-              'addUserToTicketItem:updatedTicketUsers',
-              true,
-            );
-          }
-          return await getConnection().transaction(async transactionalEntityManager => {
-            // Update subtotals for each user on this item;
-            // get their items and get their TicketUser entity and update the price to be the sum of the items
-            const ticketUsers = [];
-            for (const uidAffected of uidsAffectedAll) {
-              const updatedTicketUser = await this.ticketUserService.updateTicketUserTotals(
-                ticketId,
-                uidAffected,
-                transactionalEntityManager,
-              );
-              ticketUsers.push(updatedTicketUser);
-            }
-            return ticketUsers;
-          });
-        }, this.retryOptions);
-
-      // convert sets to arrays
-      const newTicketItemUsers: ItemIdToTicketItemUsersArray = {};
-      // tslint:disable-next-line: forin
-      for (const itemId in updatedTicketItemUsersMap) {
-        newTicketItemUsers[Number(itemId)] = Array.from(updatedTicketItemUsersMap[itemId]);
-      }
-      if (sendNotification) {
-        await this.ablyService.publish(TicketUpdates.MULTIPLE_UPDATES, [
-          { name: TicketUpdates.TICKET_ITEM_USERS_REPLACED, data: { newTicketItemUsers } },
-          { name: TicketUpdates.TICKET_USERS_UPDATED, data: updatedTicketUsers },
-        ], ticketId.toString());
-      }
-      return { updatedTicketItemUsersMap, updatedTicketUsers };
     }
+
+    const updatedTicketUsers: TicketUser[] = await retry(
+      async (context: AttemptContext, options) => {
+        if (context.attemptNum !== 0) {
+          Logger.error(
+            `A failure occurred. Making attempt #$ontext.attemptNum + 1} of updating ticket users after adding user to ticket item..
+            Attempts remaining: ${context.attemptsRemaining}.`,
+            undefined,
+            'addUserToTicketItem:updatedTicketUsers',
+            true,
+          );
+        }
+        return await getConnection().transaction(async transactionalEntityManager => {
+          // Update subtotals for each user on this item;
+          // get their items and get their TicketUser entity and update the price to be the sum of the items
+          const ticketUsers = [];
+          for (const uidAffected of uidsAffectedAll) {
+            const updatedTicketUser = await this.ticketUserService.updateTicketUserTotals(
+              ticketId,
+              uidAffected,
+              transactionalEntityManager,
+            );
+            ticketUsers.push(updatedTicketUser);
+          }
+          return ticketUsers;
+        });
+      }, this.retryOptions);
+
+    // convert sets to arrays
+    const newTicketItemUsers: ItemIdToTicketItemUsersArray = {};
+    // tslint:disable-next-line: forin
+    for (const itemId in updatedTicketItemUsersMap) {
+      newTicketItemUsers[Number(itemId)] = Array.from(updatedTicketItemUsersMap[itemId]);
+    }
+    if (sendNotification) {
+      await this.ablyService.publish(TicketUpdates.MULTIPLE_UPDATES, [
+        { name: TicketUpdates.TICKET_ITEM_USERS_REPLACED, data: { newTicketItemUsers } },
+        { name: TicketUpdates.TICKET_USERS_UPDATED, data: updatedTicketUsers },
+      ], ticketId.toString());
+    }
+
+    return { updatedTicketItemUsers: updatedTicketItemUsersMap, updatedTicketUsers };
   }
 
   // removes user from items (itemIds is an array)
@@ -174,6 +176,10 @@ export class TicketItemService {
             // Get associated ticket item
             const ticketItem = await this.getTicketItem(itemId, transactionalEntityManager);
 
+            // Push the user to be removed so that it gets included in the subtotals update below
+            const uidsAffected: Set<string> = new Set(ticketItemUsers.map(tiu => tiu.user.uid));
+            uidsAffectedAll = new Set([...uidsAffectedAll, ...uidsAffected]);
+
             // Remove current user from array of ticket item users
             const userIndex = ticketItemUsers.findIndex(ticketItemUser => ticketItemUser.user.uid === uid);
             const removedTicketItemUser = ticketItemUsers.splice(userIndex, 1)[0];
@@ -196,11 +202,6 @@ export class TicketItemService {
             if (ticketItemUsers.length) {
               await Promise.all(ticketItemUsers.map(u => ticketItemUserRepo.update(u.id!, { price: u.price })));
             }
-
-            // Push the removed user so that it gets included in the subtotals update below
-            const uidsAffected: Set<string> = new Set(ticketItemUsers.map(tiu => tiu.user.uid));
-
-            uidsAffectedAll = new Set([...uidsAffectedAll, ...uidsAffected]);
 
             return;
           });
@@ -326,15 +327,13 @@ export class TicketItemService {
         .where('ticketItem.ticket = :ticketId', { ticketId })
         .getMany();
 
-      // remove user from all ticket items that they had selected on this ticket
-
       // get only the Ids of each item
       const itemIds: number[] = [];
       items.forEach(item => {
         itemIds.push(Number(item.id));
       });
 
-      await this.removeUserFromTicketItems(uid, ticketUser.id, itemIds, ticketId, true);
+      await this.removeUserFromTicketItems(uid, ticketUser.id, itemIds, ticketId, sendNotification);
     }
     return null;
   }
@@ -347,12 +346,12 @@ export class TicketItemService {
     const ticketUser = await ticketUserRepo.findOne({ ticket: { id: ticketId }, user: { uid } }, { relations: ['user', 'user.userDetail'] });
 
     if (ticketUser) {
-      // get all ticket items that the user is not part of
+      // get all ticket items that the user is **NOT** part of
       const ticketItemRepo = await getRepository(TicketItem);
-      const items = await ticketItemRepo.find({where: {ticket: ticketId}});
-
-      console.log(items);
-      // remove user from all ticket items that they had selected on this ticket
+      const items = await ticketItemRepo.createQueryBuilder('ticketItem')
+        .leftJoin('ticketItem.users', 'ticketUser', 'ticketUser.user = :uid', { uid })
+        .where('ticketItem.ticket = :ticketId AND ticketUser.user is NULL', { ticketId })
+        .getMany();
 
       // get only the Ids of each item
       const itemIds: number[] = [];
@@ -360,7 +359,8 @@ export class TicketItemService {
         itemIds.push(Number(item.id));
       });
 
-      await this.addUserToTicketItems(uid, ticketUser.id, itemIds, ticketId, true);
+      await this.addUserToTicketItems(uid, ticketUser.id, itemIds, ticketId, sendNotification);
     }
     return null;
-  }}
+  }
+}
