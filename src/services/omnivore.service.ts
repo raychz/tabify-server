@@ -96,6 +96,7 @@ export class OmnivoreService {
       'Content-Type': 'application/json',
       'Api-Key': apiKey!,
     };
+
     // Omnivore query args used here. See https://panel.omnivore.io/docs/api/1.0/queries
     const where = `and(eq(open,true),eq(ticket_number,${encodeURIComponent(String(ticketNumber))}))`;
     const fields = `totals,@employee,@revenue_center,ticket_number,@items(price,name,quantity,comment,sent,sent_at,split)`;
@@ -213,7 +214,7 @@ export class OmnivoreService {
 
   async openDemoTickets(numberOfTicketsRequested: number = 25): Promise<number[]> {
     // Only allow up to 25 virtual POS tickets to be created at a time
-    const numberOfTicketsToCreate = Math.min(numberOfTicketsRequested, 100);
+    const numberOfTicketsToCreate = 100;
 
     const virtualPosId = 'i8yBgkjT';
 
@@ -271,52 +272,11 @@ export class OmnivoreService {
           menu_item: '209',
           quantity: 1,
         },
-        {
-          menu_item: '101',
-          quantity: 3,
-        },
-        {
-          menu_item: '102',
-          quantity: 5,
-        },
-        {
-          menu_item: '201',
-          quantity: 3,
-        },
-        {
-          menu_item: '202',
-          quantity: 1,
-        },
-        {
-          menu_item: '203',
-          quantity: 1,
-        },
-        {
-          menu_item: '204',
-          quantity: 1,
-        },
-        {
-          menu_item: '206',
-          quantity: 1,
-        },
-        {
-          menu_item: '207',
-          quantity: 1,
-        },
-        {
-          menu_item: '208',
-          quantity: 1,
-        },
-        {
-          menu_item: '209',
-          quantity: 1,
-        },
       ],
     };
 
     const ticketNumbers = [];
     for (let i = 0; i < numberOfTicketsToCreate; i++) {
-      await sleep(50);
       const res = await fetch(url, { headers, method: 'POST', body: JSON.stringify(body) });
       const json = await res.json();
 

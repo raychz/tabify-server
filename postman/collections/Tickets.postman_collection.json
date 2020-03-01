@@ -1,0 +1,225 @@
+{
+	"info": {
+		"_postman_id": "1fcbaa8b-1176-4b1e-b5d7-d53d2be04388",
+		"name": "Tickets",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Void Ticket",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Api-Key",
+						"type": "text",
+						"value": "{{omnivoreApiKey}}"
+					},
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"void\": true\n}"
+				},
+				"url": {
+					"raw": "https://api.omnivore.io/1.0/locations/cx9pap8i/tickets/201912129",
+					"protocol": "https",
+					"host": [
+						"api",
+						"omnivore",
+						"io"
+					],
+					"path": [
+						"1.0",
+						"locations",
+						"cx9pap8i",
+						"tickets",
+						"201912129"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Open Ticket",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "eyJhbGciOiJSUzI1NiIsImtpZCI6IjUxNDAyYjNkMDQyYjI5NzY5NDNmMDVmZTJlZDQyOWI3MzY0M2Y2NTEiLCJ0eXAiOiJKV1QifQ.eyJuYW1lIjoiUmF5IENoYXZleiIsImlzcyI6Imh0dHBzOi8vc2VjdXJldG9rZW4uZ29vZ2xlLmNvbS90YWJpZnktNDA3NDYiLCJhdWQiOiJ0YWJpZnktNDA3NDYiLCJhdXRoX3RpbWUiOjE1NzY0Nzc4MjYsInVzZXJfaWQiOiI1Sk9SWUVSdWo0U3ExbFJjOXZESGFiQkdsekIzIiwic3ViIjoiNUpPUllFUnVqNFNxMWxSYzl2REhhYkJHbHpCMyIsImlhdCI6MTU3OTI5NDM4MiwiZXhwIjoxNTc5Mjk3OTgyLCJlbWFpbCI6ImNoYXZlenJAbWl0LmVkdSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJmaXJlYmFzZSI6eyJpZGVudGl0aWVzIjp7ImVtYWlsIjpbImNoYXZlenJAbWl0LmVkdSJdfSwic2lnbl9pbl9wcm92aWRlciI6InBhc3N3b3JkIn19.WSb74bFN_QHsaeM21dMhfTQACsFQ6xsTE7GGZK2KfKKYrda_5M3RZpAmeNUgkYyAWPcbIBqlhTWQZDbfVgAVZfYzVWjyZ__JY6uFOVA5tvushyVxrtArBxXpXQmkVqumaSy8m7Ysbgxy6F4EyjKtNWNkb7uNfGIXz-yW6y7YnNCporD_fyH9x9WiY6OXF5pqssCFhhzYRQkSkl3XU6rds6_Pap6gC8rhjrfUmkXyKNLyNWhuG46TZr3fmSCJfr82zUMDS3fIjN0QCbAHIX_ApVbQkgOJXP0xsyRLYocYMi6O_IqHpEura9C3tLOvmkqzCDiT4kCdAK55IIw4gF0kOg",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"numberOfTickets\": 50\n}"
+				},
+				"url": {
+					"raw": "{{serverUrl}}:{{serverPort}}/tickets/demo-tickets",
+					"host": [
+						"{{serverUrl}}"
+					],
+					"port": "{{serverPort}}",
+					"path": [
+						"tickets",
+						"demo-tickets"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add User to Ticket",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{serverUrl}}:{{serverPort}}/ticket/90027/addUserToTicket",
+					"host": [
+						"{{serverUrl}}"
+					],
+					"port": "{{serverPort}}",
+					"path": [
+						"ticket",
+						"90027",
+						"addUserToTicket"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Make Ticket Payment",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "eyJhbGciOiJSUzI1NiIsImtpZCI6ImZhMWQ3NzBlZWY5ZWFhNjU0MzY1ZGE5MDhjNDIzY2NkNzY4ODkxMDUiLCJ0eXAiOiJKV1QifQ.eyJuYW1lIjoiUmF5bW9uZCBDaGF2ZXoiLCJwaWN0dXJlIjoiaHR0cHM6Ly9ncmFwaC5mYWNlYm9vay5jb20vMjU0MjkzNzkwNTczMTg2Ny9waWN0dXJlIiwiaXNzIjoiaHR0cHM6Ly9zZWN1cmV0b2tlbi5nb29nbGUuY29tL3RhYmlmeS00MDc0NiIsImF1ZCI6InRhYmlmeS00MDc0NiIsImF1dGhfdGltZSI6MTU3MDY3NDI5MiwidXNlcl9pZCI6IjRGVTE3NFVSaFFVbEp3OXV4amllZVNONHZpMDMiLCJzdWIiOiI0RlUxNzRVUmhRVWxKdzl1eGppZWVTTjR2aTAzIiwiaWF0IjoxNTcxMjkwNjc5LCJleHAiOjE1NzEyOTQyNzksImVtYWlsIjoicmF5bW9uZDc5OTA3XzFAeWFob28uY29tIiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJmaXJlYmFzZSI6eyJpZGVudGl0aWVzIjp7ImZhY2Vib29rLmNvbSI6WyIyNTQyOTM3OTA1NzMxODY3Il0sImVtYWlsIjpbInJheW1vbmQ3OTkwN18xQHlhaG9vLmNvbSJdfSwic2lnbl9pbl9wcm92aWRlciI6ImZhY2Vib29rLmNvbSJ9fQ.qRi6N6c2V1Go0FSz6G-NDHdE28rttEC_HOqHLEKGyDS4P1xU5lTITwUVCQEKMD14Bi1IbVbjMaaweeYhSCawEZ0ieK0Sh8KzDBSdmjjMibgBjnmn18J-Dr9E4a63gM3W_WpCIuJJoSzUU7Of0Wri77D2LYqICEC1oUeTi6eo_SfrQDZicbQeQfmK8YW6sY81x4zVewGNY2qXcnkYwMEFDhFC-cr2w2ZWdffkPoi4uCxbbmr56b71pvyq5xQhvde-xvnQUiYlTIMk7IHKyuw-C67EVh03KTv8PQgAY_A4enmcjjZvQ5s_h5ZZdfs_yfnCIAqvBko5odBC2zOZEfcblA",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"paymentMethodId\": 49,\n    \"amount\": 10415,\n    \"tip\": 1000\n}"
+				},
+				"url": {
+					"raw": "{{serverUrl}}:{{serverPort}}/tickets/90048/payments",
+					"host": [
+						"{{serverUrl}}"
+					],
+					"port": "{{serverPort}}",
+					"path": [
+						"tickets",
+						"90048",
+						"payments"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add items to ticket",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Api-Key",
+						"value": "{{omnivoreApiKey}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"items\": [\n        {\n            \"menu_item\": \"1843-4-40\",\n            \"quantity\": 1\n        },\n        {\n            \"menu_item\": \"1843-4-40\",\n            \"quantity\": 1\n        },\n        {\n            \"menu_item\": \"1843-4-40\",\n            \"quantity\": 1\n        },\n        {\n            \"menu_item\": \"1843-4-40\",\n            \"quantity\": 1\n        }\n    ]\n}"
+				},
+				"url": {
+					"raw": "https://api.omnivore.io/1.0/locations/{{omnivoreLocationId}}/tickets/2019121153/items/",
+					"protocol": "https",
+					"host": [
+						"api",
+						"omnivore",
+						"io"
+					],
+					"path": [
+						"1.0",
+						"locations",
+						"{{omnivoreLocationId}}",
+						"tickets",
+						"2019121153",
+						"items",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add discounts to ticket",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					},
+					{
+						"key": "Api-Key",
+						"type": "text",
+						"value": "{{omnivoreApiKey}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "[\n    {\n        \"discount\": \"1847-53-17\",\n        \"value\": 20\n    }\n]"
+				},
+				"url": {
+					"raw": "https://api.omnivore.io/1.0/locations/{{omnivoreLocationId}}/tickets/2019121254/discounts/",
+					"protocol": "https",
+					"host": [
+						"api",
+						"omnivore",
+						"io"
+					],
+					"path": [
+						"1.0",
+						"locations",
+						"{{omnivoreLocationId}}",
+						"tickets",
+						"2019121254",
+						"discounts",
+						""
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}

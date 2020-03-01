@@ -35,4 +35,15 @@ export class TicketItemController {
     itemId = Number(itemId);
     return await this.ticketItemService.removeUserFromTicketItems(uid, ticketUserId, [itemId], ticketId, true);
   }
+
+  /**
+   * get ticket items for logged in user, for a ticket
+   */
+  @Get('/user')
+  async getTicketItemsForUser(
+    @User('uid') uid: string,
+    @Param('ticketId') ticketId: number,
+  ) {
+    return await this.ticketItemService.getTicketItemsForUser(ticketId, uid);
+  }
 }

@@ -1,7 +1,8 @@
-import { Get, Controller, Query, Res, Post, Body, Put, Param, BadRequestException, NotFoundException, NotImplementedException, HttpStatus } from '@nestjs/common';
+import { Get, Controller, Query, Res, Post, Body, Put, Param, BadRequestException, NotFoundException, NotImplementedException, HttpStatus, Logger } from '@nestjs/common';
 import { FirebaseService, FraudPreventionCodeService, TicketService, OmnivoreService, StoryService, TicketUserService } from '@tabify/services';
 import { User } from '../decorators/user.decorator';
 import { Response } from 'express';
+import { MoreThanOrEqual } from 'typeorm';
 
 @Controller('tickets')
 export class TicketController {
@@ -38,7 +39,15 @@ export class TicketController {
     @User('uid') uid: string,
     @Query() params: any,
   ) {
-    const { id, ticket_number, location } = params;
+    const { opened_recently, id, ticket_number, location } = params;
+
+    // get ticket that was created in the last 6 hours
+    if (opened_recently && Boolean(JSON.parse(opened_recently))) {
+      const date = new Date();
+      date.setUTCHours(date.getUTCHours() - 6);
+      params.date_created = MoreThanOrEqual(date);
+    }
+    delete params.opened_recently;
 
     if (!location && (!ticket_number || !id)) {
       throw new BadRequestException('Missing ticket number and/or location');
@@ -57,16 +66,17 @@ export class TicketController {
 
   @Post()
   async createTicket(@Body() body: any, @Res() res: Response) {
-    const { ticket_number, location } = body;
+    const { ticket_number, location, opened_recently } = body;
 
     // Get ticket data from Omnivore
     const omnivoreTicket = await this.omnivoreService.getTicketByTicketNumber(
       location,
-      ticket_number,
+      ticket_number
     );
 
+    const openedRecently = opened_recently && Boolean(JSON.parse(opened_recently));
     // Create ticket in our database
-    const { created, ticket: newTicket } = await this.ticketService.createTicket(omnivoreTicket,
+    const { created, ticket: newTicket } = await this.ticketService.createTicket(omnivoreTicket, openedRecently,
       ['items', 'server', 'items.users', 'items.users.user', 'items.users.user.userDetail', 'location', 'users', 'users.user', 'users.user.userDetail', 'ticketTotal'],
     );
 

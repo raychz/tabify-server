@@ -271,6 +271,18 @@ export class TicketItemService {
     return ticketItemRepo.find({ where: { ticket: ticketId }, relations: ['users'] });
   }
 
+  /** get ticket items for a user, for a ticket */
+  async getTicketItemsForUser(ticketId: number, uid: string) {
+    const ticketItemRepo = await getRepository(TicketItem);
+    const items = await ticketItemRepo.createQueryBuilder('ticketItem')
+      .innerJoinAndSelect('ticketItem.users', 'ticketItemUsers')
+      .innerJoinAndSelect('ticketItemUsers.user', 'ticketItemsUsersUser', 'ticketItemsUsersUser.uid = :uid', { uid })
+      .where('ticketItem.ticket = :ticketId', { ticketId })
+      .getMany();
+
+    return items;
+  }
+
   /** Distributes the cost of an item evenly amongst ticket item users */
   private distributeItemPrice(price: number, ticketItemUsers: TicketItemUser[]) {
     currency(price / 100)

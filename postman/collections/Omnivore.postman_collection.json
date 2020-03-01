@@ -1,0 +1,376 @@
+{
+	"info": {
+		"_postman_id": "1bdb4981-2866-42fc-b8e1-271da41897ad",
+		"name": "Omnivore",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Open Ticket (All In One) (LOTS OF ITEMS)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Api-Key",
+						"value": "87bfca55d94a48a9881d5ddaa4148548",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"employee\": \"100\",\n    \"order_type\": \"1\",\n    \"revenue_center\": \"1\",\n    \"items\": [\n        {\n            \"menu_item\": \"101\",\n            \"quantity\": 3\n        },\n        {\n            \"menu_item\": \"102\",\n            \"quantity\": 5\n        },\n        {\n            \"menu_item\": \"201\",\n            \"quantity\": 3\n        },\n        {\n            \"menu_item\": \"202\",\n            \"quantity\": 1\n        },\n        {\n            \"menu_item\": \"203\",\n            \"quantity\": 1\n        },\n        {\n            \"menu_item\": \"204\",\n            \"quantity\": 1\n        },\n        {\n            \"menu_item\": \"206\",\n            \"quantity\": 1\n        },\n        {\n            \"menu_item\": \"207\",\n            \"quantity\": 1\n        },\n        {\n            \"menu_item\": \"208\",\n            \"quantity\": 1\n        },\n        {\n            \"menu_item\": \"209\",\n            \"quantity\": 1\n        },\n        {\n            \"menu_item\": \"101\",\n            \"quantity\": 3\n        },\n        {\n            \"menu_item\": \"102\",\n            \"quantity\": 5\n        },\n        {\n            \"menu_item\": \"201\",\n            \"quantity\": 3\n        },\n        {\n            \"menu_item\": \"202\",\n            \"quantity\": 1\n        },\n        {\n            \"menu_item\": \"203\",\n            \"quantity\": 1\n        },\n        {\n            \"menu_item\": \"204\",\n            \"quantity\": 1\n        },\n        {\n            \"menu_item\": \"206\",\n            \"quantity\": 1\n        },\n        {\n            \"menu_item\": \"207\",\n            \"quantity\": 1\n        },\n        {\n            \"menu_item\": \"208\",\n            \"quantity\": 1\n        },\n        {\n            \"menu_item\": \"209\",\n            \"quantity\": 1\n        },\n        {\n            \"menu_item\": \"101\",\n            \"quantity\": 3\n        },\n        {\n            \"menu_item\": \"102\",\n            \"quantity\": 5\n        },\n        {\n            \"menu_item\": \"201\",\n            \"quantity\": 3\n        },\n        {\n            \"menu_item\": \"202\",\n            \"quantity\": 1\n        },\n        {\n            \"menu_item\": \"203\",\n            \"quantity\": 1\n        },\n        {\n            \"menu_item\": \"204\",\n            \"quantity\": 1\n        },\n        {\n            \"menu_item\": \"206\",\n            \"quantity\": 1\n        },\n        {\n            \"menu_item\": \"207\",\n            \"quantity\": 1\n        },\n        {\n            \"menu_item\": \"208\",\n            \"quantity\": 1\n        },\n        {\n            \"menu_item\": \"209\",\n            \"quantity\": 1\n        },\n        {\n            \"menu_item\": \"101\",\n            \"quantity\": 3\n        },\n        {\n            \"menu_item\": \"102\",\n            \"quantity\": 5\n        },\n        {\n            \"menu_item\": \"201\",\n            \"quantity\": 3\n        },\n        {\n            \"menu_item\": \"202\",\n            \"quantity\": 1\n        },\n        {\n            \"menu_item\": \"203\",\n            \"quantity\": 1\n        },\n        {\n            \"menu_item\": \"204\",\n            \"quantity\": 1\n        },\n        {\n            \"menu_item\": \"206\",\n            \"quantity\": 1\n        },\n        {\n            \"menu_item\": \"207\",\n            \"quantity\": 1\n        },\n        {\n            \"menu_item\": \"208\",\n            \"quantity\": 1\n        },\n        {\n            \"menu_item\": \"208\",\n            \"quantity\": 1\n        }\n    ]\n}"
+				},
+				"url": {
+					"raw": "https://api.omnivore.io/1.0/locations/i8yBgkjT/tickets",
+					"protocol": "https",
+					"host": [
+						"api",
+						"omnivore",
+						"io"
+					],
+					"path": [
+						"1.0",
+						"locations",
+						"i8yBgkjT",
+						"tickets"
+					]
+				},
+				"description": "See https://panel.omnivore.io/docs/api/1.0/locations/:location_id/tickets/"
+			},
+			"response": []
+		},
+		{
+			"name": "Open Ticket (All In One) (FEW ITEMS)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Api-Key",
+						"type": "text",
+						"value": "87bfca55d94a48a9881d5ddaa4148548"
+					},
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"employee\": \"100\",\n    \"order_type\": \"1\",\n    \"revenue_center\": \"1\",\n    \"items\": [\n        {\n            \"menu_item\": \"101\",\n            \"quantity\": 3\n        },\n        {\n            \"menu_item\": \"102\",\n            \"quantity\": 5\n        },\n        {\n            \"menu_item\": \"201\",\n            \"quantity\": 3\n        },\n        {\n            \"menu_item\": \"202\",\n            \"quantity\": 1\n        },\n        {\n            \"menu_item\": \"203\",\n            \"quantity\": 1\n        },\n        {\n            \"menu_item\": \"204\",\n            \"quantity\": 1\n        }\n    ]\n}"
+				},
+				"url": {
+					"raw": "https://api.omnivore.io/1.0/locations/i8yBgkjT/tickets",
+					"protocol": "https",
+					"host": [
+						"api",
+						"omnivore",
+						"io"
+					],
+					"path": [
+						"1.0",
+						"locations",
+						"i8yBgkjT",
+						"tickets"
+					]
+				},
+				"description": "See https://panel.omnivore.io/docs/api/1.0/locations/:location_id/tickets/"
+			},
+			"response": []
+		},
+		{
+			"name": "Open Ticket",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Api-Key",
+						"type": "text",
+						"value": "{{omnivoreApiKey}}"
+					},
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"employee\": \"10\",\n    \"order_type\": \"1\",\n    \"revenue_center\": \"5\",\n    \"name\": \"Tabify Test 9\",\n    \"items\": [\n        {\n            \"menu_item\": \"1843-4-40\",\n            \"quantity\": 3\n        }\n    ]\n}"
+				},
+				"url": {
+					"raw": "https://api.omnivore.io/1.0/locations/cx9pap8i/tickets",
+					"protocol": "https",
+					"host": [
+						"api",
+						"omnivore",
+						"io"
+					],
+					"path": [
+						"1.0",
+						"locations",
+						"cx9pap8i",
+						"tickets"
+					]
+				},
+				"description": "See https://panel.omnivore.io/docs/api/1.0/locations/:location_id/tickets/"
+			},
+			"response": []
+		},
+		{
+			"name": "Add Items to Ticket",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Api-Key",
+						"type": "text",
+						"value": "{{omnivoreApiKey}}"
+					},
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"items\": [\n        {\n            \"menu_item\": \"321-40-33\",\n            \"quantity\": 1\n        },\n        {\n            \"menu_item\": \"1038-30-1\",\n            \"quantity\": 1\n        }\n    ]\n}"
+				},
+				"url": {
+					"raw": "https://api.omnivore.io/1.0/locations/cx9pap8i/tickets/2019102128/items/",
+					"protocol": "https",
+					"host": [
+						"api",
+						"omnivore",
+						"io"
+					],
+					"path": [
+						"1.0",
+						"locations",
+						"cx9pap8i",
+						"tickets",
+						"2019102128",
+						"items",
+						""
+					]
+				},
+				"description": "See https://panel.omnivore.io/docs/api/1.0/locations/:location_id/tickets/"
+			},
+			"response": []
+		},
+		{
+			"name": "List Menu Items",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Api-Key",
+						"value": "{{omnivoreApiKey}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "https://api.omnivore.io/1.0/locations/{{omnivoreLocationId}}/menu/items",
+					"protocol": "https",
+					"host": [
+						"api",
+						"omnivore",
+						"io"
+					],
+					"path": [
+						"1.0",
+						"locations",
+						"{{omnivoreLocationId}}",
+						"menu",
+						"items"
+					]
+				},
+				"description": "See https://panel.omnivore.io/docs/api/1.0/locations/:location_id/menu/items/"
+			},
+			"response": []
+		},
+		{
+			"name": "List Employees",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Api-Key",
+						"type": "text",
+						"value": "{{omnivoreApiKey}}"
+					}
+				],
+				"url": {
+					"raw": "https://api.omnivore.io/1.0/locations/cx9pap8i/employees",
+					"protocol": "https",
+					"host": [
+						"api",
+						"omnivore",
+						"io"
+					],
+					"path": [
+						"1.0",
+						"locations",
+						"cx9pap8i",
+						"employees"
+					]
+				},
+				"description": "See https://panel.omnivore.io/docs/api/1.0/locations/:location_id/menu/items/"
+			},
+			"response": []
+		},
+		{
+			"name": "List Revenue Centers",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Api-Key",
+						"type": "text",
+						"value": "{{omnivoreApiKey}}"
+					}
+				],
+				"url": {
+					"raw": "https://api.omnivore.io/1.0/locations/cx9pap8i/revenue_centers",
+					"protocol": "https",
+					"host": [
+						"api",
+						"omnivore",
+						"io"
+					],
+					"path": [
+						"1.0",
+						"locations",
+						"cx9pap8i",
+						"revenue_centers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "List Order Types",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Api-Key",
+						"type": "text",
+						"value": "{{omnivoreApiKey}}"
+					}
+				],
+				"url": {
+					"raw": "https://api.omnivore.io/1.0/locations/cx9pap8i/order_types/",
+					"protocol": "https",
+					"host": [
+						"api",
+						"omnivore",
+						"io"
+					],
+					"path": [
+						"1.0",
+						"locations",
+						"cx9pap8i",
+						"order_types",
+						""
+					]
+				},
+				"description": "See https://panel.omnivore.io/docs/api/1.0/locations/:location_id/menu/items/"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Ticket",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Api-Key",
+						"type": "text",
+						"value": "{{omnivoreApiKey}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "https://api.omnivore.io/1.0/locations/{{omnivoreLocationId}}/tickets/2019121153",
+					"protocol": "https",
+					"host": [
+						"api",
+						"omnivore",
+						"io"
+					],
+					"path": [
+						"1.0",
+						"locations",
+						"{{omnivoreLocationId}}",
+						"tickets",
+						"2019121153"
+					]
+				},
+				"description": "See https://panel.omnivore.io/docs/api/1.0/locations/:location_id/menu/items/"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Ticket Copy",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Api-Key",
+						"type": "text",
+						"value": "{{omnivoreApiKey}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "https://api.omnivore.io/1.0/locations/{{omnivoreLocationId}}/tickets/2019121153",
+					"protocol": "https",
+					"host": [
+						"api",
+						"omnivore",
+						"io"
+					],
+					"path": [
+						"1.0",
+						"locations",
+						"{{omnivoreLocationId}}",
+						"tickets",
+						"2019121153"
+					]
+				},
+				"description": "See https://panel.omnivore.io/docs/api/1.0/locations/:location_id/menu/items/"
+			},
+			"response": []
+		},
+		{
+			"name": "Location Service Charges",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": ""
+				}
+			},
+			"response": []
+		}
+	]
+}

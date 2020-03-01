@@ -1,7 +1,7 @@
 import { Injectable, Logger, BadRequestException, NotFoundException, InternalServerErrorException } from '@nestjs/common';
-import { getRepository, getConnection, FindOneOptions, FindConditions, InsertResult } from 'typeorm';
+import { getRepository, getConnection, FindOneOptions, FindConditions, InsertResult, MoreThanOrEqual } from 'typeorm';
 import { auth } from 'firebase-admin';
-import { FirebaseService, OmnivoreService, UserService, SMSService, ServerService } from '@tabify/services';
+import { FirebaseService, OmnivoreService, UserService, SMSService, ServerService, AblyService } from '@tabify/services';
 import {
   Ticket as TicketEntity,
   TicketItem as TicketItemEntity,
@@ -9,7 +9,7 @@ import {
   TicketItem,
   TicketTotal,
 } from '@tabify/entities';
-import { TicketStatus } from '../enums';
+import { TicketStatus, TicketUpdates } from '../enums';
 
 @Injectable()
 export class TicketService {
@@ -18,6 +18,7 @@ export class TicketService {
     private readonly messageService: SMSService,
     private readonly serverService: ServerService,
     private readonly userService: UserService,
+    private readonly ablyService: AblyService,
   ) { }
 
   /**
@@ -54,9 +55,22 @@ export class TicketService {
    * Creates the ticket, returns it if it already exists
    * @param ticket
    */
-  async createTicket(ticket: TicketEntity, relations: string[]) {
+  async createTicket(ticket: TicketEntity, opened_recently: boolean, relations: string[]) {
+
+    const where: FindConditions<TicketEntity> = {
+      location: ticket.location, tab_id: ticket.tab_id,
+      ticket_number: ticket.ticket_number, ticket_status: TicketStatus.OPEN,
+    };
+
+    // see if a ticket was created in the last 6 hours
+    if (opened_recently) {
+      const date = new Date();
+      date.setUTCHours(date.getUTCHours() - 6);
+      where.date_created = MoreThanOrEqual(date);
+    }
+
     const ticketFindOptions = {
-      where: { location: ticket.location, tab_id: ticket.tab_id, ticket_number: ticket.ticket_number, ticket_status: TicketStatus.OPEN },
+      where,
       relations,
       lock: { mode: 'pessimistic_write' },
     };
@@ -141,6 +155,8 @@ export class TicketService {
     await this.userService.setNewUsersFalse(ticketId);
 
     await this.serverService.sendTicketCloseSMSToServer(ticketId);
+
+    await this.ablyService.publish(TicketUpdates.TICKET_UPDATED, { ticket_status: TicketStatus.CLOSED }, ticketId.toString());
 
     return res;
   }

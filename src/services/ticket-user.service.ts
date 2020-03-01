@@ -145,7 +145,7 @@ export class TicketUserService {
           let ticketTotal = await this.ticketTotalService.getTicketTotals(ticketId);
           if (!ticketTotal) throw new InternalServerErrorException('Cannot load the ticket totals.');
 
-          let discountAmount = currency(ticketTotal.sub_total / 100).multiply(0.2).intValue;
+          let discountAmount = currency(ticketTotal.sub_total / 100).multiply(0.15).intValue;
           let distributedDiscount = currency(discountAmount / 100).distribute(ticketUsers.length);
 
           // Verify that every user's subtotal remains > $0.25 by applying the discount
@@ -156,7 +156,7 @@ export class TicketUserService {
           const isPiccolas = ticket.location!.omnivore_id === 'cx9pap8i';
 
           // Apply discount on this ticket if containsNewUser and compatibleDiscount and isPiccolas
-          if (compatibleDiscount && isPiccolas) {
+          if (discountAmount > 0 && compatibleDiscount && isPiccolas) {
             Logger.log('This discount is compatible. Apply it!');
             // TODO: Move discount id to database
             const discounts: OmnivoreTicketDiscount[] = [{ discount: '1847-53-17', value: discountAmount }];
@@ -176,7 +176,7 @@ export class TicketUserService {
                 tax: totals.tax,
                 tips: totals.tips,
                 total: totals.total,
-              });
+              }, ticketId);
               Logger.log(response, 'The updated ticket with discount');
             } catch (e) {
               Logger.error(e, undefined, 'An error occurred while adding the discount ticket item');
@@ -290,7 +290,7 @@ export class TicketUserService {
 
       if (sendNotification) {
         const messages: { name: string, data: any }[] = [
-          { name: TicketUpdates.TICKET_USERS_UPDATED, data: updatedTicketUsers }
+          { name: TicketUpdates.TICKET_USERS_UPDATED, data: updatedTicketUsers },
         ];
         if (ticketTotal) {
           messages.push({ name: TicketUpdates.TICKET_TOTALS_UPDATED, data: ticketTotal });
