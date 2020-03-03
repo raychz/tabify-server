@@ -8,6 +8,7 @@ import { retry, AttemptContext, PartialAttemptOptions } from '@lifeomic/attempt'
 import { concatSets } from '../utilities/general.utilities';
 import { ItemIdToTicketItemUsersSet } from 'interfaces/ItemIdToTicketItemUsersSet';
 import { ItemIdToTicketItemUsersArray } from 'interfaces/ItemIdToTicketItemUsersArray';
+import { TicketService } from './ticket.service';
 
 @Injectable()
 export class TicketItemService {
@@ -20,7 +21,12 @@ export class TicketItemService {
     jitter: true,
   };
 
-  constructor(private ticketUserService: TicketUserService, private readonly ablyService: AblyService, private userService: UserService) { }
+  constructor(
+    private ticketUserService: TicketUserService,
+    private readonly ablyService: AblyService,
+    private userService: UserService,
+    private ticketService: TicketService,
+  ) { }
 
   async addUserToTicketItems(uid: string, ticketUserId: number, itemIds: number[], ticketId: number, sendNotification: boolean) {
     const ticketUser = await this.ticketUserService.getTicketUserByTicketUserId(ticketUserId);
@@ -321,6 +327,12 @@ export class TicketItemService {
         }
       } catch (e) {
         throw new InternalServerErrorException('An error occured while deleting ticket user from DB.');
+      }
+
+      // if no more ticket users left for this ticket, delete the ticket
+      const ticketUsers = await this.ticketUserService.getTicketUsers(ticketId);
+      if (ticketUsers.length === 0) {
+        await this.ticketService.deleteTicket(ticketId);
       }
     }
 
