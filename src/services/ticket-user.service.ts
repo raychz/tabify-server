@@ -21,6 +21,16 @@ export class TicketUserService {
   }
 
   /**
+   * get all ticket users for a ticket
+   * @param ticketUserId number
+   */
+  async getTicketUsers(ticketId: number) {
+    const ticketUserRepo = await getRepository(TicketUser);
+    const ticketUsers = await ticketUserRepo.find({ where: { ticker: ticketId } });
+    return ticketUsers;
+  }
+
+  /**
    * Adds user to existing database ticket
    */
   async addUserToTicket(ticketId: number, uid: string, sendNotification: boolean) {
