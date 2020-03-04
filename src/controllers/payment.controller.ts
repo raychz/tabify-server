@@ -2,7 +2,6 @@ import { Get, Controller, Body, Param, Post, Delete, Res, Logger } from '@nestjs
 import { PaymentMethodService, SpreedlyService, TicketService, TicketPaymentService } from '@tabify/services';
 import { User } from '../decorators/user.decorator';
 import { Ticket } from '@tabify/entities';
-import { LogContext } from 'twilio/lib/rest/serverless/v1/service/environment/log';
 
 @Controller('tickets/:ticketId/payments')
 export class PaymentController {
@@ -28,8 +27,6 @@ export class PaymentController {
     const { token: paymentMethodToken } = paymentMethod!;
     const ticket = await this.ticketService.getTicket({ id: ticketId },
     ['location', 'ticketTotal', 'server', 'users', 'users.user']) as Ticket;
-
-    Logger.log(tip);
 
     const updatedTotal = await this.ticketPaymentService.sendTicketPayment(uid, {
       ticket,

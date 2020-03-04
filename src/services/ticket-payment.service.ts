@@ -72,13 +72,11 @@ export class TicketPaymentService {
       });
 
       const ticketUser = details.ticket.users!.find(user => user.user!.uid === uid);
-      // check if the user already has tips saved - $5 service harge on POS resets tip to 0 otherwise
+      // check if the user already has tips saved - $5 service charge on POS resets tip to 0 otherwise
       if (ticketUser && !ticketUser.tips) {
         ticketUser.tips = response.body.tip;
         const ticketUserRepo = await getRepository(TicketUser);
         ticketUserRepo.save(ticketUser);
-      } else {
-        Logger.error('Could not save the ticket user\'s tip because the ticket user was not found');
       }
     } else {
       Logger.error(spreedlyResponse, 'Error occurred while parsing the Spreedly response');
