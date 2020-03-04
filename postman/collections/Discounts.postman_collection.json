@@ -1,0 +1,41 @@
+{
+	"info": {
+		"_postman_id": "0072e07a-9c6d-4f85-98ab-5a3e59c4ae6e",
+		"name": "Discounts",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "List Discounts",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Api-Key",
+						"type": "text",
+						"value": "{{omnivoreApiKey}}"
+					}
+				],
+				"url": {
+					"raw": "https://api.omnivore.io/1.0/locations/{{omnivoreLocationId}}/discounts/",
+					"protocol": "https",
+					"host": [
+						"api",
+						"omnivore",
+						"io"
+					],
+					"path": [
+						"1.0",
+						"locations",
+						"{{omnivoreLocationId}}",
+						"discounts",
+						""
+					]
+				},
+				"description": "See https://panel.omnivore.io/docs/api/1.0/locations/:location_id/menu/items/"
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}
