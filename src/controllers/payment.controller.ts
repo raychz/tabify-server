@@ -38,16 +38,16 @@ export class PaymentController {
       amount -= (response.res.dollar_value + response.res.taxDifference);
     }
 
-    // const updatedTotal = await this.ticketPaymentService.sendTicketPayment(uid, {
-    //   ticket,
-    //   paymentMethodToken,
-    //   amount,
-    //   tip,
-    //   coupon,
-    // });
+    const updatedTotal = await this.ticketPaymentService.sendTicketPayment(uid, {
+      ticket,
+      paymentMethodToken,
+      paymentMethodId,
+      amount,
+      tip,
+      coupon,
+    });
 
-    // return updatedTotal;
-    throw new BadRequestException('fail');
+    return updatedTotal;
   }
 
   @Get()

@@ -32,7 +32,6 @@ export class CouponService {
         }
 
         const userCoupons = await query.getMany();
-
         return this.groupCoupons(userCoupons);
     }
 
@@ -69,11 +68,11 @@ export class CouponService {
           const ticketUser = ticket.users!.find( user => user.user!.uid === uid)!;
           // if the user has already applied a coupon, don't let them apply a second one.
           // silently return rather than throwing an error as to not disrupt the rest of the payment flow
-          // if (ticketUser.selected_coupon) {
-          //   const message = 'User has already applied a coupon, cannot apply a second one.';
-          //   Logger.log(message);
-          //   return {coupon: undefined, res: {valid: false, message, dollar_value: 0, taxDifference: 0}};
-          // }
+          if (ticketUser.selected_coupon) {
+            const message = 'User has already applied a coupon, cannot apply a second one.';
+            Logger.log(message);
+            return {coupon: undefined, res: {valid: false, message, dollar_value: 0, taxDifference: 0}};
+          }
           // Apply discount on this ticket if it is compatbile
           if (res.valid) {
             const openDiscountId = ticket.location!.open_discount_id!;
@@ -299,19 +298,15 @@ export class CouponService {
     // assign new users valid coupons
     async assignUsersValidCoupons(userUids: string[]) {
       await getManager().transaction(async (transactionalEntityManager: EntityManager) => {
-        try {
-            const coupons = await transactionalEntityManager.find(Coupon,
-              {where: {applies_to_everyone: true, coupon_end_date: MoreThanOrEqual(new Date())} });
-            const users = await transactionalEntityManager.find(User, {where: { uid: In(userUids) }});
+          const coupons = await transactionalEntityManager.find(Coupon,
+            {where: {applies_to_everyone: true, coupon_end_date: MoreThanOrEqual(new Date())} });
+          const users = await transactionalEntityManager.find(User, {where: { uid: In(userUids) }});
 
-            coupons.forEach(coupon => {
-              users.forEach(user => {
-                transactionalEntityManager.save(UserToCoupons, {usage_count: 0, user, coupon});
-              });
+          coupons.forEach(coupon => {
+            users.forEach(user => {
+              transactionalEntityManager.save(UserToCoupons, {usage_count: 0, user, coupon});
             });
-          } catch (error) {
-            throw new InternalServerErrorException(error);
-          }
+          });
         });
     }
 
@@ -319,24 +314,19 @@ export class CouponService {
     async saveNewCoupon(coupon: Coupon, locationOmnivoreId: string, userUids?: string[]): Promise<Coupon> {
 
         return await getManager().transaction(async (transactionalEntityManager: EntityManager) => {
-          try {
-              const location = await transactionalEntityManager.findOneOrFail(Location, {where: {omnivore_id: locationOmnivoreId}});
-              coupon.location = location;
-              const dbCoupon = await transactionalEntityManager.save(Coupon, coupon);
-              let users: User[];
-              if (userUids) {
-                users = await transactionalEntityManager.find(User, {where: { uid: In(userUids) }});
-              } else {
-                users = await transactionalEntityManager.find(User);
-              }
-              users.forEach(user => {
-                transactionalEntityManager.save(UserToCoupons, {usage_count: 0, user, coupon: dbCoupon});
-              });
-              return dbCoupon;
-            } catch (error) {
-              Logger.log(error);
-              throw new InternalServerErrorException();
+            const location = await transactionalEntityManager.findOneOrFail(Location, {where: {omnivore_id: locationOmnivoreId}});
+            coupon.location = location;
+            const dbCoupon = await transactionalEntityManager.save(Coupon, coupon);
+            let users: User[];
+            if (userUids) {
+              users = await transactionalEntityManager.find(User, {where: { uid: In(userUids) }});
+            } else {
+              users = await transactionalEntityManager.find(User);
             }
+            users.forEach(user => {
+              transactionalEntityManager.save(UserToCoupons, {usage_count: 0, user, coupon: dbCoupon});
+            });
+            return dbCoupon;
           });
     }
 }
