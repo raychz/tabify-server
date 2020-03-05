@@ -36,7 +36,7 @@
     "@sentry/integrations": "^5.12.0",
     "@sentry/node": "^5.12.3",
     "@types/node-fetch": "^2.1.2",
-    "ably": "^1.1.22",
+    "ably": "^1.1.24",
     "cross-env": "^5.2.0",
     "currency.js": "^1.2.2",
     "dotenv-safe": "^8.1.0",
