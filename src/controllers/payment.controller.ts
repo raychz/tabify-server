@@ -1,4 +1,4 @@
-import { Get, Controller, Body, Param, Post, Delete, Res } from '@nestjs/common';
+import { Get, Controller, Body, Param, Post, Delete, Res, Logger } from '@nestjs/common';
 import { PaymentMethodService, SpreedlyService, TicketService, TicketPaymentService } from '@tabify/services';
 import { User } from '../decorators/user.decorator';
 import { Ticket } from '@tabify/entities';
@@ -26,7 +26,7 @@ export class PaymentController {
     const paymentMethod = await this.paymentMethodService.readPaymentMethod(uid, paymentMethodId);
     const { token: paymentMethodToken } = paymentMethod!;
     const ticket = await this.ticketService.getTicket({ id: ticketId },
-    ['location', 'ticketTotal', 'server']) as Ticket;
+    ['location', 'ticketTotal', 'server', 'users', 'users.user']) as Ticket;
 
     const updatedTotal = await this.ticketPaymentService.sendTicketPayment(uid, {
       ticket,
