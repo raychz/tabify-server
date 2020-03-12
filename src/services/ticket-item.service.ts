@@ -96,8 +96,6 @@ export class TicketItemService {
             // Push the new user so that it gets included in the subtotals update below
             const uidsAffected: Set<string> = new Set(ticketItemUsers.map(tiu => tiu.user.uid));
             uidsAffectedAll = new Set([...uidsAffectedAll, ...uidsAffected]);
-
-            return;
           });
         }, this.retryOptions);
     }
@@ -106,7 +104,7 @@ export class TicketItemService {
       async (context: AttemptContext, options) => {
         if (context.attemptNum !== 0) {
           Logger.error(
-            `A failure occurred. Making attempt #$ontext.attemptNum + 1} of updating ticket users after adding user to ticket item..
+            `A failure occurred. Making attempt ${context.attemptNum + 1} of updating ticket users after adding user to ticket item..
             Attempts remaining: ${context.attemptsRemaining}.`,
             undefined,
             'addUserToTicketItem:updatedTicketUsers',
@@ -145,7 +143,9 @@ export class TicketItemService {
     return { updatedTicketItemUsers: updatedTicketItemUsersMap, updatedTicketUsers };
   }
 
-  // removes user from items (itemIds is an array)
+  /**
+   * removes user from items (itemIds is an array)
+   */
   async removeUserFromTicketItems(uid: string, ticketUserId: number, itemIds: number[], ticketId: number, sendNotification: boolean) {
     const ticketUser = await this.ticketUserService.getTicketUserByTicketUserId(ticketUserId);
 
@@ -198,10 +198,8 @@ export class TicketItemService {
 
             if (!updatedTicketItemUsersMap[itemId]) {
               updatedTicketItemUsersMap[itemId] = new Set();
-              concatSets(updatedTicketItemUsersMap[itemId], new Set(ticketItemUsers));
-            } else {
-              concatSets(updatedTicketItemUsersMap[itemId], new Set(ticketItemUsers));
             }
+            concatSets(updatedTicketItemUsersMap[itemId], new Set(ticketItemUsers));
 
             // Evenly distribute the cost of the item amongst the ticket item users
             this.distributeItemPrice(ticketItem.price!, ticketItemUsers);
@@ -350,7 +348,7 @@ export class TicketItemService {
       // get all ticket items that the user is part of
       const ticketItemRepo = await getRepository(TicketItem);
       const items = await ticketItemRepo.createQueryBuilder('ticketItem')
-        .innerJoin('ticketItem.users', 'ticketUser', 'ticketUser.user = :uid', { uid })
+        .innerJoin('ticketItem.users', 'ticketItemUser', 'ticketItemUser.user = :uid', { uid })
         .where('ticketItem.ticket = :ticketId', { ticketId })
         .getMany();
 
@@ -359,7 +357,6 @@ export class TicketItemService {
 
       await this.removeUserFromTicketItems(uid, ticketUser.id, itemIds, ticketId, sendNotification);
     }
-    return null;
   }
 
   /**
@@ -373,8 +370,8 @@ export class TicketItemService {
       // get all ticket items that the user is **NOT** part of
       const ticketItemRepo = await getRepository(TicketItem);
       const items = await ticketItemRepo.createQueryBuilder('ticketItem')
-        .leftJoin('ticketItem.users', 'ticketUser', 'ticketUser.user = :uid', { uid })
-        .where('ticketItem.ticket = :ticketId AND ticketUser.user is NULL', { ticketId })
+        .leftJoin('ticketItem.users', 'ticketItemUser', 'ticketItemUser.user = :uid', { uid })
+        .where('ticketItem.ticket = :ticketId AND ticketItemUser.user is NULL', { ticketId })
         .getMany();
 
       // get only the Ids of each item
@@ -382,6 +379,5 @@ export class TicketItemService {
 
       await this.addUserToTicketItems(uid, ticketUser.id, itemIds, ticketId, sendNotification);
     }
-    return null;
   }
 }
