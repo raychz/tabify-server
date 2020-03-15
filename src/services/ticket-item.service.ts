@@ -42,6 +42,8 @@ export class TicketItemService {
        not ${TicketUserStatus.SELECTING}. Please try again or refresh the app.`);
     }
 
+    // TODO: get ticket items. Put them in a map. And then get item below. Map (ItemId to TicketItem)
+
     for (const itemId of itemIds) {
       await retry(
         async (context: AttemptContext, options) => {
@@ -273,6 +275,13 @@ export class TicketItemService {
   async getTicketItems(ticketId: number, manager: EntityManager) {
     const ticketItemRepo = manager.getRepository(TicketItem);
     return ticketItemRepo.find({ where: { ticket: ticketId }, relations: ['users'] });
+  }
+
+  async getTicketItemsByItemIds(itemIds: number[]) {
+    const ticketItemRepo = await getRepository(TicketItem);
+    return await ticketItemRepo.createQueryBuilder('ticketItem')
+      .where('ticketItem.id IN (:...itemIds', { itemIds })
+      .getMany();
   }
 
   /** get ticket items for a user, for a ticket */
