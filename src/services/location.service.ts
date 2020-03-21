@@ -29,6 +29,14 @@ export class LocationService {
         const nLocation = new LocationEntity();
         nLocation.omnivore_id = location.omnivore_id;
         nLocation.name = location.name;
+
+        if (location.photo_url) {
+            nLocation.photo_url = location.photo_url;
+        } else {
+            // tslint:disable-next-line: max-line-length
+            nLocation.photo_url = 'https://g.foolcdn.com/editorial/images/543929/casual-dining-restaurant.jpg';
+        }
+
         const resLocation = await locationRepo.save(nLocation);
         return resLocation;
     }
