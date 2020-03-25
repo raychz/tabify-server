@@ -1,8 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, OneToOne, JoinColumn, CreateDateColumn } from 'typeorm';
-import { Comment, Like, Ticket } from '@tabify/entities';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, OneToOne, JoinColumn } from 'typeorm';
+import { Comment, Like, Ticket, TabifyBaseEntity } from '@tabify/entities';
 
 @Entity()
-export class Story {
+export class Story extends TabifyBaseEntity {
     @PrimaryGeneratedColumn()
     id!: number;
 
@@ -20,6 +20,4 @@ export class Story {
     @JoinColumn()
     ticket!: Ticket;
 
-    @CreateDateColumn()
-    date_created!: Date;
 }

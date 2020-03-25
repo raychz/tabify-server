@@ -4,17 +4,15 @@ import {
   Column,
   ManyToOne,
   OneToMany,
-  CreateDateColumn,
-  UpdateDateColumn,
   Unique,
   OneToOne,
 } from 'typeorm';
-import { Ticket, User } from '@tabify/entities';
+import { Ticket, User, TabifyBaseEntity } from '@tabify/entities';
 import { TicketPayment } from './ticket-payment.entity';
 
 @Entity()
 @Unique(['user', 'fingerprint'])
-export class PaymentMethod {
+export class PaymentMethod extends TabifyBaseEntity {
   @PrimaryGeneratedColumn()
   id!: number;
 
@@ -50,12 +48,6 @@ export class PaymentMethod {
 
   @Column({ type: 'int', nullable: false })
   year!: number;
-
-  @CreateDateColumn()
-  date_created!: Date;
-
-  @UpdateDateColumn()
-  date_updated!: Date;
 
   @OneToMany(type => TicketPayment, ticketPayment => ticketPayment.paymentMethod)
   ticketPayment!: TicketPayment[];

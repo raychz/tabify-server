@@ -1,8 +1,8 @@
 import { Entity, Column, ManyToMany, OneToMany, OneToOne } from 'typeorm';
-import { Comment, FraudPreventionCode, Like, Ticket, TicketItem, TicketPayment, UserDetail, PaymentMethod, TicketItemUser, TicketUser } from '@tabify/entities';
+import { Comment, FraudPreventionCode, Like, Ticket, TicketItem, TicketPayment, UserDetail, PaymentMethod, TicketItemUser, TicketUser, TabifyBaseEntity } from '@tabify/entities';
 
 @Entity()
-export class User {
+export class User extends TabifyBaseEntity {
   @Column('varchar', { length: 255, primary: true, nullable: false })
   uid!: string;
 

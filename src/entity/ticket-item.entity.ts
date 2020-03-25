@@ -8,10 +8,10 @@ import {
   OneToMany,
   Index,
 } from 'typeorm';
-import { Ticket, User, TicketItemUser} from '@tabify/entities';
+import { Ticket, User, TicketItemUser, TabifyBaseEntity} from '@tabify/entities';
 
 @Entity()
-export class TicketItem {
+export class TicketItem extends TabifyBaseEntity {
   @PrimaryGeneratedColumn()
   id?: number;
 

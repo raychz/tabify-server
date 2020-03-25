@@ -1,10 +1,10 @@
 import { Entity, Column, ManyToOne, PrimaryGeneratedColumn, Unique, Index } from 'typeorm';
-import { Ticket, User } from '@tabify/entities';
+import { Ticket, User, TabifyBaseEntity } from '@tabify/entities';
 import { TicketUserStatus } from '../enums/';
 
 @Entity()
 @Unique(['ticket', 'user'])
-export class TicketUser {
+export class TicketUser extends TabifyBaseEntity {
   @PrimaryGeneratedColumn()
   id!: number;
 

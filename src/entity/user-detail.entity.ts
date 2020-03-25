@@ -1,8 +1,8 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToOne, JoinColumn, ManyToOne, Index } from 'typeorm';
-import { Server, User } from '@tabify/entities';
+import { Server, User, TabifyBaseEntity } from '@tabify/entities';
 
 @Entity()
-export class UserDetail {
+export class UserDetail extends TabifyBaseEntity {
     @PrimaryGeneratedColumn()
     id!: number;
 
