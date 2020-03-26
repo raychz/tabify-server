@@ -1,6 +1,6 @@
 import { Get, Controller, Res, Post, Headers, Body, InternalServerErrorException } from '@nestjs/common';
 import { getRepository } from 'typeorm';
-import { User as UserEntity } from '@tabify/entities';
+import { User as UserEntity, UserSettings } from '@tabify/entities';
 import { FirebaseService, UserService } from '@tabify/services';
 import { User } from '../decorators/user.decorator';
 
@@ -44,6 +44,9 @@ export class UserController {
     // save user details
     const savedUserDetails = await this.userService.createUserDetails(user, referralCode);
 
+    // save user settings
+
+
     return savedUserDetails;
   }
 
@@ -55,4 +58,14 @@ export class UserController {
     const userDetails = await this.userService.getUserDetails(uid);
     return userDetails;
   }
+
+  // get user settings endpoint
+  @Get('/userSettings/')
+
+  /**
+   * User Settings update
+   */
+  @Post('/userSettings/')
+  
+
 }

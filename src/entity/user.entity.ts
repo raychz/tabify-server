@@ -1,5 +1,5 @@
 import { Entity, Column, ManyToMany, OneToMany, OneToOne } from 'typeorm';
-import { Comment, FraudPreventionCode, Like, Ticket, TicketItem, TicketPayment, UserDetail, PaymentMethod, TicketItemUser, TicketUser } from '@tabify/entities';
+import { Comment, FraudPreventionCode, Like, Ticket, TicketItem, TicketPayment, UserDetail, PaymentMethod, TicketItemUser, TicketUser, UserSettings } from '@tabify/entities';
 
 @Entity()
 export class User {
@@ -29,4 +29,8 @@ export class User {
 
   @OneToMany(type => TicketUser, ticketUser => ticketUser.user)
   tickets!: TicketUser[];
+
+  @OneToOne( type => UserSettings, userSetting => userSetting.user )
+  userSettings!: UserSettings;
+
 }

@@ -14,3 +14,4 @@ export * from './ticket-payment.entity';
 export * from './server-reward.entity';
 export * from './ticket-item-user.entity';
 export * from './ticket-user.entity';
+export * from './user-settings.entity';
