@@ -40,7 +40,7 @@
     "cross-env": "^5.2.0",
     "currency.js": "^1.2.2",
     "dotenv-safe": "^8.1.0",
-    "firebase": "^5.8.2",
+    "firebase": "^7.13.0",
     "firebase-admin": "^7.0.0",
     "mysql": "^2.18.1",
     "reflect-metadata": "^0.1.13",
