@@ -1,7 +1,7 @@
 import { Injectable, HttpStatus, NotFoundException, BadGatewayException, InternalServerErrorException, UnprocessableEntityException, BadRequestException } from '@nestjs/common';
 import { getManager, EntityManager } from 'typeorm';
 import fetch from 'node-fetch';
-import { Location as LocationEntity, Ticket, TicketItem } from '@tabify/entities';
+import { Location as LocationEntity, Ticket, TicketItem, TicketTotal } from '@tabify/entities';
 import { LocationService } from '@tabify/services';
 import { sleep } from '../utilities/general.utilities';
 import { OmnivoreTicketItem, OmnivoreTicketDiscount } from '@tabify/interfaces';
@@ -30,8 +30,8 @@ export class OmnivoreService {
       throw Error('Failed fetching ticket from source');
     }
 
-    return (json._embedded.locations as Array<any>).map(
-      (location: any): LocationEntity => ({
+    return (json._embedded.locations).map(
+      (location: any): Omit<LocationEntity, 'id'> => ({
         name: location.name,
         longitude: location.longitude,
         latitude: location.latitude,
@@ -129,17 +129,32 @@ export class OmnivoreService {
       throw new UnprocessableEntityException('Tickets with service/other charges are not currently supported.');
     }
 
-    // use the employee.id to find server in our DB. If this is undefined, the serverId field in 
+    // use the employee.id to find server in our DB. If this is undefined, the serverId field in
     // the ticket will be null
     const employee = customerTicket._embedded.employee;
     const employeeId = employee ? employee.id : undefined;
     const serverToAssociate = await this.serverService
       .getServerByEmployeeId(employeeId);
 
-    const ticket: Ticket = {
+    const partial_ticket_total: Omit<TicketTotal, 'id'> = {
+      discounts: customerTicket.totals.discounts,
+      due: customerTicket.totals.due,
+      items: customerTicket.totals.items,
+      other_charges: customerTicket.totals.other_charges,
+      paid: customerTicket.totals.paid,
+      service_charges: customerTicket.totals.service_charges,
+      sub_total: customerTicket.totals.sub_total,
+      tax: customerTicket.totals.tax,
+      tips: customerTicket.totals.tips,
+      total: customerTicket.totals.total,
+    } as TicketTotal;
+
+    const ticketTotal = partial_ticket_total as TicketTotal;
+
+    const ticket: Omit<Ticket, 'id'> = {
       tab_id: customerTicket.id,
       location,
-      ticket_number: customerTicket.ticket_number,
+      // ticket_number: customerTicket.ticket_number,
       items: customerTicket._embedded.items.map((item: TicketItem | any) => ({
         ticket_item_id: item.id,
         name: item.name,
@@ -150,22 +165,11 @@ export class OmnivoreService {
         sent_at: item.sent_at,
         split: item.split,
       })),
-      ticketTotal: {
-        discounts: customerTicket.totals.discounts,
-        due: customerTicket.totals.due,
-        items: customerTicket.totals.items,
-        other_charges: customerTicket.totals.other_charges,
-        paid: customerTicket.totals.paid,
-        service_charges: customerTicket.totals.service_charges,
-        sub_total: customerTicket.totals.sub_total,
-        tax: customerTicket.totals.tax,
-        tips: customerTicket.totals.tips,
-        total: customerTicket.totals.total,
-      },
+      ticketTotal,
       server: serverToAssociate,
       table_name: customerTicket._embedded.revenue_center.name,
     };
-    return ticket;
+    return ticket as Ticket;
   }
 
   async addItemsToTicket(location: LocationEntity, omnivoreTicketId: string, menuItems: OmnivoreTicketItem[]) {

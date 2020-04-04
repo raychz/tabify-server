@@ -8,9 +8,6 @@ import { Ticket, User, TabifyBaseEntity } from '@tabify/entities';
 
 @Entity()
 export class FraudPreventionCode extends TabifyBaseEntity {
-  @PrimaryGeneratedColumn()
-  id!: number;
-
   @Column({ type: 'varchar', nullable: false })
   code!: string;
 

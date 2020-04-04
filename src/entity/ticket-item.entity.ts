@@ -12,9 +12,6 @@ import { Ticket, User, TicketItemUser, TabifyBaseEntity} from '@tabify/entities'
 
 @Entity()
 export class TicketItem extends TabifyBaseEntity {
-  @PrimaryGeneratedColumn()
-  id?: number;
-
   @Column({ type: 'int', nullable: false })
   ticket_item_id?: number;
 

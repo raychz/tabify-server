@@ -3,9 +3,6 @@ import { Server, User, TabifyBaseEntity } from '@tabify/entities';
 
 @Entity()
 export class UserDetail extends TabifyBaseEntity {
-    @PrimaryGeneratedColumn()
-    id!: number;
-
     @Column({ type: 'varchar', nullable: false })
     displayName!: string;
 

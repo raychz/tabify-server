@@ -21,10 +21,7 @@ import { TicketStatus } from '../enums/ticket-status.enum';
 @Entity()
 @Unique(['tab_id', 'location'])
 export class Ticket extends TabifyBaseEntity {
-  @PrimaryGeneratedColumn()
-  id?: number;
-
-  //TODO: Change to Omnivore ID?
+  // TODO: Change to Omnivore ID?
   @Column({ type: 'varchar', nullable: false })
   tab_id?: string;
 

@@ -4,9 +4,6 @@ import { Location, UserDetail, Ticket, ServerReward, TabifyBaseEntity } from '@t
 @Entity()
 @Unique(['employeeId', 'location'])
 export class Server extends TabifyBaseEntity {
-    @PrimaryGeneratedColumn()
-    id!: number;
-
     @Column({type: 'varchar', nullable: false})
     firstName!: string;
 

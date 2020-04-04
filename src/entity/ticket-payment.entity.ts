@@ -11,9 +11,6 @@ import { PaymentMethod } from './payment-method.entity';
 /** Saves the ticket payment metadata that we get back from Omnivore */
 @Entity()
 export class TicketPayment extends TabifyBaseEntity {
-    @PrimaryGeneratedColumn()
-    id?: number;
-
     @Column({ type: 'int' })
     amount?: number;
 

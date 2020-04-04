@@ -11,9 +11,6 @@ import { Ticket, TabifyBaseEntity } from '@tabify/entities';
 @Entity()
 @Unique(['ticket'])
 export class TicketTotal extends TabifyBaseEntity {
-    @PrimaryGeneratedColumn()
-    id?: number;
-
     /** The sum total value in cents of all ticket-level discounts */
     @Column({ type: 'int', nullable: false })
     discounts!: number;

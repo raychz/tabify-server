@@ -3,9 +3,6 @@ import { Comment, Like, Ticket, TabifyBaseEntity } from '@tabify/entities';
 
 @Entity()
 export class Story extends TabifyBaseEntity {
-    @PrimaryGeneratedColumn()
-    id!: number;
-
     @OneToMany(type => Comment, comment => comment.story)
     comments!: Comment[];
 

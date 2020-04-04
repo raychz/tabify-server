@@ -1,6 +1,9 @@
-import { CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn } from 'typeorm';
 
 export abstract class TabifyBaseEntity {
+
+    @PrimaryGeneratedColumn()
+    id!: number;
 
     @CreateDateColumn()
     date_created?: Date;

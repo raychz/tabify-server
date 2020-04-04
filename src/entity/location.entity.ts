@@ -10,9 +10,6 @@ import { Server, Ticket, TabifyBaseEntity } from '@tabify/entities';
 @Entity()
 @Unique(['omnivore_id'])
 export class Location extends TabifyBaseEntity {
-  @PrimaryGeneratedColumn()
-  id?: number;
-
   @Column({ type: 'varchar', nullable: false })
   omnivore_id?: string;
 

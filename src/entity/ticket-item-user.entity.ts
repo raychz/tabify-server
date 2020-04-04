@@ -4,9 +4,6 @@ import { TicketItem, User, TabifyBaseEntity } from '@tabify/entities';
 @Entity()
 @Unique(['ticketItem', 'user'])
 export class TicketItemUser extends TabifyBaseEntity{
-  @PrimaryGeneratedColumn()
-  id?: number;
-
   @Index()
   @ManyToOne(type => TicketItem, ticketItem => ticketItem.users, { nullable: false, onDelete: 'CASCADE' })
   ticketItem!: TicketItem;

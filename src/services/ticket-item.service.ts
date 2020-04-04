@@ -50,7 +50,8 @@ export class TicketItemService {
           const ticketItem = await this.getTicketItem(itemId, transactionalEntityManager);
 
           // Add current user to array of ticket item users
-          const newTicketItemUser: TicketItemUser = { ticketItem: { id: ticketItem.id }, user: await this.userService.getUser(uid), price: 0 };
+          const partialNewTicketItemUser: Omit<TicketItemUser, 'id'> = { ticketItem: { id: ticketItem.id }, user: await this.userService.getUser(uid), price: 0 };
+          const newTicketItemUser = partialNewTicketItemUser as TicketItemUser;
           ticketItemUsers.push(newTicketItemUser);
 
           // Evenly distribute the cost of the item amongst the ticket item users

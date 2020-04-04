@@ -2,9 +2,6 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, ManyToOne } from 't
 import { Story, User, TabifyBaseEntity } from '@tabify/entities';
 @Entity()
 export class Comment extends TabifyBaseEntity {
-    @PrimaryGeneratedColumn()
-    id!: number;
-
     @Column({ type: 'varchar', nullable: false })
     text!: string;
 

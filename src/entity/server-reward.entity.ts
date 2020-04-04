@@ -3,9 +3,6 @@ import { Server, Ticket, TabifyBaseEntity } from '@tabify/entities';
 
 @Entity()
 export class ServerReward extends TabifyBaseEntity{
-    @PrimaryGeneratedColumn()
-    id!: number;
-
     @ManyToOne(type => Server, server => server.serverRewards)
     server!: Server;
 
