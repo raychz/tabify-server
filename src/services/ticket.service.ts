@@ -106,11 +106,11 @@ export class TicketService {
 
         // Add items to ticket
         const ticketItemsRepo = await transactionalEntityManager.getRepository(TicketItem);
-        await ticketItemsRepo.insert(ticket.items!.map(item => ({ ...item, ticket: insertedTicketId as unknown as TicketEntity })));
+        await ticketItemsRepo.insert(ticket.items!.map(item => ({ ...item, ticket: insertedTicketId as TicketEntity })));
 
         // Add totals to ticket
         const ticketTotalRepo = await transactionalEntityManager.getRepository(TicketTotal);
-        await ticketTotalRepo.insert({ ...ticket.ticketTotal!, ticket: insertedTicketId as unknown as TicketEntity });
+        await ticketTotalRepo.insert({ ...ticket.ticketTotal!, ticket: insertedTicketId as TicketEntity });
 
         // Retrieve and join this new ticket
         Logger.log('Retrieving the created ticket');

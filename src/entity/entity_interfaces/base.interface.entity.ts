@@ -3,7 +3,7 @@ import { CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn } from 'type
 export abstract class TabifyBaseEntity {
 
     @PrimaryGeneratedColumn()
-    id!: number;
+    id?: number;
 
     @CreateDateColumn()
     date_created?: Date;

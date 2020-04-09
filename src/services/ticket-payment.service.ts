@@ -28,7 +28,7 @@ export class TicketPaymentService {
       amount: details.amount,
       tip: details.tip,
       paymentMethod: paymentMethodAssociated,
-    } as TicketPayment);
+    });
 
     // Attempt to send the ticket payment via Spreedly
     let spreedlyResponse;

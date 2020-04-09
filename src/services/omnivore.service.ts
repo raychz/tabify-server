@@ -31,7 +31,7 @@ export class OmnivoreService {
     }
 
     return (json._embedded.locations).map(
-      (location: any): Omit<LocationEntity, 'id'> => ({
+      (location: any): LocationEntity => ({
         name: location.name,
         longitude: location.longitude,
         latitude: location.latitude,
@@ -136,7 +136,7 @@ export class OmnivoreService {
     const serverToAssociate = await this.serverService
       .getServerByEmployeeId(employeeId);
 
-    const partial_ticket_total: Omit<TicketTotal, 'id'> = {
+    const ticketTotal: TicketTotal = {
       discounts: customerTicket.totals.discounts,
       due: customerTicket.totals.due,
       items: customerTicket.totals.items,
@@ -149,9 +149,7 @@ export class OmnivoreService {
       total: customerTicket.totals.total,
     } as TicketTotal;
 
-    const ticketTotal = partial_ticket_total as TicketTotal;
-
-    const ticket: Omit<Ticket, 'id'> = {
+    const ticket: Ticket = {
       tab_id: customerTicket.id,
       location,
       // ticket_number: customerTicket.ticket_number,
