@@ -30,7 +30,7 @@ export class OmnivoreService {
       throw Error('Failed fetching ticket from source');
     }
 
-    return (json._embedded.locations).map(
+    return (json._embedded.locations as Array<any>).map(
       (location: any): LocationEntity => ({
         name: location.name,
         longitude: location.longitude,
@@ -167,7 +167,7 @@ export class OmnivoreService {
       server: serverToAssociate,
       table_name: customerTicket._embedded.revenue_center.name,
     };
-    return ticket as Ticket;
+    return ticket;
   }
 
   async addItemsToTicket(location: LocationEntity, omnivoreTicketId: string, menuItems: OmnivoreTicketItem[]) {
