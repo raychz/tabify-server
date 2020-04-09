@@ -147,7 +147,7 @@ export class OmnivoreService {
       tax: customerTicket.totals.tax,
       tips: customerTicket.totals.tips,
       total: customerTicket.totals.total,
-    } as TicketTotal;
+    };
 
     const ticket: Ticket = {
       tab_id: customerTicket.id,
