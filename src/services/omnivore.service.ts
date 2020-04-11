@@ -152,7 +152,7 @@ export class OmnivoreService {
     const ticket: Ticket = {
       tab_id: customerTicket.id,
       location,
-      // ticket_number: customerTicket.ticket_number,
+      ticket_number: customerTicket.ticket_number,
       items: customerTicket._embedded.items.map((item: TicketItem | any) => ({
         ticket_item_id: item.id,
         name: item.name,
