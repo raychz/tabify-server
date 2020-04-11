@@ -5,14 +5,11 @@ import {
   Unique,
   OneToMany,
 } from 'typeorm';
-import { Server, Ticket } from '@tabify/entities';
+import { Server, Ticket, TabifyBaseEntity } from '@tabify/entities';
 
 @Entity()
 @Unique(['omnivore_id'])
-export class Location {
-  @PrimaryGeneratedColumn()
-  id?: number;
-
+export class Location extends TabifyBaseEntity {
   @Column({ type: 'varchar', nullable: false })
   omnivore_id?: string;
 
