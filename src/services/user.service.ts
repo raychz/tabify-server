@@ -1,6 +1,6 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { getRepository } from 'typeorm';
-import { Server as ServerEntity, User as UserEntity, UserDetail as UserDetailEntity,UserSetting as UserSettingEntity, User} from '@tabify/entities';
+import { Server as ServerEntity, User as UserEntity, UserDetail as UserDetailEntity,UserSetting as UserSettingEntity, User, UserSetting} from '@tabify/entities';
 
 // This service handles operations for the User and UserDetails entities
 @Injectable()
@@ -82,15 +82,22 @@ export class UserService
         return user;
     }
 
-    //Post Request for userSettings
+    async updateUserSettings(id: number, userSetting: UserSetting){
+        const userSettingRepo = await getRepository(UserSetting)
+        const uSetting = await userSettingRepo.findOne(id);
+        if (!uSetting){
+           throw new NotFoundException('User Setting not found')
+        }
+        uSetting.defaultPaymentMethod = userSetting.defaultPaymentMethod
+        userSetting.defaultTipPercentage = userSetting.defaultTipPercentage
+        return await userSettingRepo.save(uSetting);
+    }
 
-   // async getUserSettings(uid: string){
-      //  const userSettingsRepo =
-
-    //}
-
-
-
+    async getUserSetting(uid: string) {
+        const userSettingRepo = await getRepository(UserSettingEntity);
+        const userSetting = await userSettingRepo.findOne({ where: { user: uid }, relations: ['user'] });
+        return userSetting;
+    }
 
 
     // sets newUser of all users part of ticketId to false

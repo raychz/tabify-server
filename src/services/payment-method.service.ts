@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, } from '@nestjs/common';
 import { getRepository, getConnection } from 'typeorm';
 import { PaymentMethod as PaymentMethodEntity, User } from '../entity';
 import { PaymentMethod as IPaymentMethod } from '../interfaces/spreedly-api';
@@ -19,8 +19,16 @@ export class PaymentMethodService {
     }
 
     async createPaymentMethod(uid: string, details: IPaymentMethod) {
-        const user = new User();
-        user.uid = uid;
+
+
+        //If it's the users first payment method also added as the default method
+        const userRepo = await getRepository(User);
+        const user = await userRepo.findOne({ where: { uid }, relations: ['userSettings'] });
+        if (!user){
+            throw new NotFoundException('User not found')
+         }
+        
+        // change above to get user from db
 
         const paymentMethod = new PaymentMethodEntity();
         paymentMethod.card_type = details.card_type;
@@ -34,6 +42,10 @@ export class PaymentMethodService {
         paymentMethod.token = details.token;
         paymentMethod.fingerprint = details.fingerprint;
         paymentMethod.user = user;
+
+        if(! user.userSettings.defaultPaymentMethod){
+         paymentMethod.userSetting = user.userSettings
+        }
 
         const paymentMethodRepo = await getRepository(PaymentMethodEntity);
         let newPaymentMethod;
@@ -60,10 +72,7 @@ export class PaymentMethodService {
             return newPaymentMethod;
         } catch (e) {
             throw new BadRequestException('An unknown error occurred while retaining this payment method. Please try again.', e);
-        }
-
-        //If it's the users first payment method also added as the default method
-        
+        }    
     }
 
     async updatePaymentMethod(uid: string, newPaymentMethod: PaymentMethodEntity) {

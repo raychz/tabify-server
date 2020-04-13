@@ -1,5 +1,5 @@
 import { Entity, Column, ManyToMany, OneToMany, OneToOne, CreateDateColumn, UpdateDateColumn } from 'typeorm';
-import { Comment, FraudPreventionCode, Like, Ticket, TicketItem, TicketPayment, UserDetail, PaymentMethod, TicketItemUser, TicketUser, UserSettings } from '@tabify/entities';
+import { Comment, FraudPreventionCode, Like, Ticket, TicketItem, TicketPayment, UserDetail, PaymentMethod, TicketItemUser, TicketUser, UserSetting } from '@tabify/entities';
 
 @Entity()
 export class User {

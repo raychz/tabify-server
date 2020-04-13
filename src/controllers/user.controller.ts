@@ -1,4 +1,4 @@
-import { Get, Controller, Res, Post, Headers, Body, InternalServerErrorException } from '@nestjs/common';
+import { Get, Controller, Res, Post, Headers, Body, InternalServerErrorException, Param } from '@nestjs/common';
 import { getRepository } from 'typeorm';
 import { User as UserEntity, UserSetting } from '@tabify/entities';
 import { FirebaseService, UserService } from '@tabify/services';
@@ -60,18 +60,21 @@ export class UserController {
   }
 
   // get user settings endpoint
-  //@Get('/userSettings/')
-  //async getUserSettingsFromDB(@User('uid') uid: string){
-    //const userSettings = await this.userService.getUserSettings(uid);
-    //return userSettings;
-  //}
+  @Get('/userSettings/')
+  async getUserSettingsFromDB(@User('uid') uid: string){
+    const userSettings = await this.userService.getUserSetting(uid);
+    return userSettings;
+  }
   
-
   /**
    * User Settings update USE - Patch insted of Post
    */
-  //@Post('/userSetting')
-  //async updateUserSettings
-  
-
+  @Post('/userSetting/:id')
+  async updateUserSettings( 
+    @Param('id') id: number,
+    @Body('userSetting') userSetting: UserSetting
+  ) {
+      const updatedUserSettings = await this.userService.updateUserSettings(id, userSetting);
+      return updatedUserSettings;
+    }
 }
