@@ -36,7 +36,7 @@ export class User {
   @OneToMany(type => TicketUser, ticketUser => ticketUser.user)
   tickets!: TicketUser[];
 
-  @OneToOne( type => UserSettings, userSetting => userSetting.user )
-  userSettings!: UserSettings;
+  @OneToOne( type => UserSetting, userSetting => userSetting.user )
+  userSettings!: UserSetting;
 
 }

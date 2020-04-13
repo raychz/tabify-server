@@ -1,17 +1,37 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { getRepository } from 'typeorm';
-import { Server as ServerEntity, User as UserEntity, UserDetail as UserDetailEntity } from '@tabify/entities';
+import { Server as ServerEntity, User as UserEntity, UserDetail as UserDetailEntity,UserSetting as UserSettingEntity, User} from '@tabify/entities';
 
 // This service handles operations for the User and UserDetails entities
 @Injectable()
-export class UserService {
+export class UserService 
+{
+    async createUserSetting(uid: string){
+        // check if userSettings exist in DB. If not, enter user details in DB
+        const userSettingRepo = await getRepository(UserSettingEntity);
+        // order payment methods - select the oldest created as the default
+        const userSettingsAlreadyExist = await userSettingRepo.findOne({where: {user: uid}, relations: ['user']}); // look at find options in typeorm docs
+        if (userSettingsAlreadyExist === undefined){
+            const newUserSetting = new UserSettingEntity();
+
+            newUserSetting.defaultTipPercentage = 18;
+            
+            //Look for how to order
+            const userRepo = await getRepository(User)
+            const user = await userRepo.findOne({ where: {uid}, relations: ['paymentMethods']})
+            if (!user) {
+                throw new BadRequestException('user uid not found in user table')
+            }
+            newUserSetting.user = user
+        }
+    }
 
     async createUserDetails(userDetails: any, referralCode: string) {
 
         // check if userDetails exist in DB. If not, enter user details in DB
         const userDetailsRepo = await getRepository(UserDetailEntity);
         const userDetailsAlreadyExist = await userDetailsRepo
-            .findOne({ where: { user: userDetails.uid }, relations: ['user'] });
+            .findOne({ where: { user: userDetails.uid }, relations: ['user', 'user.userSetting'] });    
 
         if (userDetailsAlreadyExist === undefined) {
             const refinedUserDetails = new UserDetailEntity();
@@ -19,7 +39,7 @@ export class UserService {
             // Add current user to refinedUserDetails
             const user = new UserEntity();
             user.uid = userDetails.uid;
-            refinedUserDetails.user = user;
+            refinedUserDetails.user = user;    
 
             refinedUserDetails.email = userDetails.email;
             refinedUserDetails.displayName = userDetails.displayName;
@@ -49,7 +69,6 @@ export class UserService {
         }
     }
 
-
     
     async getUserDetails(uid: string) {
         const userDetailsRepo = await getRepository(UserDetailEntity);
@@ -62,6 +81,17 @@ export class UserService {
         const user = await userRepo.findOneOrFail(uid, { relations: ['userDetail'] });
         return user;
     }
+
+    //Post Request for userSettings
+
+   // async getUserSettings(uid: string){
+      //  const userSettingsRepo =
+
+    //}
+
+
+
+
 
     // sets newUser of all users part of ticketId to false
     async setNewUsersFalse(ticketId: number) {

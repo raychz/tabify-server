@@ -61,6 +61,9 @@ export class PaymentMethodService {
         } catch (e) {
             throw new BadRequestException('An unknown error occurred while retaining this payment method. Please try again.', e);
         }
+
+        //If it's the users first payment method also added as the default method
+        
     }
 
     async updatePaymentMethod(uid: string, newPaymentMethod: PaymentMethodEntity) {
