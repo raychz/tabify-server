@@ -1,6 +1,5 @@
 // Keep up to date with tabify/src/interfaces/ticket.interface.ts
 import {
-  CreateDateColumn,
   Entity,
   PrimaryGeneratedColumn,
   Column,
@@ -11,21 +10,18 @@ import {
   ManyToOne,
   OneToOne,
   Index,
-  UpdateDateColumn,
 } from 'typeorm';
 import {
   FraudPreventionCode, Location, Story, TicketItem, TicketTotal, TicketPayment, User, TicketUser, Server,
   ServerReward,
+  TabifyBaseEntity,
 } from '@tabify/entities';
 import { TicketStatus } from '../enums/ticket-status.enum';
 
 @Entity()
 @Unique(['tab_id', 'location'])
-export class Ticket {
-  @PrimaryGeneratedColumn()
-  id?: number;
-
-  //TODO: Change to Omnivore ID?
+export class Ticket extends TabifyBaseEntity {
+  // TODO: Change to Omnivore ID?
   @Column({ type: 'varchar', nullable: false })
   tab_id?: string;
 
@@ -41,12 +37,6 @@ export class Ticket {
     cascade: true,
   })
   items?: TicketItem[];
-
-  @CreateDateColumn()
-  date_created?: Date;
-
-  @UpdateDateColumn()
-  date_modified?: Date;
 
   @OneToMany(type => FraudPreventionCode, fraudPreventionCode => fraudPreventionCode.id, {
     cascade: true,

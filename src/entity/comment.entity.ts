@@ -1,11 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, ManyToOne, CreateDateColumn } from 'typeorm';
-import { Story, User } from '@tabify/entities';
-
+import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, ManyToOne } from 'typeorm';
+import { Story, User, TabifyBaseEntity } from '@tabify/entities';
 @Entity()
-export class Comment {
-    @PrimaryGeneratedColumn()
-    id!: number;
-
+export class Comment extends TabifyBaseEntity {
     @Column({ type: 'varchar', nullable: false })
     text!: string;
 
@@ -15,6 +11,4 @@ export class Comment {
     @ManyToOne(type => User, user => user.comments)
     user!: User;
 
-    @CreateDateColumn()
-    date_created!: Date;
 }
