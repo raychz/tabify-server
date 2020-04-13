@@ -3,24 +3,13 @@ import {
   PrimaryGeneratedColumn,
   Column,
   ManyToOne,
-  CreateDateColumn,
-  UpdateDateColumn,
 } from 'typeorm';
-import { Ticket, User } from '@tabify/entities';
+import { Ticket, User, TabifyBaseEntity } from '@tabify/entities';
 
 @Entity()
-export class FraudPreventionCode {
-  @PrimaryGeneratedColumn()
-  id!: number;
-
+export class FraudPreventionCode extends TabifyBaseEntity {
   @Column({ type: 'varchar', nullable: false })
   code!: string;
-
-  @CreateDateColumn()
-  date_created!: Date;
-
-  @UpdateDateColumn()
-  date_updated!: Date;
 
   @ManyToOne(type => Ticket, ticket => ticket.fraudPreventionCodes, {
     onDelete: 'CASCADE',

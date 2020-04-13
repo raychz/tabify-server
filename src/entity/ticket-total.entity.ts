@@ -1,27 +1,16 @@
 import {
-    CreateDateColumn,
     Entity,
     PrimaryGeneratedColumn,
     Column,
     OneToOne,
-    UpdateDateColumn,
     JoinColumn,
     Unique,
 } from 'typeorm';
-import { Ticket } from '@tabify/entities';
+import { Ticket, TabifyBaseEntity } from '@tabify/entities';
 
 @Entity()
 @Unique(['ticket'])
-export class TicketTotal {
-    @PrimaryGeneratedColumn()
-    id?: number;
-
-    @CreateDateColumn()
-    date_created?: Date;
-
-    @UpdateDateColumn()
-    date_updated?: Date;
-
+export class TicketTotal extends TabifyBaseEntity {
     /** The sum total value in cents of all ticket-level discounts */
     @Column({ type: 'int', nullable: false })
     discounts!: number;

@@ -1,3 +1,7 @@
+// export interfaces that are extended by entity classes here - has to be exported first to avoid circular dependence
+export * from './entity_interfaces/base.interface.entity';
+
+// export entity classes here
 export * from './comment.entity';
 export * from './fraud-prevention-code.entity';
 export * from './like.entity';

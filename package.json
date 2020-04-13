@@ -52,7 +52,7 @@
     "tslib": "^1.10.0",
     "twilio": "^3.39.0",
     "typeorm": "^0.2.19",
-    "typescript": "3.4.5"
+    "typescript": "^3.8.3"
   },
   "devDependencies": {
     "@nestjs/testing": "^6.11.6",
