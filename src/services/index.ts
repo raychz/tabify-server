@@ -25,3 +25,4 @@ export * from './ticket-user.service';
 export * from './ticket-item.service';
 export * from './ticket-item-user.service';
 export * from './ticket-payment.service';
+export * from './review.service';
