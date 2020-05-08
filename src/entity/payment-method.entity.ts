@@ -49,6 +49,6 @@ export class PaymentMethod extends TabifyBaseEntity {
   ticketPayment!: TicketPayment[];
 
   @OneToOne(type => UserSetting, userSetting => userSetting.defaultPaymentMethod)
-  userSetting!: UserSetting;
+  userSettings!: UserSetting;
 
 }

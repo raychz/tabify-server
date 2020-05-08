@@ -23,7 +23,7 @@ export class PaymentMethodService {
 
         //If it's the users first payment method also added as the default method
         const userRepo = await getRepository(User);
-        const user = await userRepo.findOne({ where: { uid }, relations: ['userSettings'] });
+        const user = await userRepo.findOne({ where: { uid }, relations: ['userSettings', 'userSettings.defaultPaymentMethod'] });
         if (!user){
             throw new NotFoundException('User not found')
          }
@@ -44,7 +44,7 @@ export class PaymentMethodService {
         paymentMethod.user = user;
 
         if(! user.userSettings.defaultPaymentMethod){
-         paymentMethod.userSetting = user.userSettings
+         paymentMethod.userSettings = user.userSettings
         }
 
         const paymentMethodRepo = await getRepository(PaymentMethodEntity);
