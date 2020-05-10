@@ -70,5 +70,5 @@ export class Location extends TabifyBaseEntity {
   open_discount_id?: string;
 
   @Column({type: 'bool', default: false, nullable: false})
-  coupons_only!: boolean;
+  coupons_only?: boolean;
 }
