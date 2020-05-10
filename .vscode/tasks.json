@@ -1,48 +1,9 @@
 {
     "version": "2.0.0",
     "tasks": [
-      {
-        "type": "npm",
-        "script": "start",
-        "label": "front-end",
-        "options": {
-          "cwd": "tabify"
-        },
-        "isBackground": true,
-        "presentation": {
-          "focus": true,
-          "panel": "dedicated"
-        },
-        "group": {
-          "kind": "build",
-          "isDefault": true
-        },
-        "problemMatcher": {
-          "owner": "typescript",
-          "source": "ts",
-          "applyTo": "closedDocuments",
-          "fileLocation": [
-            "relative",
-            "${cwd}"
-          ],
-          "pattern": "$tsc",
-          "background": {
-            "activeOnStart": true,
-            "beginsPattern": {
-              "regexp": "(.*?)"
-            },
-            "endsPattern": {
-              "regexp": "Compiled successfully."
-            }
-          }
-        }
-      },
         {
             "label": "docker",
             "type": "shell",
-            "options": {
-                "cwd": "tabify-server"
-            },
             "isBackground": true,
             "runOptions": {
                 "instanceLimit": 1
@@ -70,12 +31,7 @@
             "label": "post_debug_kill_docker",
             "command": "echo ${input:terminate_docker}",
             "type": "shell",
-        },
-        {
-          "label": "post_debug_kill_front-end",
-          "command": "echo ${input:terminate_front-end}",
-          "type": "shell",
-      },
+        }
     ],
     "inputs": [
         {
@@ -83,12 +39,6 @@
           "type": "command",
           "command": "workbench.action.tasks.terminate",
           "args": "docker"
-        },
-        {
-          "id": "terminate_front-end",
-          "type": "command",
-          "command": "workbench.action.tasks.terminate",
-          "args": "front-end"
-        },
+        }
       ]
 }
