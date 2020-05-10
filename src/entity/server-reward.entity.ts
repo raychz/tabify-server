@@ -1,11 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, ManyToOne, OneToOne, JoinColumn, Column, CreateDateColumn, OneToMany } from 'typeorm';
-import { Server, Ticket } from '@tabify/entities';
+import { Entity, PrimaryGeneratedColumn, ManyToOne, OneToOne, JoinColumn, Column, OneToMany } from 'typeorm';
+import { Server, Ticket, TabifyBaseEntity } from '@tabify/entities';
 
 @Entity()
-export class ServerReward {
-    @PrimaryGeneratedColumn()
-    id!: number;
-
+export class ServerReward extends TabifyBaseEntity{
     @ManyToOne(type => Server, server => server.serverRewards)
     server!: Server;
 
@@ -16,6 +13,4 @@ export class ServerReward {
     @Column({ type: 'float', nullable: false })
     payment_amount!: number;
 
-    @CreateDateColumn()
-    date_created!: Date;
 }

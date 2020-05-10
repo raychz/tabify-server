@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException, InternalServerErrorException, Logger } from '@nestjs/common';
 import { getRepository } from 'typeorm';
-import { TicketPayment, Ticket, User, Server } from '@tabify/entities';
+import { TicketPayment, Ticket, User, Server, TicketUser } from '@tabify/entities';
 import { SpreedlyService, TicketService, PaymentMethodService, SMSService, TicketTotalService } from '@tabify/services';
 import { TicketPaymentInterface } from '../interfaces';
 import { TicketPaymentStatus } from '../enums';
@@ -71,6 +71,14 @@ export class TicketPaymentService {
         tip: response.body.tip,
         omnivore_id: response.body.id,
       });
+
+      const ticketUser = details.ticket.users!.find(user => user.user!.uid === uid);
+      // check if the user already has tips saved - $5 service charge on POS resets tip to 0 otherwise
+      if (ticketUser && !ticketUser.tips) {
+        ticketUser.tips = response.body.tip;
+        const ticketUserRepo = await getRepository(TicketUser);
+        ticketUserRepo.save(ticketUser);
+      }
     } else {
       Logger.error(spreedlyResponse, 'Error occurred while parsing the Spreedly response');
 

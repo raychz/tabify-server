@@ -1,5 +1,5 @@
-import { Get, Controller, Body, Param, Post, BadRequestException } from '@nestjs/common';
-import { PaymentMethodService, TicketService, TicketPaymentService, CouponService } from '@tabify/services';
+import { Get, Controller, Body, Param, Post, Delete, Res, Logger } from '@nestjs/common';
+import { PaymentMethodService, SpreedlyService, TicketService, TicketPaymentService, CouponService } from '@tabify/services';
 import { User } from '../decorators/user.decorator';
 import { Ticket, Coupon } from '@tabify/entities';
 

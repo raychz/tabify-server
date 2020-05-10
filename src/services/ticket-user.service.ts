@@ -73,7 +73,7 @@ export class TicketUserService {
       total: Number(priceSum),
       selectedItemsCount: Number(selectedItemsCount),
     };
-    await ticketUserRepo.update(updatedTicketUser.id, {
+    await ticketUserRepo.update(updatedTicketUser.id!, {
       items: Number(priceSum),
       sub_total: Number(priceSum),
       total: Number(priceSum),

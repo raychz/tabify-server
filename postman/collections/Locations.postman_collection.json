@@ -1,0 +1,59 @@
+{
+	"info": {
+		"_postman_id": "5f49f3df-8aee-401a-b406-2b1b3a386ac9",
+		"name": "Locations",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Sync Locations",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "eyJhbGciOiJSUzI1NiIsImtpZCI6IjA0NjUxMTM5ZDg4NzUyYjY0OTM0MjUzNGE2YjRhMDUxMjVkNzhmYmIiLCJ0eXAiOiJKV1QifQ.eyJuYW1lIjoiSmFtZXMgVGVzdGJvdCIsImlzcyI6Imh0dHBzOi8vc2VjdXJldG9rZW4uZ29vZ2xlLmNvbS90YWJpZnktNDA3NDYiLCJhdWQiOiJ0YWJpZnktNDA3NDYiLCJhdXRoX3RpbWUiOjE1NzU1ODYwMjcsInVzZXJfaWQiOiJaTlJ3WDg3dzdBZkFqTjFDTzdxa2dZV3p6bG0xIiwic3ViIjoiWk5Sd1g4N3c3QWZBak4xQ083cWtnWVd6emxtMSIsImlhdCI6MTU3NTk2MTYzNCwiZXhwIjoxNTc1OTY1MjM0LCJlbWFpbCI6ImphbWVzdGVzdGJvdEBlbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsImZpcmViYXNlIjp7ImlkZW50aXRpZXMiOnsiZW1haWwiOlsiamFtZXN0ZXN0Ym90QGVtYWlsLmNvbSJdfSwic2lnbl9pbl9wcm92aWRlciI6InBhc3N3b3JkIn19.psfnLhhxU0t8N63xaW11PSmfIv3Iz-tClapG2XEbvYt3cBVtnu-D0Fbr_osUB9YhkcQ78ivaN7hJAsHi7QsRUj4PMaAO9ZH_mkn3qEHP4NT0GgDv_HwdksrLXv-qNjrse2GpMWdDCHlf62_U1LvUg5AJmCAlEK_wXdMqY3mfbY05zYStz-4mVgOtmLvw_JLPVZcj0GyQ_xuXnAah_oyfb7S6hLbKTQovlvUxeDD_h7Yk-1GBY197oevX8LqjqcOAvws-tiIUyjUOpQhzAb_1T-NBiEgZguAGg_FD4DTDMMC-ZMPqJMVL5q40-yLgcGYvr-ywk7OXu_yhBy4CarGysA",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{serverUrl}}:{{serverPort}}/locations/sync",
+					"host": [
+						"{{serverUrl}}"
+					],
+					"port": "{{serverPort}}",
+					"path": [
+						"locations",
+						"sync"
+					]
+				},
+				"description": "Synchronizes local database location data with what is stored in Omnivore."
+			},
+			"response": []
+		},
+		{
+			"name": "Get Locations",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "eyJhbGciOiJSUzI1NiIsImtpZCI6ImZhMWQ3NzBlZWY5ZWFhNjU0MzY1ZGE5MDhjNDIzY2NkNzY4ODkxMDUiLCJ0eXAiOiJKV1QifQ.eyJuYW1lIjoiUmF5bW9uZCBDaGF2ZXoiLCJwaWN0dXJlIjoiaHR0cHM6Ly9ncmFwaC5mYWNlYm9vay5jb20vMjU0MjkzNzkwNTczMTg2Ny9waWN0dXJlIiwiaXNzIjoiaHR0cHM6Ly9zZWN1cmV0b2tlbi5nb29nbGUuY29tL3RhYmlmeS00MDc0NiIsImF1ZCI6InRhYmlmeS00MDc0NiIsImF1dGhfdGltZSI6MTU3MDY3NDI5MiwidXNlcl9pZCI6IjRGVTE3NFVSaFFVbEp3OXV4amllZVNONHZpMDMiLCJzdWIiOiI0RlUxNzRVUmhRVWxKdzl1eGppZWVTTjR2aTAzIiwiaWF0IjoxNTcxNzIxMTczLCJleHAiOjE1NzE3MjQ3NzMsImVtYWlsIjoicmF5bW9uZDc5OTA3XzFAeWFob28uY29tIiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJmaXJlYmFzZSI6eyJpZGVudGl0aWVzIjp7ImZhY2Vib29rLmNvbSI6WyIyNTQyOTM3OTA1NzMxODY3Il0sImVtYWlsIjpbInJheW1vbmQ3OTkwN18xQHlhaG9vLmNvbSJdfSwic2lnbl9pbl9wcm92aWRlciI6ImZhY2Vib29rLmNvbSJ9fQ.rR8pxIaLbKhECr9T72kGNIUOH4unXFz5EWteD2dgh63rOxb36uJnha7OZYioG-pCQymf4Yn0EWdta-vLauy1x5h8RF1GQSbhYf2pWNyhrp-CtDkE5_oLov68kqRRQu0EygaZRPIyHlYR4UYBYE0Nz17dKfSgMFbiXN5SAvilOBN0lqHByfDIbyQntWfA6QYPyYAK8KWRskIVQQxSItl3vS_hjBJLtvNhSv8seDmB67vE2WC-GFTlLxpwihxxd6uZ7fH9G-pHpFhEr-GFlfGF7UsmzfEkBd7cOxg8YJstPaDYJ5QluzdVm8_Ox_i1sCOgT0S5Tt4K6ZTrKfU0PY964Q",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{serverUrl}}:{{serverPort}}/",
+					"host": [
+						"{{serverUrl}}"
+					],
+					"port": "{{serverPort}}",
+					"path": [
+						""
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

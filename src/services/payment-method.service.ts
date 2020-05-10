@@ -69,7 +69,7 @@ export class PaymentMethodService {
             const existingPaymentMethod = await paymentMethodRepo.findOneOrFail({
                 where: { user: newPaymentMethod.user, fingerprint: newPaymentMethod.fingerprint },
             });
-            await paymentMethodRepo.update(existingPaymentMethod.id, newPaymentMethod);
+            await paymentMethodRepo.update(existingPaymentMethod.id!, newPaymentMethod);
             const updatedPaymentMethod = await paymentMethodRepo.findOneOrFail(existingPaymentMethod.id);
             return updatedPaymentMethod;
         } catch {
