@@ -78,11 +78,6 @@ Follow these steps to synchronize your local database with the demo location(s) 
 
 A `201` response indicates that the request was successful. Verify by hitting the "Pay Tab" button on your local Tabify app instance. If you see a "Virtual POS" entry in the "Find Location" page, you've successfully synchronized your local database with the location data in Omnivore.
 
-### Debugging
-
-To debug, copy and paste the .vscode folder in this repo to the root directory of your Tabify project. The backend folder in this root directory should be named 'tabify-server' in order for the backend debugger to work. The frontend folder in this root directoy (ionic 5) should be named 'tabify' in order for the frontend debugger to work. The fullstack debugger will launch both the backend and the frontend scripts and debug both at the same time.
-
-
 ## Running the tests
 
 WIP Explain how to run the automated tests for this system here
