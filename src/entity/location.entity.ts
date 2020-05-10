@@ -1,13 +1,10 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
   Column,
   Unique,
   OneToMany,
-  Index,
 } from 'typeorm';
 import { Server, Ticket, TabifyBaseEntity, Coupon } from '@tabify/entities';
-import { LocationType } from 'enums';
 
 @Entity()
 @Unique(['omnivore_id'])
@@ -72,12 +69,6 @@ export class Location extends TabifyBaseEntity {
   @Column({ type: 'varchar', nullable: true })
   open_discount_id?: string;
 
-  @Index()
-  @Column({
-    type: 'enum',
-    enum: LocationType,
-    default: LocationType.LITE,
-    nullable: false,
-  })
-  type!: LocationType;
+  @Column({type: 'bool', default: false, nullable: false})
+  coupons_only!: boolean;
 }
