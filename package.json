@@ -5,6 +5,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "format": "prettier --write \"src/**/*.ts\"",
+    "debug": "nodemon --config nodemon-debug.json",
     "start": "nodemon",
     "prestart:prod": "rimraf dist && npm run build",
     "start:prod": "node -r ./tsconfig-paths-bootstrap.js -r dotenv-safe/config dist/main.js",
