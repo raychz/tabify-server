@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { getRepository } from 'typeorm';
-import { Server as ServerEntity, User as UserEntity, UserDetail as UserDetailEntity,UserSetting as UserSettingEntity} from '@tabify/entities';
+import { Server as ServerEntity, User as UserEntity, UserDetail as UserDetailEntity,UserSetting as UserSettingEntity } from '@tabify/entities';
 
 // This service handles operations for the User and UserDetails entities
 @Injectable()
@@ -11,46 +11,33 @@ export class UserService
         const userSettingRepo = await getRepository(UserSettingEntity);
         // order payment methods - select the oldest created as the default
         const userSettingsAlreadyExist = await userSettingRepo.findOne({where: {user: uid}, relations: ['user']}); 
-        console.log("line 14 User Service", userSettingsAlreadyExist)
         if (!userSettingsAlreadyExist){
             const newUserSetting = new UserSettingEntity();
-
             newUserSetting.defaultTipPercentage = 18;
-            console.log("line 19 User Service")
             //Look for how to order
             const userRepo = await getRepository(UserEntity);
-            console.log('22 successful')
             const user = await userRepo.findOne(uid);
-            console.log("line 23 User Service",user)
             if (!user) {
                 throw new BadRequestException('user uid not found in user table')
             }
             newUserSetting.user = user;
-
-            await userSettingRepo.save(newUserSetting);
-
-            
+            await userSettingRepo.save(newUserSetting);   
         }
     }
 
     async createUserDetails(userDetails: any, referralCode: string) {
-
         // check if userDetails exist in DB. If not, enter user details in DB
         const userDetailsRepo = await getRepository(UserDetailEntity);
         const userDetailsAlreadyExist = await userDetailsRepo
-            .findOne({ where: { user: userDetails.uid }, relations: ['user', 'user.userSettings'] });    
-
+            .findOne({ where: { user: userDetails.uid }, relations: ['user', 'user.userSettings'] });
         if (userDetailsAlreadyExist === undefined) {
             const refinedUserDetails = new UserDetailEntity();
-
             // Add current user to refinedUserDetails
             const user = new UserEntity();
             user.uid = userDetails.uid;
-            refinedUserDetails.user = user;    
-
+            refinedUserDetails.user = user;
             refinedUserDetails.email = userDetails.email;
             refinedUserDetails.displayName = userDetails.displayName;
-
             if (referralCode && referralCode.length !== 0) {
                 const serverRepo = await getRepository(ServerEntity);
 
@@ -61,14 +48,12 @@ export class UserService
                     refinedUserDetails.server = referringServer;
                 }
             }
-
             if (userDetails.photo_url) {
                 refinedUserDetails.photo_url = userDetails.photo_url;
             } else {
                 // tslint:disable-next-line: max-line-length
                 refinedUserDetails.photo_url = 'https://firebasestorage.googleapis.com/v0/b/tabify-40746.appspot.com/o/user-light.png?alt=media&token=9a1c24af-58cd-4b32-8080-361d1f6915ea';
             }
-
             await userDetailsRepo.save(refinedUserDetails);
             return refinedUserDetails;
         } else {
@@ -76,7 +61,6 @@ export class UserService
         }
     }
 
-    
     async getUserDetails(uid: string) {
         const userDetailsRepo = await getRepository(UserDetailEntity);
         const userDetail = await userDetailsRepo.find({ where: { user: uid }, relations: ['user'] });
@@ -95,8 +79,8 @@ export class UserService
         if (!uSetting){
            throw new NotFoundException('User Setting not found')
         }
-        uSetting.defaultPaymentMethod = userSetting.defaultPaymentMethod
-        uSetting.defaultTipPercentage = userSetting.defaultTipPercentage
+        uSetting.defaultPaymentMethod = userSetting.defaultPaymentMethod;
+        uSetting.defaultTipPercentage = userSetting.defaultTipPercentage;
         return await userSettingRepo.save(uSetting);
     }
 
@@ -105,7 +89,6 @@ export class UserService
         const userSetting = await userSettingRepo.findOne({ where: { user: uid }, relations: ['user', 'defaultPaymentMethod'] });
         return userSetting;
     }
-
 
     // sets newUser of all users part of ticketId to false
     async setNewUsersFalse(ticketId: number) {
