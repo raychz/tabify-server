@@ -78,6 +78,10 @@ Follow these steps to synchronize your local database with the demo location(s) 
 
 A `201` response indicates that the request was successful. Verify by hitting the "Pay Tab" button on your local Tabify app instance. If you see a "Virtual POS" entry in the "Find Location" page, you've successfully synchronized your local database with the location data in Omnivore.
 
+### Debugging
+
+ In order for the Fullstack compount debugger specified in .vscode/launch.json to work, you must have the Tabify frontend (tabify) repo in your vscode workspace as well. This debugger is the same as the Fullstack debugger found in the frontend. The Backend debugger can run independently of any other repos.
+
 ## Running the tests
 
 WIP Explain how to run the automated tests for this system here
