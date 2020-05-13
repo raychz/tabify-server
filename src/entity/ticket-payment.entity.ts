@@ -50,6 +50,6 @@ export class TicketPayment extends TabifyBaseEntity {
     @ManyToOne(type => User, user => user.ticketPayments, { nullable: false })
     user?: User;
 
-    @ManyToOne(type => PaymentMethod, paymentMethod => paymentMethod.ticketPayment)
+    @ManyToOne(type => PaymentMethod, paymentMethod => paymentMethod.ticketPayment, {onDelete: 'SET NULL'})
     paymentMethod?: PaymentMethod;
 }

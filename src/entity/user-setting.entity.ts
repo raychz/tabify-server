@@ -8,7 +8,8 @@ export class UserSetting extends TabifyBaseEntity{
     defaultTipPercentage!: number;
 
     // one to one - join column on this side - settings has a column but payment method doesn't
-    @OneToOne(type => PaymentMethod, paymentMethod => paymentMethod.userSettings,{ nullable: true }) // Check if the user changes a Payment Method (only removes it) but does not delete the payment method
+    @OneToOne(type => PaymentMethod, paymentMethod => paymentMethod.userSettings, {nullable: true, onDelete:'SET NULL'}) // Check if the user changes a Payment Method (only removes it) but does not delete the payment method
+    @JoinColumn()
     defaultPaymentMethod?: PaymentMethod;
     
 
