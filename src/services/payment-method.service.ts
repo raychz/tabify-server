@@ -97,17 +97,17 @@ export class PaymentMethodService {
             .where({ id: method.id, user: uid, fingerprint: method.fingerprint })
             .execute();
 
-        return getManager().transaction(async (transactionalEntityManager: EntityManager) => {
-            const paymentMethod = await transactionalEntityManager.delete(PaymentMethodEntity,
-                { where: { id: method.id, user: uid, fingerprint: method.fingerprint }});
-            const remainingPaymentMethods = await transactionalEntityManager.find(PaymentMethodEntity,
-                { where: { user: uid }, order: {date_created: 'ASC'}});
-            const userSettings = await transactionalEntityManager.findOne(UserSetting, {where: {user: uid}, relations: ['defaultPaymentMethod']});
-            if (remainingPaymentMethods.length > 0 && userSettings && !userSettings.defaultPaymentMethod ){
-                remainingPaymentMethods[0].userSettings = userSettings;
-                transactionalEntityManager.save(PaymentMethodEntity, remainingPaymentMethods[0]);
-            }
-            return  paymentMethod;
-          });
+        // return getManager().transaction(async (transactionalEntityManager: EntityManager) => {
+        //     const paymentMethod = await transactionalEntityManager.delete(PaymentMethodEntity,
+        //         { where: { id: method.id, user: uid, fingerprint: method.fingerprint }});
+        //     const remainingPaymentMethods = await transactionalEntityManager.find(PaymentMethodEntity,
+        //         { where: { user: uid }, order: {date_created: 'ASC'}});
+        //     const userSettings = await transactionalEntityManager.findOne(UserSetting, {where: {user: uid}, relations: ['defaultPaymentMethod']});
+        //     if (remainingPaymentMethods.length > 0 && userSettings && !userSettings.defaultPaymentMethod ){
+        //         remainingPaymentMethods[0].userSettings = userSettings;
+        //         transactionalEntityManager.save(PaymentMethodEntity, remainingPaymentMethods[0]);
+        //     }
+        //     return  paymentMethod;
+        //   });
     }
 }
