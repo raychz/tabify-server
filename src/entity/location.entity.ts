@@ -5,7 +5,7 @@ import {
   Unique,
   OneToMany,
 } from 'typeorm';
-import { Server, Ticket, TabifyBaseEntity } from '@tabify/entities';
+import { Server, Ticket, TabifyBaseEntity, LocationReview } from '@tabify/entities';
 
 @Entity()
 @Unique(['omnivore_id'])
@@ -63,4 +63,8 @@ export class Location extends TabifyBaseEntity {
 
   @OneToMany(type => Server, server => server.location)
   servers!: Server[];
+
+  @OneToMany(type => LocationReview, locationReview => locationReview.location)
+  reviews!: LocationReview[];
+
 }

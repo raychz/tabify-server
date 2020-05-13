@@ -1,6 +1,7 @@
-import { Entity, Column, ManyToOne, PrimaryGeneratedColumn, Unique, Index } from 'typeorm';
-import { Ticket, User, TabifyBaseEntity } from '@tabify/entities';
+import { Entity, Column, ManyToOne, PrimaryGeneratedColumn, Unique, Index, OneToMany, OneToOne, JoinColumn } from 'typeorm';
+import { Ticket, User, TabifyBaseEntity, TicketItemReview } from '@tabify/entities';
 import { TicketUserStatus } from '../enums/';
+import { LocationReview } from './location-review.entity';
 
 @Entity()
 @Unique(['ticket', 'user'])
@@ -48,4 +49,7 @@ export class TicketUser extends TabifyBaseEntity {
     nullable: false,
   })
   status?: TicketUserStatus;
+
+  @OneToOne(type => LocationReview, locationReview => locationReview.ticket_user, { nullable: true })
+  location_review?: LocationReview;
 }
