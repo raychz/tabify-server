@@ -1,4 +1,4 @@
-import { CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn } from 'typeorm';
+import { CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn, DeleteDateColumn } from 'typeorm';
 
 export abstract class TabifyBaseEntity {
 
@@ -11,4 +11,6 @@ export abstract class TabifyBaseEntity {
     @UpdateDateColumn()
     date_updated?: Date;
 
+    @DeleteDateColumn()
+    date_deleted?: Date;
 }

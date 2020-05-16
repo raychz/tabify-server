@@ -1,27 +1,27 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { getRepository } from 'typeorm';
-import { Server as ServerEntity, User as UserEntity, UserDetail as UserDetailEntity,UserSetting as UserSettingEntity } from '@tabify/entities';
+import { Server as ServerEntity, User as UserEntity, UserDetail as UserDetailEntity, UserSetting as UserSettingEntity } from '@tabify/entities';
 
 // This service handles operations for the User and UserDetails entities
 @Injectable()
-export class UserService 
+export class UserService
 {
     async createUserSetting(uid: string){
         // check if userSettings exist in DB. If not, enter user details in DB
         const userSettingRepo = await getRepository(UserSettingEntity);
         // order payment methods - select the oldest created as the default
-        const userSettingsAlreadyExist = await userSettingRepo.findOne({where: {user: uid}, relations: ['user']}); 
+        const userSettingsAlreadyExist = await userSettingRepo.findOne({where: {user: uid}, relations: ['user']});
         if (!userSettingsAlreadyExist){
             const newUserSetting = new UserSettingEntity();
             newUserSetting.defaultTipPercentage = 18;
-            //Look for how to order
+            // Look for how to order
             const userRepo = await getRepository(UserEntity);
             const user = await userRepo.findOne(uid);
             if (!user) {
-                throw new BadRequestException('user uid not found in user table')
+                throw new BadRequestException('user uid not found in user table');
             }
             newUserSetting.user = user;
-            await userSettingRepo.save(newUserSetting);   
+            await userSettingRepo.save(newUserSetting);
         }
     }
 
@@ -74,10 +74,10 @@ export class UserService
     }
 
     async updateUserSettings(id: number, userSetting: UserSettingEntity){
-        const userSettingRepo = await getRepository(UserSettingEntity)
+        const userSettingRepo = await getRepository(UserSettingEntity);
         const uSetting = await userSettingRepo.findOne(id);
         if (!uSetting){
-           throw new NotFoundException('User Setting not found')
+           throw new NotFoundException('User Setting not found');
         }
         uSetting.defaultPaymentMethod = userSetting.defaultPaymentMethod;
         uSetting.defaultTipPercentage = userSetting.defaultTipPercentage;
