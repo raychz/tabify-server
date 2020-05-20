@@ -29,6 +29,9 @@ export class LocationService {
         const nLocation = new LocationEntity();
         nLocation.omnivore_id = location.omnivore_id;
         nLocation.name = location.name;
+
+        nLocation.photo_url = location.photo_url || 'https://firebasestorage.googleapis.com/v0/b/tabify-40746.appspot.com/o/Default-Resturant-Pic.jpg?alt=media&token=5440f9ec-9f3a-4b4c-aaa9-2b98ee41d2e7';
+
         const resLocation = await locationRepo.save(nLocation);
         return resLocation;
     }
