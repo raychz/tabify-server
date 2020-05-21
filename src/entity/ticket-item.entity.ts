@@ -8,7 +8,7 @@ import {
   OneToMany,
   Index,
 } from 'typeorm';
-import { Ticket, User, TicketItemUser, TabifyBaseEntity} from '@tabify/entities';
+import { Ticket, User, TicketItemUser, TabifyBaseEntity, TicketItemReview} from '@tabify/entities';
 
 @Entity()
 export class TicketItem extends TabifyBaseEntity {
@@ -36,4 +36,7 @@ export class TicketItem extends TabifyBaseEntity {
 
   @OneToMany(type => TicketItemUser, ticketItemUser => ticketItemUser.ticketItem)
   users?: TicketItemUser[];
+
+  @OneToMany(type => TicketItemReview, ticketItemReview => ticketItemReview.ticket_item, {nullable: true })
+  reviews?: TicketItemReview[];
 }

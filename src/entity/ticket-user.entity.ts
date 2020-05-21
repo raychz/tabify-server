@@ -1,5 +1,5 @@
-import { Entity, Column, ManyToOne, PrimaryGeneratedColumn, Unique, Index } from 'typeorm';
-import { Ticket, User, TabifyBaseEntity, Coupon } from '@tabify/entities';
+import { Entity, Column, ManyToOne, PrimaryGeneratedColumn, Unique, Index, OneToMany, OneToOne, JoinColumn } from 'typeorm';
+import { Ticket, User, TabifyBaseEntity, TicketItemReview, Coupon, LocationReview } from '@tabify/entities';
 import { TicketUserStatus } from '../enums/';
 
 @Entity()
@@ -51,4 +51,7 @@ export class TicketUser extends TabifyBaseEntity {
 
   @ManyToOne(type => Coupon, coupon => coupon.selectedTicketUsers, { nullable: true })
   selected_coupon?: Coupon;
+
+  @OneToOne(type => LocationReview, locationReview => locationReview.ticket_user, { nullable: true })
+  location_review?: LocationReview;
 }

@@ -4,7 +4,7 @@ import {
   Unique,
   OneToMany,
 } from 'typeorm';
-import { Server, Ticket, TabifyBaseEntity, Coupon } from '@tabify/entities';
+import { Server, Ticket, TabifyBaseEntity, LocationReview, Coupon } from '@tabify/entities';
 
 @Entity()
 @Unique(['omnivore_id'])
@@ -71,4 +71,7 @@ export class Location extends TabifyBaseEntity {
 
   @Column({type: 'bool', default: false, nullable: false})
   coupons_only?: boolean;
+  @OneToMany(type => LocationReview, locationReview => locationReview.location)
+  reviews!: LocationReview[];
+
 }
