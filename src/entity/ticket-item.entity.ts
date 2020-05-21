@@ -15,6 +15,9 @@ export class TicketItem extends TabifyBaseEntity {
   @Column({ type: 'int', nullable: false })
   ticket_item_id?: number;
 
+  @Column({ type: 'varchar', nullable: false })
+  menu_item_id?: string;
+
   @Index()
   @ManyToOne(type => Ticket, (ticket: Ticket) => ticket.items, {
     nullable: false,

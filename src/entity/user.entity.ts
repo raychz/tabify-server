@@ -1,6 +1,6 @@
 import { Entity, Column, ManyToMany, OneToMany, OneToOne, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { Comment, FraudPreventionCode, Like, Ticket, TicketItem, TicketPayment, UserDetail,
-  PaymentMethod, TicketItemUser, TicketUser, LocationReview, TicketItemReview } from '@tabify/entities';
+  PaymentMethod, TicketItemUser, TicketUser, LocationReview, TicketItemReview, UserToCoupons } from '@tabify/entities';
 
 @Entity()
 export class User {
@@ -39,6 +39,9 @@ export class User {
 
   @OneToOne(type => UserDetail, userDetail => userDetail.user)
   userDetail!: UserDetail;
+
+  @OneToMany(type => UserToCoupons, userCoupon => userCoupon.user)
+  userToCoupons!: UserToCoupons[];
 
   @OneToMany(type => TicketUser, ticketUser => ticketUser.user)
   tickets!: TicketUser[];

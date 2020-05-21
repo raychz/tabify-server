@@ -1,4 +1,4 @@
-import { Injectable, HttpStatus, NotFoundException, BadGatewayException, InternalServerErrorException, UnprocessableEntityException, BadRequestException } from '@nestjs/common';
+import { Injectable, HttpStatus, NotFoundException, BadGatewayException, InternalServerErrorException, UnprocessableEntityException, BadRequestException, Logger } from '@nestjs/common';
 import { getManager, EntityManager } from 'typeorm';
 import fetch from 'node-fetch';
 import { Location as LocationEntity, Ticket, TicketItem, TicketTotal } from '@tabify/entities';
@@ -100,7 +100,7 @@ export class OmnivoreService {
 
     // Omnivore query args used here. See https://panel.omnivore.io/docs/api/1.0/queries
     const where = `and(eq(open,true),eq(ticket_number,${encodeURIComponent(String(ticketNumber))}))`;
-    const fields = `totals,@employee,@revenue_center,ticket_number,@items(price,name,quantity,comment,sent,sent_at,split)`;
+    const fields = `totals,@employee,@revenue_center,ticket_number,@items(price,name,quantity,comment,sent,sent_at,split,@menu_item.id)`;
     const url = `${OmnivoreService.API_URL}/locations/${location.omnivore_id}/tickets?where=${where}&fields=${fields}`;
     const res = await fetch(url, { headers });
     const json = await res.json();
@@ -158,6 +158,7 @@ export class OmnivoreService {
         ticket_item_id: item.id,
         name: item.name,
         comment: item.comment,
+        menu_item_id: item._embedded.menu_item.id,
         price: item.price,
         quantity: item.quantity,
         sent: item.sent,

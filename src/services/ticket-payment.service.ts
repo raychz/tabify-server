@@ -27,6 +27,7 @@ export class TicketPaymentService {
       user: { uid } as User,
       amount: details.amount,
       tip: details.tip,
+      coupon: details.coupon,
       paymentMethod: paymentMethodAssociated,
     });
 

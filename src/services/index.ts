@@ -21,6 +21,7 @@ export * from './server.service';
 export * from './spreedly.service';
 export * from './ticket.service';
 export * from './ticket-total.service';
+export * from './coupon.service';
 export * from './ticket-user.service';
 export * from './ticket-item.service';
 export * from './ticket-item-user.service';
