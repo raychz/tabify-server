@@ -37,20 +37,20 @@ export class CouponService {
 
     // group coupons into the 3 classifications: valid, upcoming, and used
     groupCoupons(userCoupons: UserToCoupons[]) {
-      const validCoupons: any[] = [];
-      const usedCoupons: any[] = [];
-      const upcomingCoupons: any[] = [];
+      const validCoupons: Coupon[] = [];
+      const usedCoupons: Coupon[] = [];
+      const upcomingCoupons: Coupon[] = [];
 
       userCoupons.forEach( userCoupon => {
         if (userCoupon.usage_count > 0) {
-          usedCoupons.push({ ...userCoupon.coupon, usage_count: userCoupon.usage_count });
+          usedCoupons.push({ ...userCoupon.coupon, userToCoupons: [userCoupon] });
         }
 
         if (new Date(userCoupon.coupon.coupon_start_date).getTime() > new Date().getTime()) {
-          upcomingCoupons.push({ ...userCoupon.coupon, usage_count: userCoupon.usage_count });
+          upcomingCoupons.push({ ...userCoupon.coupon, userToCoupons: [userCoupon] });
         } else if (new Date(userCoupon.coupon.coupon_end_date).getTime() >= new Date().getTime()
         && (!userCoupon.coupon.usage_limit || userCoupon.usage_count < userCoupon.coupon.usage_limit)) {
-          validCoupons.push({ ...userCoupon.coupon, usage_count: userCoupon.usage_count });
+          validCoupons.push({ ...userCoupon.coupon, userToCoupons: [userCoupon] });
         }
       });
       return {validCoupons, upcomingCoupons, usedCoupons};
@@ -277,20 +277,22 @@ export class CouponService {
     }
 
     // get all valid coupons for a specific ticket and a specific ticket user
-    async getApplicableTicketUserCoupons(coupons: any[], ticket: Ticket, userUid: string) {
-      const validCoupons: any[] = [];
+    async getApplicableTicketUserCoupons(coupons: Coupon[], ticket: Ticket, userUid: string) {
+      const validCoupons: Coupon[] = [];
       coupons.forEach(async coupon => {
         const response = this.calculateCouponWorth(coupon, ticket, userUid);
 
-        coupon.dollar_value = response.dollar_value;
-        coupon.menu_item_name = response.message;
-        coupon.estimated_tax_difference = response.taxDifference;
+        coupon.ticket_information = {
+          dollar_value: response.dollar_value,
+          menu_item_name: response.message,
+          estimated_tax_difference: response.taxDifference,
+        };
         if (response.valid) {
           validCoupons.push(coupon);
         }
       });
 
-      validCoupons.sort((couponA, couponB) => couponB.dollar_value - couponA.dollar_value);
+      validCoupons.sort((couponA, couponB) => couponB.ticket_information!.dollar_value - couponA.ticket_information!.dollar_value);
 
       return validCoupons;
     }

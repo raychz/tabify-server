@@ -71,6 +71,7 @@ export class Location extends TabifyBaseEntity {
 
   @Column({type: 'bool', default: false, nullable: false})
   coupons_only?: boolean;
+
   @OneToMany(type => LocationReview, locationReview => locationReview.location)
   reviews!: LocationReview[];
 

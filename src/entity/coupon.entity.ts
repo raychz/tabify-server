@@ -1,16 +1,12 @@
 import {
     Entity,
-    PrimaryGeneratedColumn,
     Column,
-    CreateDateColumn,
-    UpdateDateColumn,
     ManyToOne,
     OneToMany,
-    OneToOne,
   } from 'typeorm';
-import { Location, UserToCoupons } from '@tabify/entities';
-import { TicketUser } from './ticket-user.entity';
-import { TicketPayment } from './ticket-payment.entity';
+import { Location, UserToCoupons, TabifyBaseEntity, TicketPayment, TicketUser} from '@tabify/entities';
+import { stringify } from 'querystring';
+import { CouponTicketInfo } from '@tabify/interfaces';
 
 export enum CouponType {
   PERCENT = 'percent',
@@ -23,10 +19,7 @@ export enum CouponOffOf {
 }
 
 @Entity()
-  export class Coupon {
-    @PrimaryGeneratedColumn()
-    id?: number;
-
+  export class Coupon extends TabifyBaseEntity {
     @Column({ type: 'varchar', nullable: false })
     description!: string;
 
@@ -38,12 +31,6 @@ export enum CouponOffOf {
 
     @Column({ type: 'int', nullable: true })
     usage_limit?: number;
-
-    @CreateDateColumn()
-    date_created?: Date;
-
-    @UpdateDateColumn()
-    date_updated?: Date;
 
     @Column({type: 'datetime', nullable: false})
     coupon_start_date!: Date;
@@ -118,4 +105,8 @@ export enum CouponOffOf {
 
     @OneToMany(type => TicketPayment, ticketPayment => ticketPayment.coupon, { nullable: true })
     ticketPayments?: TicketPayment[];
+
+    // this field should be left null in the db but will be populated on a per ticket basis before being sent to the frontend
+    @Column({type: 'json', nullable: true, default: null})
+    ticket_information?: CouponTicketInfo;
   }
