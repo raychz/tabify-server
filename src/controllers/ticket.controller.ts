@@ -72,7 +72,7 @@ export class TicketController {
     // Get ticket data from Omnivore
     const omnivoreTicket = await this.omnivoreService.getTicketByTicketNumber(
       location,
-      ticket_number
+      ticket_number,
     );
 
     const openedRecently = opened_recently && Boolean(JSON.parse(opened_recently));
