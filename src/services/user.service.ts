@@ -10,8 +10,8 @@ export class UserService
         // check if userSettings exist in DB. If not, enter user details in DB
         const userSettingRepo = await getRepository(UserSettingEntity);
         // order payment methods - select the oldest created as the default
-        const userSettingsAlreadyExist = await userSettingRepo.findOne({where: {user: uid}, relations: ['user']});
-        if (!userSettingsAlreadyExist){
+        let userSettings = await userSettingRepo.findOne({where: {user: uid}, relations: ['user']});
+        if (!userSettings){
             const newUserSetting = new UserSettingEntity();
             newUserSetting.defaultTipPercentage = 18;
             // Look for how to order
@@ -21,8 +21,9 @@ export class UserService
                 throw new BadRequestException('user uid not found in user table');
             }
             newUserSetting.user = user;
-            await userSettingRepo.save(newUserSetting);
+            userSettings = await userSettingRepo.save(newUserSetting);
         }
+        return userSettings;
     }
 
     async createUserDetails(userDetails: any, referralCode: string) {
@@ -63,8 +64,12 @@ export class UserService
 
     async getUserDetails(uid: string) {
         const userDetailsRepo = await getRepository(UserDetailEntity);
-        const userDetail = await userDetailsRepo.find({ where: { user: uid }, relations: ['user'] });
-        return userDetail[0];
+        const userDetails = await userDetailsRepo.find({ where: { user: uid }, relations: ['user', 'user.userSettings'] });
+        const userDetail = userDetails[0];
+        if (userDetail && !userDetail.user.userSettings) {
+            userDetail.user.userSettings = await this.createUserSetting(uid);
+        }
+        return userDetail;
     }
 
     async getUser(uid: string) {
