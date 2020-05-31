@@ -8,6 +8,7 @@
  */
 export * from './ably.service';
 export * from './story.service';
+export * from './payment-method.service';
 export * from './user.service';
 export * from './comment.service';
 export * from './firebase.service';
@@ -15,7 +16,6 @@ export * from './fraud-prevention-code/fraud-prevention-code.service';
 export * from './like.service';
 export * from './location.service';
 export * from './omnivore.service';
-export * from './payment-method.service';
 export * from './sms.service';
 export * from './server.service';
 export * from './spreedly.service';
