@@ -1,4 +1,4 @@
-import { Injectable, Logger, BadRequestException, NotFoundException, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, Logger, BadRequestException, NotFoundException, InternalServerErrorException, ForbiddenException } from '@nestjs/common';
 import { getRepository, getConnection, FindOneOptions, FindConditions, InsertResult, MoreThanOrEqual } from 'typeorm';
 import { auth } from 'firebase-admin';
 import { FirebaseService, OmnivoreService, UserService, SMSService, ServerService, AblyService } from '@tabify/services';
@@ -9,7 +9,7 @@ import {
   TicketItem,
   TicketTotal,
 } from '@tabify/entities';
-import { TicketStatus, TicketUpdates } from '../enums';
+import { TicketStatus, TicketUpdates, TicketMode } from '../enums';
 
 @Injectable()
 export class TicketService {
@@ -43,11 +43,28 @@ export class TicketService {
    * Updates the ticket then returns the ticket object
    * @param ticket
    */
-  async updateTicket(ticket: TicketEntity): Promise<TicketEntity> {
+  async updateTicketConfig(ticketId: number, config: {mode: TicketMode, partySize?: number}): Promise<TicketEntity> {
     const savedTicket = await getConnection().transaction(async transactionalEntityManager => {
       const ticketRepo = await transactionalEntityManager.getRepository(TicketEntity);
+      const ticket = await ticketRepo.findOneOrFail({
+        where: {
+          id: ticketId,
+        },
+        lock: {
+          mode: 'pessimistic_write',
+        },
+      });
+
+      if (ticket.mode && ticket.mode !== config.mode) {
+        throw new ForbiddenException('The ticket mode has already been set and cannot be changed');
+      }
+      ticket.mode = config.mode;
+      if (config.partySize) {
+        ticket.partySize = config.partySize;
+      }
       return await ticketRepo.save(ticket);
     });
+    await this.ablyService.publish(TicketUpdates.TICKET_UPDATED, {mode: savedTicket.mode, partySize: savedTicket.partySize}, ticketId.toString());
     return savedTicket;
   }
 
