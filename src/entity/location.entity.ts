@@ -1,11 +1,10 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
   Column,
   Unique,
   OneToMany,
 } from 'typeorm';
-import { Server, Ticket, TabifyBaseEntity } from '@tabify/entities';
+import { Server, Ticket, TabifyBaseEntity, LocationReview, Coupon } from '@tabify/entities';
 
 @Entity()
 @Unique(['omnivore_id'])
@@ -63,4 +62,16 @@ export class Location extends TabifyBaseEntity {
 
   @OneToMany(type => Server, server => server.location)
   servers!: Server[];
+
+  @OneToMany(type => Coupon, coupon => coupon.id)
+  coupons?: Coupon[];
+
+  @Column({ type: 'varchar', nullable: true })
+  open_discount_id?: string;
+
+  @Column({type: 'bool', default: false, nullable: false})
+  coupons_only?: boolean;
+  @OneToMany(type => LocationReview, locationReview => locationReview.location)
+  reviews!: LocationReview[];
+
 }

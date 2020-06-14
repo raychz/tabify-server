@@ -24,6 +24,7 @@ async function bootstrap() {
         'http://localhost:8100',
         'http://localhost:8101',
         'http://localhost:8080',
+        'http://localhost:4200',
         'capacitor://localhost',
         'http://localhost',
         'ionic://localhost',

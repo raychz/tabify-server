@@ -1,4 +1,4 @@
-import { Entity, Column, ManyToOne, PrimaryGeneratedColumn, Unique, Index } from 'typeorm';
+import { Entity, Column, ManyToOne, PrimaryGeneratedColumn, Unique, Index, OneToMany } from 'typeorm';
 import { TicketItem, User, TabifyBaseEntity } from '@tabify/entities';
 
 @Entity()

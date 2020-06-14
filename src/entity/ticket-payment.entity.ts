@@ -3,8 +3,9 @@ import {
     PrimaryGeneratedColumn,
     Column,
     ManyToOne,
+    OneToOne,
 } from 'typeorm';
-import { Ticket, User, TabifyBaseEntity } from '@tabify/entities';
+import { Ticket, User, TabifyBaseEntity, Coupon } from '@tabify/entities';
 import { TicketPaymentStatus } from '../enums/ticket-payment-status.enum';
 import { PaymentMethod } from './payment-method.entity';
 
@@ -50,6 +51,8 @@ export class TicketPayment extends TabifyBaseEntity {
     @ManyToOne(type => User, user => user.ticketPayments, { nullable: false })
     user?: User;
 
+    @ManyToOne(type => Coupon, coupon => coupon.ticketPayments, { nullable: true })
+    coupon?: Coupon;
     @ManyToOne(type => PaymentMethod, paymentMethod => paymentMethod.ticketPayment)
     paymentMethod?: PaymentMethod;
 }

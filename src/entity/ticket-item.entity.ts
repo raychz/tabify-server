@@ -8,12 +8,15 @@ import {
   OneToMany,
   Index,
 } from 'typeorm';
-import { Ticket, User, TicketItemUser, TabifyBaseEntity} from '@tabify/entities';
+import { Ticket, User, TicketItemUser, TabifyBaseEntity, TicketItemReview} from '@tabify/entities';
 
 @Entity()
 export class TicketItem extends TabifyBaseEntity {
   @Column({ type: 'int', nullable: false })
   ticket_item_id?: number;
+
+  @Column({ type: 'varchar', nullable: false })
+  menu_item_id?: string;
 
   @Index()
   @ManyToOne(type => Ticket, (ticket: Ticket) => ticket.items, {
@@ -33,4 +36,7 @@ export class TicketItem extends TabifyBaseEntity {
 
   @OneToMany(type => TicketItemUser, ticketItemUser => ticketItemUser.ticketItem)
   users?: TicketItemUser[];
+
+  @OneToMany(type => TicketItemReview, ticketItemReview => ticketItemReview.ticket_item, {nullable: true })
+  reviews?: TicketItemReview[];
 }
