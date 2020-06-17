@@ -1,8 +1,9 @@
-import { Get, Controller, Query, Res, Post, Body, Put, Param, BadRequestException, NotFoundException, NotImplementedException, HttpStatus, Logger } from '@nestjs/common';
-import { FirebaseService, FraudPreventionCodeService, TicketService, OmnivoreService, StoryService, TicketUserService } from '@tabify/services';
+import { Get, Controller, Query, Res, Post, Body, Put, Param, BadRequestException, NotFoundException, NotImplementedException, HttpStatus, Logger, Patch } from '@nestjs/common';
+import { FirebaseService, FraudPreventionCodeService, TicketService, OmnivoreService, StoryService, TicketUserService, SMSService } from '@tabify/services';
 import { User } from '../decorators/user.decorator';
 import { Response } from 'express';
 import { MoreThanOrEqual } from 'typeorm';
+import { TicketMode } from 'enums';
 
 @Controller('tickets')
 export class TicketController {
@@ -12,6 +13,7 @@ export class TicketController {
     private readonly firebaseService: FirebaseService,
     private readonly fraudPreventionCodeService: FraudPreventionCodeService,
     private omnivoreService: OmnivoreService,
+    private smsService: SMSService,
   ) { }
 
   @Get(':id')
@@ -72,7 +74,7 @@ export class TicketController {
     // Get ticket data from Omnivore
     const omnivoreTicket = await this.omnivoreService.getTicketByTicketNumber(
       location,
-      ticket_number
+      ticket_number,
     );
 
     const openedRecently = opened_recently && Boolean(JSON.parse(opened_recently));
@@ -95,6 +97,28 @@ export class TicketController {
     } else {
       res.status(HttpStatus.OK).send(newTicket);
     }
+  }
+
+  @Post('sms')
+  async sendTicketNotification(@Body() body: any) {
+    const { phoneNumber, locationId, ticketNumber  } = body;
+    const message = `Thank you for using with Tabify! To join your ticket and pay go to https://www.m.tabifyapp.com/#/tab-lookup/${locationId}/${ticketNumber}`;
+    return await this.smsService.sendSMS(phoneNumber, message);
+  }
+
+  @Patch(':ticketId')
+  async updateTicketConfig(
+    @User('uid') uid: string,
+    @Param('ticketId') ticketId: number,
+    @Body('mode') mode: string,
+    @Body('partySize') partySize: number,
+  ) {
+    const ticketMode: TicketMode = mode as TicketMode;
+    if (!Object.values(TicketMode).includes(ticketMode)) {
+      throw new BadRequestException('Invalid ticket ticket mode.');
+    }
+    Logger.log({ticketId, config: {mode: ticketMode, partySize}});
+    return await this.ticketService.updateTicketConfig(ticketId, {mode: ticketMode, partySize});
   }
 
   /** Adds user to Firestore ticket */

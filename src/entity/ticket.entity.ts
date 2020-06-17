@@ -17,6 +17,7 @@ import {
   TabifyBaseEntity,
 } from '@tabify/entities';
 import { TicketStatus } from '../enums/ticket-status.enum';
+import { TicketMode } from 'enums';
 
 @Entity()
 @Unique(['tab_id', 'location'])
@@ -75,4 +76,14 @@ export class Ticket extends TabifyBaseEntity {
 
   @OneToMany(type => ServerReward, serverReward => serverReward.ticket)
   serverReward?: ServerReward;
+
+  @Column({type: 'int', nullable: true, default: null})
+  partySize?: number;
+
+  @Column({
+    type: 'enum',
+    enum: TicketMode,
+    nullable: true,
+  })
+  mode?: TicketMode;
 }

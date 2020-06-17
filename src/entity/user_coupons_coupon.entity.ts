@@ -1,14 +1,8 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne } from 'typeorm';
-import { User, Coupon } from '@tabify/entities';
+import { User, Coupon, TabifyBaseEntity } from '@tabify/entities';
 
 @Entity()
-export class UserToCoupons {
-  @PrimaryGeneratedColumn()
-  id?: number;
-
-  @CreateDateColumn()
-  date_created!: Date;
-
+export class UserToCoupons extends TabifyBaseEntity{
   @Column({ type: 'int', nullable: false })
   usage_count!: number;
 
