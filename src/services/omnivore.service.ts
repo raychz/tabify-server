@@ -1,7 +1,7 @@
-import { Injectable, HttpStatus, NotFoundException, BadGatewayException, InternalServerErrorException, UnprocessableEntityException, BadRequestException } from '@nestjs/common';
+import { Injectable, HttpStatus, NotFoundException, BadGatewayException, InternalServerErrorException, UnprocessableEntityException, BadRequestException, Logger } from '@nestjs/common';
 import { getManager, EntityManager } from 'typeorm';
 import fetch from 'node-fetch';
-import { Location as LocationEntity, Ticket, TicketItem } from '@tabify/entities';
+import { Location as LocationEntity, Ticket, TicketItem, TicketTotal } from '@tabify/entities';
 import { LocationService } from '@tabify/services';
 import { sleep } from '../utilities/general.utilities';
 import { OmnivoreTicketItem, OmnivoreTicketDiscount } from '@tabify/interfaces';
@@ -47,6 +47,7 @@ export class OmnivoreService {
         phone: location.phone,
         google_place_id: location.google_place_id,
         tickets: [],
+        reviews: [],
         servers: [],
       }),
     );
@@ -99,7 +100,7 @@ export class OmnivoreService {
 
     // Omnivore query args used here. See https://panel.omnivore.io/docs/api/1.0/queries
     const where = `and(eq(open,true),eq(ticket_number,${encodeURIComponent(String(ticketNumber))}))`;
-    const fields = `totals,@employee,@revenue_center,ticket_number,@items(price,name,quantity,comment,sent,sent_at,split)`;
+    const fields = `totals,@employee,@revenue_center,ticket_number,@items(price,name,quantity,comment,sent,sent_at,split,@menu_item.id)`;
     const url = `${OmnivoreService.API_URL}/locations/${location.omnivore_id}/tickets?where=${where}&fields=${fields}`;
     const res = await fetch(url, { headers });
     const json = await res.json();
@@ -129,12 +130,25 @@ export class OmnivoreService {
       throw new UnprocessableEntityException('Tickets with service/other charges are not currently supported.');
     }
 
-    // use the employee.id to find server in our DB. If this is undefined, the serverId field in 
+    // use the employee.id to find server in our DB. If this is undefined, the serverId field in
     // the ticket will be null
     const employee = customerTicket._embedded.employee;
     const employeeId = employee ? employee.id : undefined;
     const serverToAssociate = await this.serverService
       .getServerByEmployeeId(employeeId);
+
+    const ticketTotal: TicketTotal = {
+      discounts: customerTicket.totals.discounts,
+      due: customerTicket.totals.due,
+      items: customerTicket.totals.items,
+      other_charges: customerTicket.totals.other_charges,
+      paid: customerTicket.totals.paid,
+      service_charges: customerTicket.totals.service_charges,
+      sub_total: customerTicket.totals.sub_total,
+      tax: customerTicket.totals.tax,
+      tips: customerTicket.totals.tips,
+      total: customerTicket.totals.total,
+    };
 
     const ticket: Ticket = {
       tab_id: customerTicket.id,
@@ -144,24 +158,14 @@ export class OmnivoreService {
         ticket_item_id: item.id,
         name: item.name,
         comment: item.comment,
+        menu_item_id: item._embedded.menu_item.id,
         price: item.price,
         quantity: item.quantity,
         sent: item.sent,
         sent_at: item.sent_at,
         split: item.split,
       })),
-      ticketTotal: {
-        discounts: customerTicket.totals.discounts,
-        due: customerTicket.totals.due,
-        items: customerTicket.totals.items,
-        other_charges: customerTicket.totals.other_charges,
-        paid: customerTicket.totals.paid,
-        service_charges: customerTicket.totals.service_charges,
-        sub_total: customerTicket.totals.sub_total,
-        tax: customerTicket.totals.tax,
-        tips: customerTicket.totals.tips,
-        total: customerTicket.totals.total,
-      },
+      ticketTotal,
       server: serverToAssociate,
       table_name: customerTicket._embedded.revenue_center.name,
     };

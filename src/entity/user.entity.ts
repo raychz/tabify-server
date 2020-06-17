@@ -1,10 +1,17 @@
-import { Entity, Column, ManyToMany, OneToMany, OneToOne } from 'typeorm';
-import { Comment, FraudPreventionCode, Like, Ticket, TicketItem, TicketPayment, UserDetail, PaymentMethod, TicketItemUser, TicketUser } from '@tabify/entities';
+import { Entity, Column, ManyToMany, OneToMany, OneToOne, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Comment, FraudPreventionCode, Like, Ticket, TicketItem, TicketPayment, UserDetail,
+  PaymentMethod, TicketItemUser, TicketUser, LocationReview, TicketItemReview, UserToCoupons } from '@tabify/entities';
 
 @Entity()
 export class User {
   @Column('varchar', { length: 255, primary: true, nullable: false })
   uid!: string;
+
+  @CreateDateColumn()
+  date_created?: Date;
+
+  @UpdateDateColumn()
+  date_updated?: Date;
 
   @OneToMany(type => TicketItemUser, ticketItemUser => ticketItemUser.user)
   ticketItems!: TicketItemUser[];
@@ -24,8 +31,17 @@ export class User {
   @OneToMany(type => TicketPayment, ticketPayment => ticketPayment.user)
   ticketPayments!: TicketPayment[];
 
+  @OneToMany(type => LocationReview, locationReview => locationReview.user)
+  location_reviews!: LocationReview[];
+
+  @OneToMany(type => TicketItemReview, ticketItemReview => ticketItemReview.user)
+  item_reviews!: TicketItemReview[];
+
   @OneToOne(type => UserDetail, userDetail => userDetail.user)
   userDetail!: UserDetail;
+
+  @OneToMany(type => UserToCoupons, userCoupon => userCoupon.user)
+  userToCoupons!: UserToCoupons[];
 
   @OneToMany(type => TicketUser, ticketUser => ticketUser.user)
   tickets!: TicketUser[];

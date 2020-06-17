@@ -1,27 +1,17 @@
 import {
-    CreateDateColumn,
     Entity,
     PrimaryGeneratedColumn,
     Column,
-    UpdateDateColumn,
     ManyToOne,
+    OneToOne,
 } from 'typeorm';
-import { Ticket, User } from '@tabify/entities';
+import { Ticket, User, TabifyBaseEntity, Coupon } from '@tabify/entities';
 import { TicketPaymentStatus } from '../enums/ticket-payment-status.enum';
 import { PaymentMethod } from './payment-method.entity';
 
 /** Saves the ticket payment metadata that we get back from Omnivore */
 @Entity()
-export class TicketPayment {
-    @PrimaryGeneratedColumn()
-    id?: number;
-
-    @CreateDateColumn()
-    date_created?: Date;
-
-    @UpdateDateColumn()
-    date_updated?: Date;
-
+export class TicketPayment extends TabifyBaseEntity {
     @Column({ type: 'int' })
     amount?: number;
 
@@ -61,6 +51,8 @@ export class TicketPayment {
     @ManyToOne(type => User, user => user.ticketPayments, { nullable: false })
     user?: User;
 
+    @ManyToOne(type => Coupon, coupon => coupon.ticketPayments, { nullable: true })
+    coupon?: Coupon;
     @ManyToOne(type => PaymentMethod, paymentMethod => paymentMethod.ticketPayment)
     paymentMethod?: PaymentMethod;
 }

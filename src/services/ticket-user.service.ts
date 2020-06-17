@@ -1,6 +1,6 @@
-import { Injectable, Logger, BadRequestException, InternalServerErrorException, ForbiddenException } from '@nestjs/common';
-import { getRepository, getConnection, EntityManager } from 'typeorm';
-import { TicketUser, Ticket, TicketItemUser, TicketItem } from '@tabify/entities';
+import { Injectable, Logger, BadRequestException, NotFoundException, InternalServerErrorException, ForbiddenException } from '@nestjs/common';
+import { getRepository, getConnection, FindOneOptions, FindConditions, EntityManager, In } from 'typeorm';
+import { TicketUser, Ticket, User, TicketItemUser, TicketItem, TicketTotal } from '@tabify/entities';
 import { AblyService, OmnivoreService, TicketTotalService } from '@tabify/services';
 import { TicketUpdates, TicketUserStatus, TicketUserStatusOrder } from '../enums';
 import * as currency from 'currency.js';
@@ -83,7 +83,7 @@ export class TicketUserService {
       total: Number(priceSum),
       selectedItemsCount: Number(selectedItemsCount),
     };
-    await ticketUserRepo.update(updatedTicketUser.id, {
+    await ticketUserRepo.update(updatedTicketUser.id!, {
       items: Number(priceSum),
       sub_total: Number(priceSum),
       total: Number(priceSum),
@@ -101,6 +101,40 @@ export class TicketUserService {
       lock: { mode: 'pessimistic_write' },
     });
     return ticketItemUsers;
+  }
+
+  // calculate the tax for each user
+  private calculateUserTax(users: TicketUser[], totals: TicketTotal) {
+    let distributedTaxTotal = 0;
+    const distributedTax: currency[] = [];
+    // estimate each users tax
+    users.forEach( user => {
+      const subtotalPercentage = user.sub_total / totals.sub_total;
+      Logger.log(subtotalPercentage);
+      const userTax = currency(subtotalPercentage * (totals.tax / 100));
+      distributedTax.push(userTax);
+      distributedTaxTotal += userTax.intValue;
+    });
+
+    // if the tax is not equal to the toal tax add or subtract pennies from each user until it is
+    let index = 0;
+    while (distributedTaxTotal !== totals.tax) {
+      if (distributedTaxTotal < totals.tax) {
+        distributedTax[index] = distributedTax[index].add(0.01);
+        distributedTaxTotal += 1;
+      } else if (distributedTaxTotal > totals.tax) {
+        distributedTax[index] = distributedTax[index].subtract(0.01);
+        distributedTaxTotal -= 1;
+      }
+
+      index++;
+
+      if (index >= distributedTax.length) {
+        index = 0;
+      }
+    }
+
+    return distributedTax;
   }
 
   async updateTicketUserStatus(ticketId: number, ticketUserId: number, newUserStatus: TicketUserStatus, sendNotification: boolean) {
@@ -152,54 +186,6 @@ export class TicketUserService {
           const ticketRepo = transactionalEntityManager.getRepository(Ticket);
           const ticket = await ticketRepo.findOneOrFail(ticketId, { relations: ['location', 'ticketTotal'] });
 
-          let ticketTotal = await this.ticketTotalService.getTicketTotals(ticketId);
-          if (!ticketTotal) throw new InternalServerErrorException('Cannot load the ticket totals.');
-
-          let discountAmount = currency(ticketTotal.sub_total / 100).multiply(0.15).intValue;
-          let distributedDiscount = currency(discountAmount / 100).distribute(ticketUsers.length);
-
-          // Verify that every user's subtotal remains > $0.25 by applying the discount
-          const compatibleDiscount = ticketUsers.every((ticketUser: TicketUser, index: number) =>
-            (ticketUser.sub_total - distributedDiscount[index].intValue) > 25);
-
-          // Only apply to Piccola's
-          const isPiccolas = ticket.location!.omnivore_id === 'cx9pap8i';
-
-          // Apply discount on this ticket if containsNewUser and compatibleDiscount and isPiccolas
-          if (discountAmount > 0 && compatibleDiscount && isPiccolas) {
-            Logger.log('This discount is compatible. Apply it!');
-            // TODO: Move discount id to database
-            const discounts: OmnivoreTicketDiscount[] = [{ discount: '1847-53-17', value: discountAmount }];
-            try {
-              const response = await this.omnivoreService.applyDiscountsToTicket(ticket.location!, ticket.tab_id!, discounts);
-              const { totals } = response;
-
-              ticketTotal = await this.ticketTotalService.updateTicketTotals({
-                id: ticket.ticketTotal!.id,
-                discounts: totals.discounts,
-                due: totals.due,
-                items: totals.items,
-                other_charges: totals.other_charges,
-                paid: totals.paid,
-                service_charges: totals.service_charges,
-                sub_total: totals.sub_total,
-                tax: totals.tax,
-                tips: totals.tips,
-                total: totals.total,
-              }, ticketId);
-              Logger.log(response, 'The updated ticket with discount');
-            } catch (e) {
-              Logger.error(e, undefined, 'An error occurred while adding the discount ticket item');
-              throw new InternalServerErrorException(e, 'An error occurred while adding the discount ticket item');
-            }
-          }
-          // If not compatible, reset discount to 0
-          else {
-            Logger.log('No new users found or the discount is NOT compatible; don\'t apply Tabify discount.');
-            discountAmount = 0;
-            distributedDiscount = currency(discountAmount / 100).distribute(ticketUsers.length);
-          }
-
           // Before setting everyone's status to PAYING,
           // first check if all items are claimed by at least one person
           const ticketItemRepo = transactionalEntityManager.getRepository(TicketItem);
@@ -210,17 +196,17 @@ export class TicketUserService {
           }
 
           // Set everyone's status to PAYING and also verify and finalize the totals.
-          const distributedTax = currency(ticketTotal.tax / 100).distribute(ticketUsers.length);
+          const ticketTotal = await this.ticketTotalService.getTicketTotals(ticketId);
+          if (!ticketTotal) throw new InternalServerErrorException('Cannot load the ticket totals.');
+
+          // const distributedTax = currency(ticketTotal.tax / 100).distribute(ticketUsers.length);
+          const distributedTax = this.calculateUserTax(ticketUsers, ticketTotal);
           let allUsersItems = 0;
           let allUsersDiscounts = 0;
           let allUsersSubtotal = 0;
           let allUsersTax = 0;
           let allUsersTotal = 0;
           ticketUsers.forEach((ticketUser: TicketUser, index: number) => {
-            // Subtract discount from each ticket user if applicable
-            ticketUser.discounts = distributedDiscount[index].intValue;
-            ticketUser.sub_total = ticketUser.sub_total - ticketUser.discounts;
-
             // Find sum of the selected items for this user
             let items = 0;
             ticketItems.forEach((ticketItem) => {
@@ -254,8 +240,7 @@ export class TicketUserService {
             allUsersDiscounts += ticketUser.discounts;
             allUsersSubtotal += ticketUser.sub_total;
 
-            // Distribute the tax evenly
-            // TODO: Distribute the tax proportionally
+            // Distribute the tax proportionally
             ticketUser.tax = distributedTax[index].intValue;
             allUsersTax += ticketUser.tax;
 
