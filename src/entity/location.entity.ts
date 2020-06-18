@@ -7,10 +7,13 @@ import {
 import { Server, Ticket, TabifyBaseEntity, LocationReview, Coupon } from '@tabify/entities';
 
 @Entity()
-@Unique(['omnivore_id'])
+@Unique(['omnivore_id', 'slug'])
 export class Location extends TabifyBaseEntity {
   @Column({ type: 'varchar', nullable: false })
   omnivore_id?: string;
+
+  @Column({type: 'varchar', nullable: false })
+  slug?: string;
 
   @Column({ type: 'varchar', nullable: false })
   name!: string;
