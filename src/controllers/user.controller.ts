@@ -1,12 +1,7 @@
 import { Get, Controller, Post, Headers, Body, InternalServerErrorException, Param, Patch } from '@nestjs/common';
 import { getRepository } from 'typeorm';
-<<<<<<< HEAD
 import { User as UserEntity, UserSetting } from '@tabify/entities';
-import { FirebaseService, UserService } from '@tabify/services';
-=======
-import { User as UserEntity } from '@tabify/entities';
 import { FirebaseService, UserService, CouponService } from '@tabify/services';
->>>>>>> master
 import { User } from '../decorators/user.decorator';
 import { Coupon, CouponOffOf, CouponType } from '../entity/coupon.entity';
 
@@ -46,11 +41,9 @@ export class UserController {
     const userRepo = await getRepository(UserEntity);
     await userRepo.save({ uid });
      // save user settings
-     const savedUserSettings = await this.userService.createUserSetting(uid);
+    const savedUserSettings = await this.userService.createUserSetting(uid);
     // save user details
     const savedUserDetails = await this.userService.createUserDetails(user, referralCode);
-<<<<<<< HEAD
-=======
 
     // assign new user coupon ($5 off at Piccola's) and all other valid coupons
     // const newUserCouponEndDate = new Date();
@@ -70,7 +63,6 @@ export class UserController {
     // this.couponService.saveNewCoupon(coupon, piccolaLocationOmnivoreId, [uid]);
     this.couponService.assignUsersValidCoupons([uid]);
 
->>>>>>> master
     return savedUserDetails;
   }
 
@@ -89,12 +81,12 @@ export class UserController {
     const userSettings = await this.userService.getUserSetting(uid);
     return userSettings;
   }
-  
+
   /**
    * User Settings update USE - Patch insted of Post
    */
   @Patch('/userSettings/:id')
-  async updateUserSettings( 
+  async updateUserSettings(
     @Param('id') id: number,
     @Body() userSetting: UserSetting,
   ) {
