@@ -20,5 +20,6 @@ export * from './user_coupons_coupon.entity';
 export * from './server-reward.entity';
 export * from './ticket-item-user.entity';
 export * from './ticket-user.entity';
+export * from './user-setting.entity';
 export * from './ticket-item-review.entity';
 export * from './location-review.entity';

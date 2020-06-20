@@ -7,7 +7,7 @@
             "name": "Backend",
             "port": 9229,
             "preLaunchTask": "docker",
-            "postDebugTask": "post_debug_kill_docker",
+            //"postDebugTask": "post_debug_kill_docker",
             "restart": true,
             "skipFiles": ["<node_internals>/**", "**/*.js"],
             "runtimeExecutable": "npm",

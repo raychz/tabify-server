@@ -1,6 +1,6 @@
-import { Injectable, BadRequestException, } from '@nestjs/common';
-import { getRepository, getConnection } from 'typeorm';
-import { PaymentMethod as PaymentMethodEntity, User } from '../entity';
+import { Injectable, BadRequestException, NotFoundException, Logger, ForbiddenException } from '@nestjs/common';
+import { getRepository, EntityManager, getManager, DeleteResult } from 'typeorm';
+import { PaymentMethod as PaymentMethodEntity, User, UserSetting } from '../entity';
 import { PaymentMethod as IPaymentMethod } from '../interfaces/spreedly-api';
 import { SpreedlyService } from './spreedly.service';
 
@@ -15,12 +15,18 @@ export class PaymentMethodService {
 
     async readPaymentMethods(uid: string) {
         const paymentMethodRepo = await getRepository(PaymentMethodEntity);
-        return await paymentMethodRepo.find({ where: { user: { uid } } });
+        return await paymentMethodRepo.find({ where: { user: { uid }, order: {date_created: 'ASC'} }});
     }
 
     async createPaymentMethod(uid: string, details: IPaymentMethod) {
-        const user = new User();
-        user.uid = uid;
+
+        // If it's the users first payment method also added as the default method
+        const userRepo = await getRepository(User);
+        const user = await userRepo.findOne({ where: { uid }, relations: ['userSettings', 'userSettings.defaultPaymentMethod'] });
+        if (!user){
+            throw new NotFoundException('User not found');
+         }
+        // change above to get user from db
 
         const paymentMethod = new PaymentMethodEntity();
         paymentMethod.card_type = details.card_type;
@@ -34,6 +40,10 @@ export class PaymentMethodService {
         paymentMethod.token = details.token;
         paymentMethod.fingerprint = details.fingerprint;
         paymentMethod.user = user;
+
+        if (! user.userSettings.defaultPaymentMethod){
+         paymentMethod.userSettings = user.userSettings;
+        }
 
         const paymentMethodRepo = await getRepository(PaymentMethodEntity);
         let newPaymentMethod;
@@ -53,7 +63,6 @@ export class PaymentMethodService {
         if (!newPaymentMethod) {
             throw new BadRequestException('An unknown error occurred while updating this payment method. Please try again.');
         }
-
         // Retain payment method on Spreedly
         try {
             const retainResponse = await this.spreedlyService.retainPaymentMethod(newPaymentMethod.token);
@@ -66,6 +75,9 @@ export class PaymentMethodService {
     async updatePaymentMethod(uid: string, newPaymentMethod: PaymentMethodEntity) {
         try {
             const paymentMethodRepo = await getRepository(PaymentMethodEntity);
+            const restorePaymentMethod = await paymentMethodRepo.restore({
+                user: newPaymentMethod.user, fingerprint: newPaymentMethod.fingerprint,
+          });
             const existingPaymentMethod = await paymentMethodRepo.findOneOrFail({
                 where: { user: newPaymentMethod.user, fingerprint: newPaymentMethod.fingerprint },
             });
@@ -77,13 +89,23 @@ export class PaymentMethodService {
         }
     }
 
-    async deletePaymentMethod(uid: string, method: PaymentMethodEntity) {
-        const paymentMethodRepo = await getRepository(PaymentMethodEntity);
-        return await paymentMethodRepo
-            .createQueryBuilder()
-            .delete()
-            .from(PaymentMethodEntity)
-            .where({ id: method.id, user: uid, fingerprint: method.fingerprint })
-            .execute();
+    async deletePaymentMethod(uid: string, method: PaymentMethodEntity): Promise<DeleteResult> {
+        return getManager().transaction(async (transactionalEntityManager: EntityManager) => {
+            const paymentMethod = await transactionalEntityManager.softDelete(PaymentMethodEntity,
+                { id: method.id, user: uid, fingerprint: method.fingerprint });
+            const userSettings = await transactionalEntityManager.findOne(UserSetting, {where: {user: uid},
+                 relations: ['defaultPaymentMethod']});
+            if ( userSettings?.defaultPaymentMethod && userSettings.defaultPaymentMethod.id === method.id  ){
+                const remainingPaymentMethods = await transactionalEntityManager.find(PaymentMethodEntity,
+                    { where: { user: uid }, order: {date_created: 'ASC'}});
+                if (remainingPaymentMethods.length > 0 ){
+                    userSettings.defaultPaymentMethod = remainingPaymentMethods[0];
+                    transactionalEntityManager.save(UserSetting, userSettings);
+                } else {
+                    throw new ForbiddenException ('Cannont delete default payment method when no other payment method exists.');
+                }
+            }
+            return  paymentMethod;
+          });
     }
 }

@@ -1,14 +1,13 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
   Column,
   ManyToOne,
   OneToMany,
   Unique,
   OneToOne,
+  JoinColumn,
 } from 'typeorm';
-import { Ticket, User, TabifyBaseEntity } from '@tabify/entities';
-import { TicketPayment } from './ticket-payment.entity';
+import { User, UserSetting, TicketPayment, TabifyBaseEntity } from '@tabify/entities';
 
 @Entity()
 @Unique(['user', 'fingerprint'])
@@ -48,4 +47,7 @@ export class PaymentMethod extends TabifyBaseEntity {
 
   @OneToMany(type => TicketPayment, ticketPayment => ticketPayment.paymentMethod)
   ticketPayment!: TicketPayment[];
+
+  @OneToOne(type => UserSetting, userSetting => userSetting.defaultPaymentMethod, { nullable: true })
+  userSettings?: UserSetting;
 }
