@@ -75,4 +75,13 @@ export class UserController {
     const userDetails = await this.userService.getUserDetails(uid);
     return userDetails;
   }
+
+  /**
+   * Returns a list of all users in the system
+   */
+  @Get('/all')
+  async getUsersFromDB(@User('uid') uid: string) {
+    const users = await this.userService.getAllUsers(uid);
+    return users;
+  }
 }

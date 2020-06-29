@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { getRepository } from 'typeorm';
+import { getRepository, Not } from 'typeorm';
 import { Server as ServerEntity, User as UserEntity, UserDetail as UserDetailEntity } from '@tabify/entities';
 
 // This service handles operations for the User and UserDetails entities
@@ -53,6 +53,12 @@ export class UserService {
         const userDetailsRepo = await getRepository(UserDetailEntity);
         const userDetail = await userDetailsRepo.find({ where: { user: uid }, relations: ['user'] });
         return userDetail[0];
+    }
+
+    async getAllUsers(curUserUid: string) {
+        const userDetailsRepo = await getRepository(UserDetailEntity);
+        const userDetails = await userDetailsRepo.find({ where: { user: Not(curUserUid) }, relations: ['user'] });
+        return userDetails;
     }
 
     async getUser(uid: string) {
