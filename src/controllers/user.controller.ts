@@ -1,6 +1,6 @@
-import { Get, Controller, Res, Post, Headers, Body, InternalServerErrorException } from '@nestjs/common';
+import { Get, Controller, Post, Headers, Body, InternalServerErrorException, Param, Patch } from '@nestjs/common';
 import { getRepository } from 'typeorm';
-import { User as UserEntity } from '@tabify/entities';
+import { User as UserEntity, UserSetting } from '@tabify/entities';
 import { FirebaseService, UserService, CouponService } from '@tabify/services';
 import { User } from '../decorators/user.decorator';
 import { Coupon, CouponOffOf, CouponType } from '../entity/coupon.entity';
@@ -35,14 +35,13 @@ export class UserController {
   ) {
     const user = await this.firService
       .getUserInfo(uid);
-
     if (!user) {
       throw new InternalServerErrorException('This user does not exist in Firebase.');
     }
-
     const userRepo = await getRepository(UserEntity);
     await userRepo.save({ uid });
-
+     // save user settings
+    const savedUserSettings = await this.userService.createUserSetting(uid);
     // save user details
     const savedUserDetails = await this.userService.createUserDetails(user, referralCode);
 
@@ -75,4 +74,23 @@ export class UserController {
     const userDetails = await this.userService.getUserDetails(uid);
     return userDetails;
   }
+
+  // get user settings endpoint
+  @Get('/userSettings/')
+  async getUserSettingsFromDB(@User('uid') uid: string){
+    const userSettings = await this.userService.getUserSetting(uid);
+    return userSettings;
+  }
+
+  /**
+   * User Settings update USE - Patch insted of Post
+   */
+  @Patch('/userSettings/:id')
+  async updateUserSettings(
+    @Param('id') id: number,
+    @Body() userSetting: UserSetting,
+  ) {
+      const updatedUserSettings = await this.userService.updateUserSettings(id, userSetting);
+      return updatedUserSettings;
+    }
 }
