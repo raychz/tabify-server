@@ -19,7 +19,7 @@ export class TicketItemController {
     ticketId = Number(ticketId);
     ticketUserId = Number(ticketUserId);
     itemId = Number(itemId);
-    return await this.ticketItemService.addUserToTicketItem(uid, ticketUserId, itemId, ticketId, true);
+    return await this.ticketItemService.addUserToTicketItems(uid, ticketUserId, [itemId], ticketId, true);
   }
 
   /** Removes user from ticket item */
@@ -33,7 +33,7 @@ export class TicketItemController {
     ticketId = Number(ticketId);
     ticketUserId = Number(ticketUserId);
     itemId = Number(itemId);
-    return await this.ticketItemService.removeUserFromTicketItem(uid, ticketUserId, itemId, ticketId, true);
+    return await this.ticketItemService.removeUserFromTicketItems(uid, ticketUserId, [itemId], ticketId, true);
   }
 
   /**

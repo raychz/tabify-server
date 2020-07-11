@@ -4,7 +4,7 @@ import { TicketUser, Ticket, User, TicketItemUser, TicketItem, TicketTotal } fro
 import { AblyService, OmnivoreService, TicketTotalService } from '@tabify/services';
 import { TicketUpdates, TicketUserStatus, TicketUserStatusOrder } from '../enums';
 import * as currency from 'currency.js';
-import { OmnivoreTicketItem, OmnivoreTicketDiscount } from '@tabify/interfaces';
+import { OmnivoreTicketDiscount } from '@tabify/interfaces';
 
 @Injectable()
 export class TicketUserService {
@@ -18,6 +18,16 @@ export class TicketUserService {
     const ticketUserRepo = await getRepository(TicketUser);
     const ticketUser = await ticketUserRepo.findOneOrFail(ticketUserId);
     return ticketUser;
+  }
+
+  /**
+   * get all ticket users for a ticket
+   * @param ticketUserId number
+   */
+  async getTicketUsers(ticketId: number) {
+    const ticketUserRepo = await getRepository(TicketUser);
+    const ticketUsers = await ticketUserRepo.find({ where: { ticker: ticketId } });
+    return ticketUsers;
   }
 
   /**

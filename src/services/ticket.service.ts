@@ -1,5 +1,5 @@
 import { Injectable, Logger, BadRequestException, NotFoundException, InternalServerErrorException } from '@nestjs/common';
-import { getRepository, getConnection, FindOneOptions, FindConditions, InsertResult, MoreThanOrEqual } from 'typeorm';
+import { getRepository, getConnection, FindOneOptions, FindConditions, InsertResult, MoreThanOrEqual, DeleteResult } from 'typeorm';
 import { auth } from 'firebase-admin';
 import { FirebaseService, OmnivoreService, UserService, SMSService, ServerService, AblyService } from '@tabify/services';
 import {
@@ -49,6 +49,16 @@ export class TicketService {
       return await ticketRepo.save(ticket);
     });
     return savedTicket;
+  }
+
+  /**
+   * Delete a ticket
+   * @param ticketId number
+   */
+  async deleteTicket(ticketId: number): Promise<DeleteResult> {
+    const ticketRepo = await getRepository(TicketEntity);
+    const deletedTicket = await ticketRepo.delete(ticketId);
+    return deletedTicket;
   }
 
   /**
