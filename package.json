@@ -51,7 +51,7 @@
     "socket.io": "^2.2.0",
     "tsconfig-paths": "^3.8.0",
     "tslib": "^1.10.0",
-    "twilio": "^3.39.0",
+    "twilio": "^3.65.0",
     "typeorm": "^0.2.24",
     "typescript": "^3.8.3"
   },
