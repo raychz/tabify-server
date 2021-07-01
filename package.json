@@ -35,7 +35,7 @@
     "@nestjs/core": "^6.11.6",
     "@nestjs/platform-express": "^6.11.6",
     "@sentry/integrations": "^5.12.0",
-    "@sentry/node": "^5.12.3",
+    "@sentry/node": "^6.8.0",
     "@types/node-fetch": "^2.1.2",
     "ably": "^1.1.24",
     "cross-env": "^5.2.0",
